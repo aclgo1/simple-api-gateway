@@ -7,26 +7,29 @@ import (
 )
 
 type Config struct {
-	Server
-	Redis  Redis
-	Logger Logger
+	Server     `mapstructure:",squash"`
+	Logger     `mapstructure:",squash"`
+	Redis      `mapstructure:",squash"`
+	DbDriver   string `mapstructure:"DB_DRIVER"`
+	DbUrl      string `mapstructure:"DB_URL"`
+	BaseApiUrl string `mapstructure:"BASE_API_URL"`
 }
 
 type Server struct {
-	ApiPort int
-	Mode    string
+	ApiPort int    `mapstructure:"API_PORT"`
+	Mode    string `mapstructure:"SERVER_MODE"`
 }
 
 type Logger struct {
-	LogLevel string
-	Encoding string
+	LogLevel string `mapstructure:"LOG_LEVEL"`
+	Encoding string `mapstructure:"LOG_ENCODING"`
 }
 
 type Redis struct {
-	Addr     string
-	Username string
-	Password string
-	DB       int
+	RedisAddr     string `mapstructure:"REDIS_ADDR"`
+	RedisUsername string `mapstructure:"REDIS_USERNAME"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB       int    `mapstructure:"REDIS_DB"`
 }
 
 func Load(path string) *Config {
@@ -35,8 +38,9 @@ func Load(path string) *Config {
 	v := viper.New()
 
 	v.AddConfigPath(path)
-	v.SetConfigName("config.yml")
-	v.SetConfigType("yml")
+	v.SetConfigName("simple-api-gateway")
+	v.SetConfigType("env")
+	v.SetConfigFile(".env")
 
 	v.AutomaticEnv()
 

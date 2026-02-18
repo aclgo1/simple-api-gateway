@@ -4,6 +4,7 @@ import "net/http"
 
 type Auth interface {
 	ValidateToken(next http.HandlerFunc) http.HandlerFunc
+	ValidateTokenWs(next http.HandlerFunc) http.HandlerFunc
 	ValidateTwoToken(next http.HandlerFunc) http.HandlerFunc
 	ValidateUpdate(next http.HandlerFunc) http.HandlerFunc
 	ValidateCreateAdmin(next http.HandlerFunc) http.HandlerFunc
@@ -16,11 +17,13 @@ type (
 	CtxParamsCreateAdmin string
 	CtxParamsToken       string
 	CtxParamsTwoTokens   string
+	KeyQueryToken        string
 )
 
 var (
 	SUPERADMIN Level = "super-admin"
 	ADMIN      Level = "admin"
+	CLIENT     Level = "client"
 
 	KeyCtxParamsUpdate       CtxParamsUpdate      = "params-update"
 	KeyCtxParamsCreateAdmin  CtxParamsCreateAdmin = "params-create-admin"
@@ -28,10 +31,12 @@ var (
 	KeyCtxParamsRefreshToken CtxParamsTwoTokens   = "params-two-tokens"
 	KeyAccessTokenHeader                          = "access-token"
 	KeyRefreshTokenHeader                         = "refresh-token"
+	KeyQueryTokenValue       KeyQueryToken        = "token"
 )
 
 type ParamsUpdate struct {
 	ParamsToken
+	IdUpdate string `json:"user_id"`
 	Name     string `json:"name"`
 	Lastname string `json:"lastname"`
 	Password string `json:"password"`
@@ -39,11 +44,15 @@ type ParamsUpdate struct {
 }
 
 type ParamsCreateAdmin struct {
-	Name     string `json:"name"`
-	Lastname string `json:"lastname"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	Name          string  `json:"name"`
+	Lastname      string  `json:"lastname"`
+	Password      string  `json:"password"`
+	Email         string  `json:"email"`
+	Role          string  `json:"role"`
+	Verified      string  `json:"verified"`
+	Balance       float64 `json:"balance"`
+	CaptchaId     string  `json:"captcha_id"`
+	CaptchaAwnser string  `json:"captcha_awnser"`
 }
 
 type ParamsToken struct {

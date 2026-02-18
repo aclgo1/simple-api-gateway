@@ -4,9 +4,175 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/login.css" type="text/css"/>
+    <link rel="stylesheet" type="text/css"/>
     <title>Aclgo Login</title>
 </head>
+<style>
+    body {
+    margin: 0;
+    padding:0;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    min-height: 100vh;
+    font-family: sans-serif;
+    background-position: center;
+    background-size: cover;
+   /* // background: linear-gradient(to bottom, rgb(54, 41, 130), rgb(34, 31, 33)); */
+    background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/eac2616f-9ca4-4a89-84d5-7bbc482fb1b2/df2dmoo-3403837f-2435-4c6b-9bd6-b82891aabe2d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VhYzI2MTZmLTljYTQtNGE4OS04NGQ1LTdiYmM0ODJmYjFiMlwvZGYyZG1vby0zNDAzODM3Zi0yNDM1LTRjNmItOWJkNi1iODI4OTFhYWJlMmQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Rn4fVOkXvtPjkkBt7uBdxdZlFvRpqVNg3TBuhnr5R_E");
+}
+
+.main {
+    width: 400px;
+    height: 600px;
+    overflow: hidden;
+    border-radius: 40px;
+    box-shadow: 5px 20px 50px blue;
+}
+
+#chk {
+    display: none;
+}
+
+.create {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+label {
+    color: white;
+    font-size: 2.3rem;
+    justify-content: center;
+    display: flex;
+    margin:60px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.5s ease in ease-in-out;
+}
+input {
+    width: 60%;
+    height: 35px;
+    margin: 10px auto;
+    justify-content: center;
+    display: block;
+    margin: #fff;
+    background: rgb(54, 41, 130);
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 15px;
+    outline: none;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+button {
+    width: 60%;
+    height: 40px;
+    margin: 10px auto;
+    justify-content: center;
+    display: block;
+    color: #fff;
+    background: rgb(54, 41, 130);
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 30px;
+    outline:none;
+    border:none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-bottom: 30px;
+}
+
+button:hover{
+    background: #6d44b8;
+}
+
+.login {
+    margin-top: 30px;
+    height: 700px;
+    background: #eee;
+    border-radius: 60%/10%;
+    transform: translateY(-180px);
+    transition: 0.8s ease-in-out;
+}
+
+.login form{
+    text-align: center;
+}
+
+.login label {
+    color: rgb(41, 50, 131);
+    transform: scale(0.6);
+}
+
+#chk:checked ~.login  {
+    transform: translateY(-500px);
+}
+
+#chk:checked ~ .login label {
+    transform: scale(1);
+}
+
+#chk:checked ~ .signup label {
+    transform: scale(1);
+}
+
+#forgot {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#forgot:hover{
+    cursor: pointer;
+    color: #6d44b8;
+}
+
+.captcha-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+#image-captcha{
+    border-radius: 10px;
+    max-width: 90%;
+    height: auto;
+    border: 1px solid #ccc;
+}
+
+.login #awnser-captcha{
+    background: #fff;
+    border: 1px solid rgb(54, 41 ,130);
+    color: #333;
+    margin-top: 5px;
+}
+
+.captcha-container-signup{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+#image-captcha-signup{
+    border-radius: 10px;
+    max-width: 60%;
+    height: auto;
+    border: 1px solid #ccc;
+}
+
+.login #awnser-captcha-signup{
+    background: #fff;
+    border: 1px solid rgb(54, 41 ,130);
+    color: #333;
+    margin-top: 5px;
+}
+</style>
 <body>
     <div class="main">
         <input type="checkbox" id="chk" aria-hidden="true"/>
@@ -17,6 +183,10 @@
                 <input type="text" id="lastname" name="lastname" placeholder="Lastname">
                 <input type="text" id="email" name="email" placeholder="Email"/>
                 <input type="text" id="pass" name="pass" placeholder="Password"/>
+                <!-- <div class="captcha-container-signup">
+                    <img id="image-captcha-signup" alt="Captcha">
+                    <input type="text" id="awnser-captcha-signup" placeholder="code captcha">
+                </div> -->
                 <button type="submit" id="createBtn">Sign up</button>
             </form>
         </div>
@@ -25,20 +195,29 @@
                 <label for="chk" aria-hidden="true">Login</label>
                 <input type="text" id="user_login" name="user" placeholder="Email or Username"/>
                 <input type="text" id="pass_login" name="pass" placeholder="Password"/>
+
                 <button type="submit" id="loginBtn">Login</button>
                 <a id="forgot" href="/resetpass">Forgot Pass?</a>
             </form>
         </div>
     </div>
     <h1 id="message"></h1>
+    <div class="captcha-container">
+        <img id="image-captcha" alt="Captcha">
+        <input type="text" id="awnser-captcha" placeholder="code captcha">
+    </div>
 </body>
 <script>
 
+getCaptcha();
 const BASE_URL = "http://localhost:4000";
 const createBtn = document.getElementById('createBtn');
 const loginBtn = document.getElementById('loginBtn');
 const main = document.querySelector('.main');
 const chk = document.getElementById('chk');
+let idCaptcha = ""
+let inputCaptcha = document.getElementById("awnser-captcha");
+let inputCaptchaSignup = document.getElementById("awnser-captcha-signup")
 
 createBtn.addEventListener("click", (event)=> {
     event.preventDefault();
@@ -85,16 +264,25 @@ function Create(){
         window.alert(`password empty`)
         return
     }
+
+    if(inputCaptcha.value== ""){
+        window.alert("empty captcha code")
+        return;
+    }
         
     const data = {
         name:us,
         lastname: lastname,
         password: ps,
         email: em,
-
+        captcha_id: idCaptcha,
+        captcha_awnser: inputCaptcha.value,
     };
 
     console.log(data);
+
+    createBtn.disabled =  true;
+    createBtn.innerHTML = "wait..."
 
     const options = {
         method:"POST",
@@ -104,7 +292,7 @@ function Create(){
         }
     };
 
-    fetch(BASE_URL + "/api/user/register", options)
+    fetch("/api/user/register", options)
     .then(response => response.text())
     .then(resp =>{
         const r = JSON.parse(resp);
@@ -112,6 +300,7 @@ function Create(){
             console.log(r.message);
             window.alert(r.message);
              //   message.textContent = r.error;
+            getCaptcha();
             return;
         }
         //    console.log(r.message);
@@ -121,6 +310,10 @@ function Create(){
 
     .catch(error =>{
         console.error(error);
+    })
+    .finally(()=>{
+        createBtn.disabled = false;
+        createBtn.innerHTML = `Sign up`
     });
 };
 
@@ -128,6 +321,10 @@ function Login(){
 
     const us = document.getElementById('user_login').value;
     const ps = document.getElementById('pass_login').value;
+    if(inputCaptcha.value == ""){
+        window.alert("empty captcha code")
+        return;
+    }
 
     if (!us || !ps) {
         console.log("empty crendentials")
@@ -138,9 +335,12 @@ function Login(){
     const data = {
         email: us,
         password:ps,
+        captcha_id: idCaptcha,
+        captcha_awnser: inputCaptcha.value,
     }
 
-    console.log(data);
+    loginBtn.disabled =  true;
+    loginBtn.innerHTML = "wait..."
 
     const options = {
         method: "POST",
@@ -150,7 +350,7 @@ function Login(){
         }
     };
 
-    fetch(BASE_URL+"/api/login", options)
+    fetch("/api/login", options)
     .then(response => {
         if (response.status == 403){
             window.location.assign(BASE_URL + "api/confirm");
@@ -164,19 +364,19 @@ function Login(){
         if ("error" in r){
             console.log(r.message);
             window.alert(r.message);
+            getCaptcha();
             return;
-        }
+        } 
 
-
-        console.log(r.tokens.access_token);
-        console.log(r.tokens.refresh_token);
+        console.log("access-token: ", r.tokens.access_token);
+        console.log("refresh-token: ", r.tokens.refresh_token);
         window.alert("user logged")
 
         window.localStorage.setItem('access_token', r.tokens.access_token);
         window.localStorage.setItem('refresh_token', r.tokens.refresh_token);
 
         const headers = {
-            'Authorization' : `Baerer ${r.tokens.access_token}`
+            'access-token' : `Baerer ${r.tokens.access_token}`
         }
 
         window.location.assign("/home", { headers });
@@ -186,7 +386,44 @@ function Login(){
         .catch(error =>{
             console.error(error);
     })
+    .finally(()=>{
+        loginBtn.disabled =  false;
+        loginBtn.innerHTML = `Login`
+    })
 };
+
+function getCaptcha(){
+    opt = {
+        method:'GET',
+        headers: {
+            'Content-Type':'application/json',
+        }
+    }
+
+    fetch("/api/captcha", opt)
+    .then(response => {
+        return response.json()
+    })
+    .then(data =>{
+        const imageCaptcha = document.getElementById("image-captcha")
+        imageCaptcha.src = data.base64_image;
+        // const imageCaptchaSignup = document.getElementById("image-captcha-signup")
+        // imageCaptchaSignup.src = data.base64_image;
+
+        idCaptcha = data.id;
+        inputCaptcha.value = "";
+        
+        console.log(idCaptcha);
+        console.log(inputCaptcha.value);
+        // console.log(inputCaptchaSignup.value);
+
+
+
+    })
+    .catch(error=>{
+        console.log(`error in connection ${error.message}`)
+    })
+}
 
 </script>
 </html>

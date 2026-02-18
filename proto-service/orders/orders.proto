@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "github.com/aclgo/simple-api-gateway/proto-service/orders";
+
+import "google/protobuf/timestamp.proto";
+
+message Orders {
+    string orderID = 1;
+    string accountID = 2;
+    repeated string productsIDS = 3;
+    google.protobuf.Timestamp createdAT = 4;
+}
+
+message ParamCreateOrderRequest {
+    string accountID = 1;
+    repeated string productsIDS = 2;
+}
+
+message ParamCreateOrderResponse {
+    Orders order = 1;
+}
+
+message ParamFindOrderRequest {
+    string orderID = 1;
+}
+
+message ParamFindOrderResponse {
+    Orders order = 1;
+}
+
+message ParamFindOrderByAccountRequest{
+    string accountID = 1;
+}
+
+message ParamFindOrderByAccountResponse{
+    repeated Orders orders = 1;
+}
+
+message ParamFindOrderByProductRequest{
+    string productID = 1;
+}
+
+message ParamFindOrderByProductResponse{
+    Orders order = 1;
+}
+
+service ServiceOrder {
+    rpc Create(ParamCreateOrderRequest) returns (ParamCreateOrderResponse);
+    rpc Find(ParamFindOrderRequest) returns (ParamFindOrderResponse);
+    rpc FindOrderByAccount(ParamFindOrderByAccountRequest) returns (ParamFindOrderByAccountResponse);
+    rpc FindOrderByProduct(ParamFindOrderByProductRequest) returns (ParamFindOrderByProductResponse);
+}

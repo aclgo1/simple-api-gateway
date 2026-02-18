@@ -1,73 +1,65 @@
-* {
-    padding: 0;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
     margin: 0;
-    font-family: sans-serif;
-    /* background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/eac2616f-9ca4-4a89-84d5-7bbc482fb1b2/df2dmoo-3403837f-2435-4c6b-9bd6-b82891aabe2d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VhYzI2MTZmLTljYTQtNGE4OS04NGQ1LTdiYmM0ODJmYjFiMlwvZGYyZG1vby0zNDAzODM3Zi0yNDM1LTRjNmItOWJkNi1iODI4OTFhYWJlMmQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Rn4fVOkXvtPjkkBt7uBdxdZlFvRpqVNg3TBuhnr5R_E"); */
 }
 
-/* body{
-    background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/eac2616f-9ca4-4a89-84d5-7bbc482fb1b2/df2dmoo-3403837f-2435-4c6b-9bd6-b82891aabe2d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VhYzI2MTZmLTljYTQtNGE4OS04NGQ1LTdiYmM0ODJmYjFiMlwvZGYyZG1vby0zNDAzODM3Zi0yNDM1LTRjNmItOWJkNi1iODI4OTFhYWJlMmQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Rn4fVOkXvtPjkkBt7uBdxdZlFvRpqVNg3TBuhnr5R_E");
-} */
-
-#top {
-    margin-bottom: 30px;
-    text-align: center;
-    margin-top: 6rem;
-    color: rgb(212, 32, 32);
+/* Container que envolve os inputs e botão */
+#reset {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    gap: 10px;
 }
 
-#reset{
-    text-align: center;
+/* Estilo dos campos de texto */
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-
-input[type=text]{
-    margin-bottom: 10px;
-    width: 600px;
-    height:45px;
-    background-color: rgba(255, 255, 255, 0.03);
-    color: rgb(108, 87, 199);
-    font-size: 17px;
-    border-radius: 10px;
-    border-color: #1d9fb6;
-    cursor:pointer;
-    padding: 0px 10px 0px;
-    outline: 0;
-    border-width: 3px;
-    font-weight: bold;
-}
-
-input[type=text]:hover{
-    background-color: rgb(231, 175, 90);
-}
-
+/* Botão de Reset */
 #send {
-    margin-bottom: 10px;
-    width: 300px;
-    height:40px;
-    background-color: rgba(255, 255, 255, 0.03);
-    color: rgb(212, 32, 32);
-    font-size: 17px;
-    border-radius: 10px;
-    border-color: #1d9fb6;
-    cursor:pointer;
-    padding: 0px 10px 0px;
-    outline: 0;
-    border-width: 3px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
     font-weight: bold;
 }
 
-#send:hover{
-    background-color: rgb(231, 175, 90);
+#send:hover {
+    background-color: #218838;
 }
 
-#message{
-    margin-top: 10px;
+/* Estilização do Captcha (Menor e centralizado) */
+#image-captcha {
+    width: 250px;   /* Largura reduzida */
+    height: auto;
+    margin: 15px 0 5px 0; /* Espaçamento para não grudar nos itens */
+    border: 1px solid #ddd;
+    display: block;
+}
+
+/* Input do captcha específico */
+#input-captcha {
+    max-width: 250px; /* Alinhado com a largura da imagem */
     text-align: center;
-    font-weight: bold;
-    color: #1ac9e0;
 }
 
+/* Mensagem de erro/sucesso */
 #message {
-    display: none;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 10px;
 }

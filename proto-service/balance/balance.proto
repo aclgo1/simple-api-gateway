@@ -1,0 +1,62 @@
+syntax  = "proto3";
+
+option go_package = "github.com/aclgo/simple-api-gateway/proto-service/balance";
+
+import "google/protobuf/timestamp.proto";
+
+message ParamCreateWalletRequest {
+    string accountID = 1;
+}
+
+message ParamCreateWalletResponse {
+    string walletID = 1;
+    string accountID = 2;
+    double balance = 3;
+    google.protobuf.Timestamp createdAT = 4;
+    google.protobuf.Timestamp updatedAT = 5;
+}
+
+message ParamCreditWalletRequest {
+    string walletID = 1;
+    double amount = 2;
+}
+
+message ParamCreditWalletResponse {
+    string walletID = 1;
+    string accountID = 2;
+    double balance = 3;
+    google.protobuf.Timestamp createdAT = 4;
+    google.protobuf.Timestamp updatedAT = 5;
+}
+
+message ParamDebitWalletRequest {
+    string walletID = 1;
+    double amount = 2;
+}
+
+message ParamDebitWalletResponse {
+    string walletID = 1;
+    string accountID = 2;
+    double balance = 3;
+    google.protobuf.Timestamp createdAT = 4;
+    google.protobuf.Timestamp updatedAT = 5;
+}
+
+message ParamGetWalletByAccountRequest {
+    string accountID = 1;
+}
+
+message ParamgGetWalletByAccountResponse {
+    string walletID = 1;
+    string accountID = 2;
+    double balance = 3;
+    google.protobuf.Timestamp createdAT = 4;
+    google.protobuf.Timestamp updatedAT = 5;
+}
+
+service WalletService {
+    rpc Create(ParamCreateWalletRequest) returns (ParamCreateWalletResponse);
+    rpc Credit(ParamCreditWalletRequest) returns (ParamCreditWalletResponse);
+    rpc Debit(ParamDebitWalletRequest) returns (ParamDebitWalletResponse);
+    rpc GetWalletByAccount(ParamGetWalletByAccountRequest) returns (ParamgGetWalletByAccountResponse);
+}

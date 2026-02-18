@@ -4,9 +4,76 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/resetpass.css">
+    <link rel="stylesheet">
     <title>Store</title>
 </head>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Container que envolve os inputs e botão */
+#reset {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    gap: 10px;
+}
+
+/* Estilo dos campos de texto */
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Botão de Reset */
+#send {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#send:hover {
+    background-color: #218838;
+}
+
+/* Estilização do Captcha (Menor e centralizado) */
+#image-captcha {
+    width: 300px;   /* Largura reduzida */
+    height: auto;
+    margin: 15px 0 5px 0; /* Espaçamento para não grudar nos itens */
+    border: 1px solid #ddd;
+    display: block;
+}
+
+/* Input do captcha específico */
+#input-captcha {
+    max-width: 300px; /* Alinhado com a largura da imagem */
+    text-align: center;
+}
+
+/* Mensagem de erro/sucesso */
+#message {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+</style>
 <body>
     <div id="top">
         <h1>Forgot Pass</h1>
@@ -18,10 +85,15 @@
         </div>
         <button id="send" type="text">Reset Password</button>
     </div>
-        <p id="message">dddd</p>
+    <img id="image-captcha">
+    <input type="text" id="input-captcha" placeholder="captcha code">
+    <p id="message"></p>
 </body>
 
 <script>
+getCaptcha();
+let idCaptcha = ""
+let inputCaptcha = document.getElementById("input-captcha");
 
 const btnSend = document.getElementById("send");
 btnSend.onclick = function(e){
@@ -33,33 +105,79 @@ function sendMail(){
     const email = document.getElementById("email").value;
     const message = document.getElementById("message");
 
-    var data = {
-        email: email
+    if (email == "") {
+        window.alert("email empty")
+        return;
     }
+
+    if(inputCaptcha.value == ""){
+        window.alert("captcha code empty")
+        return
+    }
+
+    btnSend.disabled = true
+    btnSend.innerHTML = `wait...`
 
     const opt = {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type":"application/json" }
+        method: "GET",
+        // body: JSON.stringify(data),
+        headers: { 'Content-Type':'application/json' }
     }
 
-    fetch("http://localhost:400/api/user/resetpass", opt)
+    fetch(`/api/user/resetpass/${email}/${idCaptcha}/${inputCaptcha.value}`, opt)
     .then(response =>{return response.json();})
     .then(data =>{
-        console.log(data);
-
-        if(data.error){
-            message.style.display = "block";
-            message.textContent = data.error;
+        if(data.message && data.message.includes("no rows in result set")){
+            window.alert("email not cadastred in site")
+            inputCaptcha.value = "";
+            getCaptcha();
             return;
-        };
+        }
+
+        inputCaptcha.value = "";
+
+        window.localStorage.setItem("code_newpass", data.code);
 
         message.style.display = "block";
         message.textContent = data.message;
+        getCaptcha();
     })
     .catch(error =>{
         console.error(error);
     })
+    .finally(()=>{
+        btnSend.disabled = false
+        btnSend.innerHTML = `Reset Password`
+    });
 };
+
+function getCaptcha(){
+    opt = {
+        method:'GET',
+        headers: {
+            'Content-Type':'application/json',
+        }
+    }
+
+    fetch("/api/captcha", opt)
+    .then(response => {
+        return response.json()
+    })
+    .then(data =>{
+        const imageCaptcha = document.getElementById("image-captcha")
+        imageCaptcha.src = data.base64_image;
+        // const imageCaptchaSignup = document.getElementById("image-captcha-signup")
+        // imageCaptchaSignup.src = data.base64_image;
+
+        idCaptcha = data.id;
+        inputCaptcha.value = "";
+        
+        console.log(idCaptcha);
+
+    })
+    .catch(error=>{
+        console.log(`error in connection ${error.message}`)
+    })
+}
 </script>
 </html>

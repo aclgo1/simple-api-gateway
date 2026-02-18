@@ -2,36 +2,51 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"github.com/aclgo/simple-api-gateway/internal/captcha"
 	"github.com/aclgo/simple-api-gateway/internal/user"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
+	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
 	mail "github.com/aclgo/simple-api-gateway/proto-service/mail"
 	protoUser "github.com/aclgo/simple-api-gateway/proto-service/user"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type userUc struct {
-	clientUserGRPC protoUser.UserServiceClient
-	clientMailGRPC mail.MailServiceClient
-	redisClient    *redis.Client
-	logger         logger.Logger
+	clientUserGRPC    protoUser.UserServiceClient
+	clientMailGRPC    mail.MailServiceClient
+	clientBalanceGRPC protoBalance.WalletServiceClient
+	captchaRepo       captcha.Repository
+	redisClient       *redis.Client
+	baseApiUrl        string
+	logger            logger.Logger
 }
 
 func NewuserUC(clientUser protoUser.UserServiceClient,
 	clientMail mail.MailServiceClient,
-	redisClient *redis.Client, logger logger.Logger) *userUc {
+	clientBalance protoBalance.WalletServiceClient,
+	captchaRepo captcha.Repository,
+	redisClient *redis.Client,
+	logger logger.Logger,
+) user.UserUC {
+
 	return &userUc{
-		clientUserGRPC: clientUser,
-		clientMailGRPC: clientMail,
-		redisClient:    redisClient,
-		logger:         logger,
+		clientUserGRPC:    clientUser,
+		clientMailGRPC:    clientMail,
+		clientBalanceGRPC: clientBalance,
+		captchaRepo:       captchaRepo,
+		redisClient:       redisClient,
+		logger:            logger,
 	}
 }
 
 func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) (*user.User, error) {
+	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
+		return nil, user.ErrFailedVerifyCaptcha{}
+	}
+
 	created, err := u.clientUserGRPC.Register(ctx, &protoUser.CreateUserRequest{
 		Name:     params.Name,
 		LastName: params.Lastname,
@@ -43,6 +58,15 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		return nil, err
 	}
 
+	paramCreateBalance := protoBalance.ParamCreateWalletRequest{
+		AccountID: created.User.Id,
+	}
+
+	wallet, err := u.clientBalanceGRPC.Create(ctx, &paramCreateBalance)
+	if err != nil {
+		return nil, fmt.Errorf("u.clientBalanceGRPC.Create: %w", err)
+	}
+
 	return &user.User{
 		UserID:    created.User.Id,
 		Name:      created.User.Name,
@@ -51,12 +75,17 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		Email:     created.User.Email,
 		Role:      created.User.Role,
 		Verified:  created.User.Verified,
+		Balance:   wallet.Balance,
 		CreatedAt: created.User.CreatedAt.AsTime(),
 		UpdatedAt: created.User.UpdatedAt.AsTime(),
 	}, nil
 }
 
 func (u *userUc) Login(ctx context.Context, params *user.ParamsUserLoginRequest) (*user.ParamsUserLoginResponse, error) {
+	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
+		return nil, user.ErrFailedVerifyCaptcha{}
+	}
+
 	resp, err := u.clientUserGRPC.Login(ctx, &protoUser.UserLoginRequest{
 		Email:    params.Email,
 		Password: params.Password,
@@ -94,22 +123,35 @@ func (u *userUc) FindById(ctx context.Context, params *user.ParamsUserFindById) 
 		return nil, err
 	}
 
-	return &user.User{
-		UserID:    resp.User.Id,
-		Name:      resp.User.Name,
-		Lastname:  resp.User.LastName,
-		Password:  resp.User.Password,
-		Email:     resp.User.Email,
-		Role:      resp.User.Role,
-		Verified:  resp.User.Verified,
-		CreatedAt: resp.User.CreatedAt.AsTime(),
-		UpdatedAt: resp.User.UpdatedAt.AsTime(),
-	}, nil
-}
-func (u *userUc) FindByEmail(ctx context.Context, params *user.ParamsUserFindByEmail) (*user.User, error) {
-	resp, err := u.clientUserGRPC.FindByEmail(ctx, &protoUser.FindByEmailRequest{Email: params.Email})
+	paramFindWallet := protoBalance.ParamGetWalletByAccountRequest{
+		AccountID: params.UserID,
+	}
+
+	wallet, err := u.clientBalanceGRPC.GetWalletByAccount(ctx, &paramFindWallet)
 	if err != nil {
-		return nil, err
+		u.logger.Error("u.clientBalanceGRPC.GetWalletByAccount", err)
+
+		paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
+			AccountID: params.UserID,
+		}
+
+		newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
+		if err != nil {
+			u.logger.Error("u.clientBalanceGRPC.Create: ", err)
+		}
+
+		return &user.User{
+			UserID:    resp.User.Id,
+			Name:      resp.User.Name,
+			Lastname:  resp.User.LastName,
+			Password:  resp.User.Password,
+			Email:     resp.User.Email,
+			Role:      resp.User.Role,
+			Verified:  resp.User.Verified,
+			Balance:   newWallet.Balance,
+			CreatedAt: resp.User.CreatedAt.AsTime(),
+			UpdatedAt: resp.User.UpdatedAt.AsTime(),
+		}, nil
 	}
 
 	return &user.User{
@@ -120,6 +162,57 @@ func (u *userUc) FindByEmail(ctx context.Context, params *user.ParamsUserFindByE
 		Email:     resp.User.Email,
 		Role:      resp.User.Role,
 		Verified:  resp.User.Verified,
+		Balance:   wallet.Balance,
+		CreatedAt: resp.User.CreatedAt.AsTime(),
+		UpdatedAt: resp.User.UpdatedAt.AsTime(),
+	}, nil
+}
+func (u *userUc) FindByEmail(ctx context.Context, params *user.ParamsUserFindByEmail) (*user.User, error) {
+	resp, err := u.clientUserGRPC.FindByEmail(ctx, &protoUser.FindByEmailRequest{Email: params.Email})
+	if err != nil {
+		return nil, err
+	}
+
+	paramProtoFind := protoBalance.ParamGetWalletByAccountRequest{
+		AccountID: resp.User.Id,
+	}
+
+	wallet, err := u.clientBalanceGRPC.GetWalletByAccount(ctx, &paramProtoFind)
+	if err != nil {
+		u.logger.Error("u.clientBalanceGRPC.GetWalletByAccount", err)
+
+		paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
+			AccountID: resp.User.Id,
+		}
+
+		newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
+		if err != nil {
+			u.logger.Error("u.clientBalanceGRPC.Create: ", err)
+		}
+
+		return &user.User{
+			UserID:    resp.User.Id,
+			Name:      resp.User.Name,
+			Lastname:  resp.User.LastName,
+			Password:  resp.User.Password,
+			Email:     resp.User.Email,
+			Role:      resp.User.Role,
+			Verified:  resp.User.Verified,
+			Balance:   newWallet.Balance,
+			CreatedAt: resp.User.CreatedAt.AsTime(),
+			UpdatedAt: resp.User.UpdatedAt.AsTime(),
+		}, nil
+	}
+
+	return &user.User{
+		UserID:    resp.User.Id,
+		Name:      resp.User.Name,
+		Lastname:  resp.User.LastName,
+		Password:  resp.User.Password,
+		Email:     resp.User.Email,
+		Role:      resp.User.Role,
+		Verified:  resp.User.Verified,
+		Balance:   wallet.Balance,
 		CreatedAt: resp.User.CreatedAt.AsTime(),
 		UpdatedAt: resp.User.UpdatedAt.AsTime(),
 	}, nil
@@ -192,8 +285,6 @@ func (u *userUc) SendConfirm(ctx context.Context, params *user.ParamsConfirm) er
 			Servicename: user.DefaultServiceName,
 		}
 
-		fmt.Println(req)
-
 		_, err = u.clientMailGRPC.SendService(ctx, req)
 		if err != nil {
 			return err
@@ -244,16 +335,34 @@ func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK
 }
 
 func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) error {
-	switch _, err := u.clientUserGRPC.FindByEmail(ctx, &protoUser.FindByEmailRequest{Email: params.Email}); {
-	case errors.Is(err, redis.Nil):
-		resetCode := uuid.NewString()
+	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
+		return user.ErrFailedVerifyCaptcha{}
+	}
 
+	userData, err := u.clientUserGRPC.FindByEmail(ctx, &protoUser.FindByEmailRequest{Email: params.Email})
+	if err != nil {
+		return fmt.Errorf("u.clientUserGRPC.FindByEmail: %w", err)
+	}
+
+	if userData.User.Verified == user.DefaultVerifiedNo {
+		return user.ErrUserNotVerified{}
+	}
+
+	errRedis := u.redisClient.Get(ctx, userData.User.Id).Err()
+	if errRedis != redis.Nil && errRedis != nil {
+		return errRedis
+	}
+
+	resetCode := uuid.NewString()
+
+	if errRedis == redis.Nil {
 		in := mail.MailRequest{
-			From:     user.DefaultFromSendMail,
-			To:       params.Email,
-			Subject:  user.DefaultSubjectResetPass,
-			Body:     fmt.Sprintf(user.DefaultBodyResetPass, resetCode),
-			Template: user.DefaultTemplateResetPass,
+			From:        user.DefaultFromSendMail,
+			To:          params.Email,
+			Subject:     user.DefaultSubjectResetPass,
+			Body:        fmt.Sprintf(user.DefaultBodyResetPass, resetCode),
+			Template:    user.DefaultTemplateResetPass,
+			Servicename: user.DefaultServiceName,
 		}
 
 		_, err = u.clientMailGRPC.SendService(ctx, &in)
@@ -261,28 +370,33 @@ func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) er
 			return err
 		}
 
-		if err := u.redisClient.Set(ctx, resetCode, params.Email, user.DefaultTimeSendEmails).Err(); err != nil {
+		if err := u.redisClient.Set(ctx, resetCode, userData.User.Id, user.DefaultTimeSendEmails).Err(); err != nil {
 			return err
 		}
 
-		if err := u.redisClient.Set(ctx, params.Email, resetCode, user.DefaultTimeSendEmails).Err(); err != nil {
+		if err := u.redisClient.Set(ctx, userData.User.Id, resetCode, user.DefaultTimeSendEmails).Err(); err != nil {
 			return err
 		}
 
-	case err == nil:
-		return user.ErrEmailSentCheckInbox{}
-	default:
-		return err
+		return nil
 	}
 
-	return nil
+	return user.ErrEmailSentCheckInbox{}
+
 }
 
 func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error {
+	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
+		return user.ErrFailedVerifyCaptcha{}
+	}
 
 	idUser, err := u.redisClient.Get(ctx, params.NewPassCode).Result()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		return err
+	}
+
+	if err == redis.Nil {
+		return user.ErrInvalidCode{}
 	}
 
 	_, err = u.clientUserGRPC.FindById(ctx, &protoUser.FindByIdRequest{Id: idUser})
@@ -290,7 +404,7 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 		return err
 	}
 
-	updated, err := u.clientUserGRPC.Update(ctx, &protoUser.UpdateRequest{
+	_, err = u.clientUserGRPC.Update(ctx, &protoUser.UpdateRequest{
 		Id:       idUser,
 		Password: params.NewPass,
 	})
@@ -299,7 +413,10 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 		return err
 	}
 
-	fmt.Println(updated)
+	errDel := u.redisClient.Del(ctx, params.NewPassCode).Err()
+	if errDel != nil {
+		return errDel
+	}
 
 	return nil
 }

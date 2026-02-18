@@ -15,14 +15,14 @@ import (
 )
 
 type userService struct {
-	userService user.UserUC
-	logger      logger.Logger
+	userUC user.UserUC
+	logger logger.Logger
 }
 
-func NewuserService(userSvc user.UserUC, logger logger.Logger) *userService {
+func NewuserService(user user.UserUC, logger logger.Logger) *userService {
 	return &userService{
-		userService: userSvc,
-		logger:      logger,
+		userUC: user,
+		logger: logger,
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		created, err := s.userService.Register(ctx, &params)
+		created, err := s.userUC.Register(ctx, &params)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
@@ -55,7 +55,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		err = s.userService.SendConfirm(
+		err = s.userUC.SendConfirm(
 			ctx,
 			&user.ParamsConfirm{
 				To:           created.Email,
@@ -66,7 +66,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 		if err != nil {
 
 			//SE ERROR SEND EMAIL VERIFICACAO, DELETA O USER CRIADO PARA NAO DA CONFLITO COM O EMAIL
-			errCancel := s.userService.Delete(ctx, &user.ParamsUserDelete{
+			errCancel := s.userUC.Delete(ctx, &user.ParamsUserDelete{
 				UserID: created.UserID,
 			})
 
@@ -110,7 +110,7 @@ func (s *userService) Login(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		logged, err := s.userService.Login(ctx, &params)
+		logged, err := s.userUC.Login(ctx, &params)
 		if err != nil {
 
 			var response *service.RestError
@@ -160,7 +160,7 @@ func (s *userService) Logout(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		if err := s.userService.Logout(ctx, &params); err != nil {
+		if err := s.userUC.Logout(ctx, &params); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -193,14 +193,6 @@ func (s *userService) Find(ctx context.Context) http.HandlerFunc {
 			UserID: paramsTtk.UserID,
 		}
 
-		// if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		// 	response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
-
-		// 	service.JSON(w, response, http.StatusBadRequest)
-
-		// 	return
-		// }
-
 		if err := params.Validate(); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 
@@ -209,7 +201,7 @@ func (s *userService) Find(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		found, err := s.userService.FindById(ctx, &params)
+		found, err := s.userUC.FindById(ctx, &params)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
@@ -239,7 +231,7 @@ func (s *userService) Update(ctx context.Context) http.HandlerFunc {
 		}
 
 		params := user.ParamsUserUpdate{
-			UserID:   ctxData.UserID,
+			UserID:   ctxData.IdUpdate,
 			Name:     ctxData.Name,
 			Lastname: ctxData.Lastname,
 			Password: ctxData.Password,
@@ -254,7 +246,7 @@ func (s *userService) Update(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		updated, err := s.userService.Update(ctx, &params)
+		updated, err := s.userUC.Update(ctx, &params)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
@@ -281,15 +273,10 @@ func (s *userService) ValidToken(ctx context.Context) http.HandlerFunc {
 
 func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := user.ParamsConfirmOK{}
 
-		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+		code := r.PathValue("confirm_code")
 
-			service.JSON(w, response, http.StatusBadRequest)
-
-			return
-		}
+		params := user.ParamsConfirmOK{ConfirmCode: code}
 
 		if err := params.Validate(); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
@@ -299,7 +286,7 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		if err := s.userService.SendConfirmOK(ctx, &params); err != nil {
+		if err := s.userUC.SendConfirmOK(ctx, &params); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -307,24 +294,25 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		resp := map[string]string{
-			"message": "user confirmed signup",
-		}
+		// resp := map[string]string{
+		// 	"message": "user confirmed signup",
+		// }
 
-		service.JSON(w, resp, http.StatusOK)
+		http.Redirect(w, r, "/login", http.StatusOK)
 	}
 }
 
 func (s *userService) UserResetPass(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := user.ParamsResetPass{}
 
-		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+		email := r.PathValue("email")
+		cptId := r.PathValue("captcha_id")
+		cptAwnser := r.PathValue("captcha_awnser")
 
-			service.JSON(w, response, http.StatusBadRequest)
-
-			return
+		params := user.ParamsResetPass{
+			Email:         email,
+			CaptchaId:     cptId,
+			CaptchaAwnser: cptAwnser,
 		}
 
 		if err := params.Validate(); err != nil {
@@ -335,7 +323,8 @@ func (s *userService) UserResetPass(ctx context.Context) http.HandlerFunc {
 
 		}
 
-		if err := s.userService.ResetPass(ctx, &params); err != nil {
+		err := s.userUC.ResetPass(ctx, &params)
+		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -353,7 +342,12 @@ func (s *userService) UserResetPass(ctx context.Context) http.HandlerFunc {
 
 func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := user.ParamsNewPass{}
+
+		code := r.PathValue("code")
+
+		params := user.ParamsNewPass{
+			NewPassCode: code,
+		}
 
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
@@ -371,9 +365,15 @@ func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		if err := s.userService.NewPass(ctx, &params); err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+		if err := s.userUC.NewPass(ctx, &params); err != nil {
+			if err == (user.ErrInvalidCode{}) {
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+				service.JSON(w, response, http.StatusBadRequest)
 
+				return
+			}
+
+			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 			service.JSON(w, response, http.StatusInternalServerError)
 
 			return
@@ -390,7 +390,7 @@ func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 
 func (s *userService) RefreshTokens(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		refreshTokens, ok := r.Context().Value(auth.KeyCtxParamsRefreshToken).(auth.ParamsTwoTokens)
+		refreshTokens, ok := r.Context().Value(auth.KeyCtxParamsRefreshToken).(*auth.ParamsTwoTokens)
 		if !ok {
 			resp := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrNoParamsInCtx.Error())
 

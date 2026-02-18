@@ -59,3 +59,12 @@ type ErrUserNotVerified struct {
 func (e ErrUserNotVerified) Error() string {
 	return "user not verified"
 }
+
+type ErrFailedVerifyCaptcha struct {
+	Message string
+}
+
+func (e ErrFailedVerifyCaptcha) Error() string {
+	e.Message = "failed to verify captcha"
+	return e.Message
+}

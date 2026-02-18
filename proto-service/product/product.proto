@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+option go_package = "github.com/aclgo/simple-api-gateway/proto-service/product";
+
+import "google/protobuf/timestamp.proto";
+
+message Product {
+    string Id = 1;
+    string name = 2;
+    double price = 3;
+    int64 quantity = 4;
+    string description = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+message ProductInsertRequest {
+    string name = 1;
+    double price = 2;
+    int64 quantity = 3;
+    string description = 4;
+}
+
+message ProductInsertResponse {
+    Product product = 1;
+}
+
+
+message ProductFindRequest {
+    string id = 1;
+}
+
+message ProductFindResponse {
+    Product product = 1;
+}
+
+message ProductFindAllRequest {
+
+}
+
+message ProductFindAllResponse {
+    repeated Product products = 1;
+}
+
+message ProductUpdateRequest {
+    string id = 1;
+    string name = 2;
+    double price = 3;
+    int64 quantity = 4;
+    string description = 5;
+}
+
+message ProductUpdateResponse {
+    Product product = 1;
+}
+
+message ProductDeleteRequest {
+    string id  = 1;
+} 
+
+message ProductDeleteResponse {
+    string msg = 1;
+}
+
+service ProductService {
+   rpc Insert(ProductInsertRequest) returns (ProductInsertResponse);
+   rpc Find(ProductFindRequest) returns (ProductFindResponse);
+   rpc FindAll(ProductFindAllRequest) returns (ProductFindAllResponse);
+   rpc Update(ProductUpdateRequest) returns (ProductUpdateResponse);
+   rpc Delete(ProductDeleteRequest) returns (ProductDeleteResponse);
+}

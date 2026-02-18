@@ -6,29 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/newpass.css" type="text/css">
     <title>New Pass</title>
-<body>
+    <body>
+    <div>
+        <h3>Renew Your Password</h3>
+    </div>
 
-    <div><h3>Renew You Pass</h3></div>
     <div id="pass">
-        <ul> 
-            <li>
-                <label for="new-pass">Password</label>
-                <input type="text" name="new-pass" id="new-pass" required/>
-            </li>
-            <li>
-                <label for="confirm-pass">Confirm Password</label>
-                <input type="text" name="confirm-pass" id="confirm-pass" required/>
-            </li>
-            <li>
-                <!-- <label for="new-btn">Renew</label> -->
-                <button id="new-btn">Renew</button>
-            </li>
-
-            <li id="message"></li>
-        </ul>
+        <form id="renew-form">
+            <ul>
+                <li>
+                    <label for="new-pass">Password</label>
+                    <input type="password" name="new-pass" id="new-pass" required />
+                </li>
+                <li>
+                    <label for="confirm-pass">Confirm Password</label>
+                    <input type="password" name="confirm-pass" id="confirm-pass" required />
+                </li>
+                <li>
+                    <label for="input-captcha">Captcha Code</label>
+                    <img id="image-captcha" alt="Captcha Image">
+                    <input type="text" id="input-captcha" placeholder="Enter captcha code" required>
+                </li>
+                <li>
+                    <button type="submit" id="new-btn">Renew</button>
+                </li>
+                <li id="message"></li>
+            </ul>
+        </form>
     </div>
 </body>
+
 <script>
+
+getCaptcha();
+let idCaptcha = ""
+let inputCaptcha = document.getElementById("input-captcha");
 
 const send = document.getElementById("new-btn");
 send.onclick = function(e){
@@ -53,11 +65,20 @@ function SendNewPass(){
         return;
     }
 
+    if (inputCaptcha.value == ""){
+        window.alert("captcha code empty")
+        return;
+    }
+
     const data = {
-        code: ccode,
         new_pass: newPass,
         confirm_pass: confirmPass,
+        captcha_id: idCaptcha,
+        captcha_awnser: inputCaptcha.value,
     }
+
+    send.disabled = true
+    send.innerHTML = `wait...`
 
     const options = {
         method:"POST",
@@ -67,7 +88,7 @@ function SendNewPass(){
         },
     }
 
-    fetch("http://localhost:4000/api/user/newpass", options)
+    fetch("/api/user/newpass/"+ccode, options)
     .then(response =>{
         return response.json();
     })
@@ -75,10 +96,15 @@ function SendNewPass(){
         if (data.error){
             console.log(data.error);
             mError(data.error);
+            getCaptcha();
             return;
         }
 
         mError(data.message);
+    })
+    .finally(()=>{
+        send.disabled = false
+        send.innerHTML = `Renew`
     });
 }
 
@@ -87,5 +113,33 @@ function mError(msg){
     message.display = "block"
     message.textContent = msg
 };
+
+function getCaptcha(){
+    opt = {
+        method:'GET',
+        headers: {
+            'Content-Type':'application/json',
+        }
+    }
+
+    fetch("/api/captcha", opt)
+    .then(response => {
+        return response.json()
+    })
+    .then(data =>{
+        const imageCaptcha = document.getElementById("image-captcha")
+        imageCaptcha.src = data.base64_image;
+        // const imageCaptchaSignup = document.getElementById("image-captcha-signup")
+        // imageCaptchaSignup.src = data.base64_image;
+
+        idCaptcha = data.id;
+        inputCaptcha.value = "";
+        
+        console.log(idCaptcha);
+    })
+    .catch(error=>{
+        console.log(`error in connection ${error.message}`)
+    })
+}
 </script>
 </html>

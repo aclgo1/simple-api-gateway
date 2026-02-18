@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/products.css" type="text/css"/>
+    <title>Aclgo Products</title>
+</head>
+<body>
+    <h1>Products</h1>
+    <button id="toggleFormButton">Create Product</button>
+
+    <div id="formContainer" style="display: none;"></div>
+
+    <div id="formContainerProduct"></div>
+
+    <div id="list-products" class="grid-products">
+    </div>
+</body>
+<script>
+const BASE_URL ="http://localhost:4000"
+let access_token = window.localStorage.getItem("access_token")
+let refresh_token = window.localStorage.getItem("refresh_token")
+let isRefreshing =  false
+let refreshSubscribers = [];
+
+getProducts();
+addEventFormCreate();
+
+function subscribeTokenRefresh(cb){
+    refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(){
+    refreshSubscribers.forEach(cb => cb());
+    refreshSubscribers = [];
+}
+
+document.getElementById('list-products').addEventListener('click', function (e){
+    if(e.target && e.target.classList.contains('btn-delete')){
+        const id = e.target.getAttribute('data-id');
+
+        deleteProduct(id);
+    }
+
+    const updateBtn = e.target.closest('.btn-update');
+    if(updateBtn){
+        const id = updateBtn.getAttribute('data-id');
+        const formContainer = document.getElementById('formContainerProduct');
+
+        
+        if(formContainer && formContainer.style.display === 'block'){
+            formContainer.style.display = 'none';
+            formContainer.innerHTML = '';
+            return;
+        }
+
+        
+        const card = updateBtn.closest('.card');
+        
+        if(!card) {
+            console.error("Erro: O botão não está dentro de um elemento com a classe 'card'");
+            return;
+        }
+
+
+        const productData = {
+            product_id: id,
+            name: card.querySelector('.name') ? card.querySelector('.name').innerText : '',
+            description: card.querySelector('.description') ? card.querySelector('.description').innerText.replace('Description:', '').trim() : '',
+            price: card.querySelector('.price') ? card.querySelector('.price').innerText.replace('R$ ', '').trim() : '0',
+            quantity: card.querySelector('.quantity') ? card.querySelector('.quantity').innerText.replace('Quantity: ', '').trim() : '0'
+        };
+
+        addEventFormUpdate(productData);
+    }
+});
+
+function addEventFormCreate(){
+
+    const toggleButton = document.getElementById('toggleFormButton');
+    const formContainer = document.getElementById('formContainer')
+
+    formContainer.innerHTML = `
+        <form id="productForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="text" id="description" placeholder="Description" required>
+            <input type="number" id="price" placedholder="Price" step="0.01" required>
+            <input type="number" id="quantity" placeholder="Quantity" required>
+            <button type="submit">Save</button>
+        </form>
+    `
+
+    toggleButton.addEventListener('click', () =>{
+        if (formContainer.style.display === 'none' || formContainer.style.display === ''){
+            formContainer.style.display = 'block';
+            toggleButton.textContext = 'ocult form';
+        }else{
+            formContainer.style.display = 'none';
+            toggleButton.TextContent = 'Create Product'
+        }
+    });
+
+    document.getElementById('productForm').addEventListener('submit', (e) =>{
+        e.preventDefault();
+        const product = {
+            name: document.getElementById('name').value,
+            price: parseFloat(document.getElementById('price').value),
+            description: document.getElementById('description').value,
+            quantity: parseInt(document.getElementById('quantity').value)
+        };
+
+        createProduct(product);
+        e.target.reset();
+        getProducts();
+
+    });
+};
+
+function addEventFormUpdate(productData){
+
+    const formContainer = document.getElementById('formContainerProduct')
+
+    formContainer.style.display = 'block'
+
+    formContainer.innerHTML = `
+        <form id="productFormUpdate">
+            <input type="text" id="name-product" value="${productData.name}" required>
+            <input type="text" id="description-product" value="${productData.description}" required>
+            <input type="number" id="price-product" step="0.01" value="${productData.price}" required>
+            <input type="number" id="quantity-product" value="${productData.quantity}" required>
+            <button type="submit" id="submit-product">Save Changes</button>
+        </form>
+    `
+
+    document.getElementById('productFormUpdate').addEventListener('submit', (e) =>{
+        e.preventDefault();
+        const product = {
+            product_id: productData.product_id,
+            name: document.getElementById('name-product').value,
+            price: parseFloat(document.getElementById('price-product').value),
+            description: document.getElementById('description-product').value,
+            quantity: parseInt(document.getElementById('quantity-product').value)
+        };
+
+        updateProduct(product);
+        formContainer.style.display = 'none';
+        formContainer.innerHTML = '';
+    });
+};
+
+function createProduct(productData){
+    opt = {
+        method: 'POST',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`,
+        },
+        body: JSON.stringify(productData)
+    };
+
+    fetch(BASE_URL + '/api/product/create', opt)
+        .then(response => {
+            if(response.status == 401){
+                return refreshTokens(()=>createProduct(productData));
+            }
+            if(!response.ok) throw new Error("error create product");
+        })
+        .then(data => {
+            console.log("product created", data);
+            getProducts();
+        })
+        .catch(error => { console.error(error)});
+};
+
+function updateProduct(productData){
+    opt = {
+        method: 'PUT',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`
+        },
+        body: JSON.stringify(productData)
+    }
+
+    fetch(BASE_URL + '/api/product/update', opt)
+        .then(response =>{
+            if(response.status == 401){
+                return refreshTokens(()=>updateProduct(productData));
+            }
+            if(!response.ok) throw new Error("error updated product");
+
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            getProducts();
+        })
+        .catch(error => {console.error(error)});
+};
+
+function deleteProduct(productID){
+    if(!confirm("tem certeza que deseja excluir?")) return;
+    opt = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`
+        }
+    }
+
+    fetch(BASE_URL + '/api/product/delete/' + productID, opt)
+        .then(response => {
+            if(response.status == 401){
+                return refreshTokens(()=>deleteProduct(productID));
+            }
+            if (!response.ok) throw new Error("error delete product");
+        })
+        .then(data => {
+            window.alert("product deleted")
+            console.log(data);
+            getProducts();
+        })
+        .catch(error => {console.error(error)});
+};
+
+function getProducts(){
+    opt = {
+        method: 'GET',
+        headers: {
+            'Content-Type':'application/json'
+        }
+    }
+
+    fetch(BASE_URL + '/api/product/findall', opt)
+    .then(response => {
+        if(response.status == 401){
+            return refreshTokens(()=>getProducts());
+        }
+        if(!response.ok){
+            console.log("error to get products")
+            throw new Error("error to get products")
+        }
+
+        return response.json();
+    })
+
+    .then(data => {
+        const container = document.getElementById('list-products');
+        container.innerHTML = '';
+
+        if(data == null){
+            console.log("nenhum product cadastred")
+            return
+        }
+
+        data.forEach(product => {
+
+            const card = `
+                <div class="card">
+                    <p class="name">${product.name}</p>
+                    <p class="description">Description:${product.description}</p>
+                    <p class="price">R$ ${product.price.toFixed(2)}</p>
+                    <p class="quantity">Quantity: ${product.quantity}</p>
+                    <div>
+                        <small> ID: ${product.product_id}</small><br>
+                        <small> Created in: ${new Date(product.created_at).toLocaleString('pt-BR')}</small><br>
+                        <small> Updated in: ${new Date(product.updated_at).toLocaleString('pt-BR')}</small><br>
+                        <button class="btn-delete" data-id="${product.product_id}">Delete</button>
+                        <button class="btn-update" data-id="${product.product_id}">Update</button>
+                    </div>
+                </div>
+            `
+
+            container.innerHTML += card;
+
+        })
+    })
+
+    .catch(error => {
+        console.error(error);
+    });
+}
+
+function refreshTokens(fn){
+
+    if(isRefreshing){
+        return new Promise(resolve =>{
+            subscribeTokenRefresh(()=>{
+                resolve(fn());
+            })
+        })
+    }
+
+    isRefreshing = true;
+
+    opt = {
+        method: "GET",
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`bearer ${access_token}`,
+            'refresh-token': `bearer ${refresh_token}`
+        }
+    }
+
+    fetch(BASE_API_ENDPOINT + "/api/refresh", opt)
+    .then(response => {
+        if(response.status == 401){
+            console.log("unauthorized")
+            window.location.assign("/unauthorized")
+            return;
+        }
+        if(!response.ok){
+            console.log("unauthorized")
+            window.location.assign("/unauthorized")
+            return;
+        }
+
+        return response.json()
+    })
+
+    .then(data =>{
+        access_token = data.tokens.access_token;
+        refresh_token = data.tokens.refresh_token;
+
+        // localStorage.clear();
+        window.localStorage.setItem("access_token", access_token)
+        window.localStorage.setItem("refresh_token", refresh_token)
+
+        console.log("tokens access and refresh new")
+        onTokenRefreshed();
+        return fn();
+    })
+    .finally(()=>{
+        isRefreshing = false;
+    })
+}
+
+</script>
+</html>

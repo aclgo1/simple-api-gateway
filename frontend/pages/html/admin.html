@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/products.css" type="text/css"/>
+    <title>Aclgo Users</title>
+</head>
+<style>
+    Container que envolve todos os cards
+#list-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    font-family: sans-serif;
+}
+
+/* Estilo do Card Individual */
+.card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: #bbb;
+}
+
+/* Estilização dos parágrafos de dados */
+.card p {
+    margin: 5px 0;
+    color: #333;
+    font-size: 14px;
+}
+
+.card p strong {
+    color: #000;
+}
+
+/* Destaque para o Balance e Role */
+.role { font-weight: bold; color: #555; text-transform: uppercase; font-size: 12px; }
+.balance { color: #2ecc71 !important; font-weight: bold; font-size: 16px !important; }
+
+/* Pequenos detalhes de ID e Datas */
+small {
+    display: block;
+    color: #888;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* Botão Delete */
+.btn-delete {
+    width: 100%;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-delete:hover {
+    background-color: #cc0000;
+}
+</style>
+<body>
+    <h1>Users</h1>
+    <button id="toggleFormButton">Create User</button>
+    <div id="formContainer" style="display: none;"></div>
+    <div id="list-products" class="grid-products">
+    </div>
+</body>
+<script>
+const BASE_URL ="http://localhost:4000"
+let access_token = window.localStorage.getItem("access_token")
+let refresh_token = window.localStorage.getItem("refresh_token")
+let isRefreshing =  false
+let refreshSubscribers = [];
+
+getProducts();
+addEventFormCreate();
+
+function subscribeTokenRefresh(cb){
+    refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(){
+    refreshSubscribers.forEach(cb => cb());
+    refreshSubscribers = [];
+}
+
+document.getElementById('list-products').addEventListener('click', function (e){
+    if(e.target && e.target.classList.contains('btn-delete')){
+        const id = e.target.getAttribute('data-id');
+        deleteProduct(id);
+    }
+});
+
+function addEventFormCreate(){
+
+    const toggleButton = document.getElementById('toggleFormButton');
+    const formContainer = document.getElementById('formContainer')
+
+    formContainer.innerHTML = `
+        <form id="productForm" class="admin-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" placeholder="Enter name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="lastname">Lastname:</label>
+                <input type="text" id="lastname" placeholder="Enter lastname" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="Enter email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Role:</label>
+                <select id="role">
+                    <option value="admin">Admin</option>
+                    <option value="client">Client</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="verified">Verified:</label>
+                <select id="verified">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="balance">Balance:</label>
+                <input type="number" id="balance" step="0.01" required>
+            </div>
+
+            <button type="submit" class="btn-save">Save User</button>
+        </form>
+    `;
+
+    toggleButton.addEventListener('click', () =>{
+        if (formContainer.style.display === 'none' || formContainer.style.display === ''){
+            formContainer.style.display = 'block';
+            toggleButton.textContext = 'Ocult form';
+        }else{
+            formContainer.style.display = 'none';
+            toggleButton.TextContent = 'Create User'
+        }
+    });
+
+    document.getElementById('productForm').addEventListener('submit', (e) =>{
+        e.preventDefault();
+        const product = {
+            name: document.getElementById('name').value,
+            lastname: document.getElementById('lastname').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            role: document.getElementById('role').value,
+            verified: document.getElementById('verified').value,
+            balance: parseFloat(document.getElementById('balance').value),
+        };
+
+        createProduct(product);
+        e.target.reset();
+        getProducts();
+
+    });
+};
+
+function createProduct(userData){
+    opt = {
+        method: 'POST',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`,
+        },
+        body: JSON.stringify(userData)
+    };
+
+    fetch('/api/admin/register', opt)
+        .then(response => {
+            if(response.status == 401){
+                return refreshTokens(()=>createProduct(userData));
+            }
+            if(!response.ok) throw new Error("error create product");
+        })
+        .then(data => {
+            console.log("user created", data);
+            getProducts();
+        })
+        .catch(error => { console.error(error)});
+};
+
+function deleteProduct(productID){
+    if(!confirm("tem certeza que deseja excluir?")) return;
+    opt = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`
+        }
+    }
+
+    fetch('/api/admin/delete/' + productID, opt)
+        .then(response => {
+            if(response.status == 401){
+                return refreshTokens(()=>deleteProduct(productID));
+            }
+            if (!response.ok) throw new Error("error delete product");
+        })
+        .then(data => {
+            window.alert("product deleted")
+            console.log(data);
+            getProducts();
+        })
+        .catch(error => {console.error(error)});
+};
+
+function getProducts(){
+
+    const data = {
+        query:"",
+	    role:"",
+	    page:0,
+	    offset:0,
+	    limit:0,
+    }
+
+    opt = {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`
+        }
+    }
+
+    fetch('/api/admin/search', opt)
+    .then(response => {
+        if(response.status == 401){
+            return refreshTokens(()=>getProducts());
+        }
+        if(!response.ok){
+            console.log("error to get products")
+            throw new Error("error to get products")
+        }
+
+        return response.json();
+    })
+
+    .then(data => {
+        const container = document.getElementById('list-products');
+        container.innerHTML = '';
+
+        if(data == null){
+            console.log("nenhum product cadastred")
+            return
+        }
+
+        data.users.forEach(user => {
+
+            const card = `
+             <div class="card">
+              <p>NAME:${user.name.toUpperCase()}</p>
+              <p><strng>LASTNAME:</strong> ${user.lastname.toUpperCase()}</p>
+              <p><strn>EMAIL:</strong> ${user.email}</p>
+              <p clas=rle">ROLE: ${user.role}</p>
+              <p clas=rle">VERIFIED: ${user.verified}</p>
+              <p clas=blance">BALANCE: $${user.balance.toFixed(2)}</p>
+              <div cls=footer-card">
+                    <smll>CREATED: ${new Date(user.created_at).toLocaleString('pt-BR')}</small><br>
+                    <smll>UPDATED AT: ${new Date(user.updated_at).toLocaleString('pt-BR')}</small>
+                    <button class="btn-delete" data-id="${user.id}">DELETE</button>
+                </div>
+            </div>
+        `
+            container.innerHTML += card;
+
+        })
+    })
+
+    .catch(error => {
+        console.error(error);
+    });
+}
+
+function refreshTokens(fn){
+    
+    if(isRefreshing){
+        return new Promise(resolve =>{
+            subscribeTokenRefresh(()=>{
+                resolve(fn());
+            })
+        })
+    }
+
+    isRefreshing = true;
+
+    const opt = {
+        method: "GET",
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`bearer ${access_token}`,
+            'refresh-token': `bearer ${refresh_token}`
+        }
+    }
+
+    fetch("/api/refresh", opt)
+    .then(response => {
+        if(!response.ok){
+            // console.log("unauthorized")
+            // window.location.assign("/unauthorized")
+            return;
+        }
+
+        return response.json()
+    })
+
+    .then(data =>{
+        access_token = data.tokens.access_token;
+        refresh_token = data.tokens.refresh_token;
+
+        // localStorage.clear();
+
+        window.localStorage.setItem("access_token",  data.tokens.access_token)
+        window.localStorage.setItem("refresh_token", data.tokens.refresh_token)
+
+        console.log("tokens access and refresh new")
+        onTokenRefreshed();
+        return fn()
+    })
+    .catch(error =>{
+        console.error("error in refresh:", error)
+        // window.location.assign("/unauthorized")
+    })
+    .finally(
+        isRefreshing = false
+    )  
+}
+
+</script>
+</html>

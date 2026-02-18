@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"regexp"
 	"time"
 )
 
@@ -28,25 +30,72 @@ type User struct {
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	Verified  string    `json:"verified"`
+	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ParamsUserRegister struct {
-	Name     string `json:"name"`
-	Lastname string `json:"lastname"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Name          string `json:"name"`
+	Lastname      string `json:"lastname"`
+	Password      string `json:"password"`
+	Email         string `json:"email"`
+	CaptchaId     string `json:"captcha_id"`
+	CaptchaAwnser string `json:"captcha_awnser"`
 }
 
-func (p *ParamsUserRegister) Validate() error { return nil }
+func (p *ParamsUserRegister) Validate() error {
+	if p.Name == "" {
+		return errors.New("name empty")
+	}
+	if p.Lastname == "" {
+		return errors.New("lastname empty")
+	}
+	if p.Password == "" {
+		return errors.New("password empty")
+	}
+	if p.Email == "" {
+		return errors.New("email empty")
+	}
+
+	regexp := regexp.MustCompile(`^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	if !regexp.MatchString(p.Email) {
+		return errors.New("email invalid")
+	}
+
+	if p.CaptchaId == "" {
+		return errors.New("captcha id empty")
+	}
+	if p.CaptchaAwnser == "" {
+		return errors.New("captcha awnser empty")
+	}
+
+	return nil
+}
 
 type ParamsUserLoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email         string `json:"email"`
+	Password      string `json:"password"`
+	CaptchaId     string `json:"captcha_id"`
+	CaptchaAwnser string `json:"captcha_awnser"`
 }
 
-func (p *ParamsUserLoginRequest) Validate() error { return nil }
+func (p *ParamsUserLoginRequest) Validate() error {
+
+	if p.Password == "" {
+		return errors.New("password empty")
+	}
+	if p.Email == "" {
+		return errors.New("email empty")
+	}
+	if p.CaptchaId == "" {
+		return errors.New("captcha id empty")
+	}
+	if p.CaptchaAwnser == "" {
+		return errors.New("captcha awnser empty")
+	}
+	return nil
+}
 
 type ParamsUserLoginResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -105,6 +154,14 @@ func (p *ParamsUserUpdate) Validate() error {
 		return fmt.Errorf("user_id empty")
 	}
 
+	regexp := regexp.MustCompile(`^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+	if p.Email != "" {
+		if !regexp.MatchString(p.Email) {
+			return ErrInvalidEmail{}
+		}
+	}
+
 	return nil
 }
 
@@ -114,7 +171,7 @@ type ParamsConfirm struct {
 }
 
 type ParamsConfirmOK struct {
-	ConfirmCode string
+	ConfirmCode string `json:"confirm_code"`
 }
 
 func (p *ParamsConfirmOK) Validate() error {
@@ -126,7 +183,9 @@ func (p *ParamsConfirmOK) Validate() error {
 }
 
 type ParamsResetPass struct {
-	Email string `json:"email"`
+	Email         string `json:"email"`
+	CaptchaId     string `json:"captcha_id"`
+	CaptchaAwnser string `json:"captcha_awnser"`
 }
 
 func (p *ParamsResetPass) Validate() error {
@@ -134,13 +193,23 @@ func (p *ParamsResetPass) Validate() error {
 		return ErrInvalidEmail{}
 	}
 
+	if p.CaptchaId == "" {
+		return errors.New("captcha id empty")
+	}
+
+	if p.CaptchaAwnser == "" {
+		return errors.New("captcha awnser empty")
+	}
+
 	return nil
 }
 
 type ParamsNewPass struct {
-	NewPassCode string `json:"code"`
-	NewPass     string `json:"new_pass"`
-	ConfirmPass string `json:"confirm_pass"`
+	NewPassCode   string
+	NewPass       string `json:"new_pass"`
+	ConfirmPass   string `json:"confirm_pass"`
+	CaptchaId     string `json:"captcha_id"`
+	CaptchaAwnser string `json:"captcha_awnser"`
 }
 
 func (p *ParamsNewPass) Validate() error {
@@ -154,6 +223,14 @@ func (p *ParamsNewPass) Validate() error {
 
 	if p.ConfirmPass != p.NewPass {
 		return fmt.Errorf("passwords not match")
+	}
+
+	if p.CaptchaId == "" {
+		return fmt.Errorf("captcha id empty")
+	}
+
+	if p.CaptchaAwnser == "" {
+		return fmt.Errorf("captcha awnser empty")
 	}
 
 	return nil

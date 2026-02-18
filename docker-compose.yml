@@ -24,8 +24,47 @@ services:
       - 3003:3003
     depends_on:
       - grpc-user
+  
+  grpc-product:
+    build: ../grpc-product
+    restart: always
+    ports:
+      - 50054:50054
+    depends_on:
+      - grpc-user
+      - grpc-admin
+      - grpc-mail
+  grpc-orders:
+    build: ../grpc-orders
+    restart: always
+    ports: 
+      - 50055:50055
+    depends_on:
+      - grpc-user
+      - grpc-admin
+      - grpc-mail
+  grpc-balance:
+    build: ../grpc-balance
+    restart: always
+    ports: 
+      - 50056:50056
+    depends_on:
+      - grpc-user
+      - grpc-admin
+      - grpc-mail
+  
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=wallets
+      - MONGO_INITDB_ROOT_PASSWORD=wallets
   redis:
     image: redis
+    container_name: redis
     ports:
       - "6379:6379"
     environment:
@@ -35,14 +74,14 @@ services:
     image: postgres:15.2-alpine3.17
     container_name: db
     environment:
-      POSTGRES_PASSWORD: grpc-admin
-      POSTGRES_USER: grpc-admin
-      POSTGRES_DB: grpc-admin
+      POSTGRES_PASSWORD: api-gateway
+      POSTGRES_USER: api-gateway
+      POSTGRES_DB: api-gateway
 
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U grpc-admin"]
+      test: ["CMD-SHELL", "pg_isready -U api-gateway"]
       interval: 3s
       timeout: 5s
       retries: 5
