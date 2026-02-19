@@ -407,7 +407,7 @@ function refreshTokens(fn){
         }
     }
 
-    fetch(BASE_API_ENDPOINT + "/api/refresh", opt)
+    fetch("/api/refresh", opt)
     .then(response => {
         if(!response.ok){
             console.log("unauthorized")
@@ -451,7 +451,7 @@ function Logout() {
         }
     }
 
-    fetch(BASE_API_ENDPOINT + "/api/logout", opt)
+    fetch("/api/logout", opt)
     .then(response => {
         if(!response.ok){
             console.log("unauthorized")
@@ -485,7 +485,7 @@ function getBalanceInfo() {
 
     let userId = ""
 
-    fetch(BASE_API_ENDPOINT + "/api/user/find", opt)
+    fetch("/api/user/find", opt)
     .then(response => {
 
         if(response.status == 401){
@@ -522,7 +522,7 @@ function Profile() {
 
     let userId = ""
 
-    fetch(BASE_API_ENDPOINT + "/api/user/find", opt)
+    fetch("/api/user/find", opt)
     .then(response => {
 
         if(response.status == 401){
@@ -596,7 +596,7 @@ function getProducts(){
         }
     }
 
-    fetch(BASE_API_ENDPOINT + '/api/product/findall', opt)
+    fetch('/api/product/findall', opt)
     .then(response => {
         if(response.status == 401){
             return refreshTokens(()=>getProducts());
@@ -677,7 +677,7 @@ function createOrder(productId, productName, bntClickedBuy){
         body: JSON.stringify(data),
     }
 
-    fetch(BASE_API_ENDPOINT + "/api/orders", opt)
+    fetch("/api/orders", opt)
     .then(response =>{
         if (response.status ==401){
             return refreshTokens(()=>createOrder(productId, productName));
@@ -710,7 +710,7 @@ function getOrdersProducts(accountId){
         }
     }
 
-    fetch(BASE_API_ENDPOINT+ "/api/orders/find/account", opt)
+    fetch("/api/orders/find/account", opt)
     .then(response =>{
         if(response.status == 401){
             return refreshTokens(()=>getOrdersProducts(accountId) );
@@ -741,7 +741,7 @@ function getProductById(productId, orderCreatedAt){
         }
     }
 
-    fetch(BASE_API_ENDPOINT + "/api/product/find/"+ productId, opt)
+    fetch("/api/product/find/"+ productId, opt)
     .then(response =>{
         if(response.status == 401){
            return refreshTokens(() => getProductById(productId, orderCreatedAt));

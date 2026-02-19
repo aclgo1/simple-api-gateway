@@ -1,4 +1,4 @@
-package balance
+package wallet
 
 import (
 	"context"
@@ -8,9 +8,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Balance interface {
+type WalletInterface interface {
+	RegisterProvider(string, PaymentProcessor)
 	Credit(context.Context, *ParamCreditInput) (*ParamCreditOutput, error)
+	GeneratePayment(context.Context, *ParamGeneratePaymentInput) (*ParamGeneratePaymentOutput, error)
 }
+
+type PaymentProcessor interface {
+	Proccess(context.Context, float64) (any, error)
+}
+
+var (
+	PaymentMethodPix             = "pix"
+	PaymentMethodCard            = "card"
+	ErrPaymentMethodNotSupported = errors.New("payment method not supported")
+)
 
 type ParamCreditInput struct {
 	WalletId string
@@ -40,4 +52,14 @@ type ParamCreditOutput struct {
 	Balance   float64   `json:"balance"`
 	CreatedAT time.Time `json:"created_at"`
 	UpdatedAT time.Time `json:"updated_at"`
+}
+
+type ParamGeneratePaymentInput struct {
+	Method string  `json:"method"`
+	Amount float64 `json:"amount"`
+}
+
+type ParamGeneratePaymentOutput struct {
+	Type string `json:"type"`
+	Data any    `json:"data"`
 }

@@ -22,6 +22,7 @@ import (
 	svcUser "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/user"
 	svcEx "github.com/aclgo/simple-api-gateway/internal/delivery/websocket/service/ex"
 	"github.com/aclgo/simple-api-gateway/internal/user"
+	"github.com/aclgo/simple-api-gateway/internal/wallet"
 	migration "github.com/aclgo/simple-api-gateway/migrations"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -34,6 +35,9 @@ import (
 	ordersUC "github.com/aclgo/simple-api-gateway/internal/orders/usecase"
 	productUC "github.com/aclgo/simple-api-gateway/internal/product/usecase"
 	userUC "github.com/aclgo/simple-api-gateway/internal/user/usecase"
+	cardUC "github.com/aclgo/simple-api-gateway/internal/wallet/card/usecase"
+	pixUC "github.com/aclgo/simple-api-gateway/internal/wallet/pix/usecase"
+	walletUC "github.com/aclgo/simple-api-gateway/internal/wallet/usecase"
 
 	redis "github.com/aclgo/simple-api-gateway/pkg/rredis"
 
@@ -154,6 +158,13 @@ func main() {
 	product := productUC.NewProductUC(logger, productUserService)
 	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger)
 
+	pixProcessor := pixUC.NewpaymentProcessorPix()
+	cardProcessor := cardUC.NewpaymentProcessorCard()
+
+	w := walletUC.NewwalletUC(balanceUserService, logger)
+	w.RegisterProvider(wallet.PaymentMethodPix, pixProcessor)
+	w.RegisterProvider(wallet.PaymentMethodCard, cardProcessor)
+
 	userHandler := svcUser.NewuserService(user, logger)
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
@@ -199,6 +210,7 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
+
 	mux.HandleFunc("GET /api/ws/card/{token}", authUC.ValidateTokenWs(exHandler.ExWs(ctx)))
 	mux.HandleFunc("GET /api/ws/endpoints", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -218,7 +230,7 @@ func main() {
 		log.Fatalf("load.Start: %v", err)
 	}
 
-	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(load.PathCss))))
+	// mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(load.PathCss))))
 
 	mux.HandleFunc("/login", pages.Login)
 	mux.HandleFunc("/home", pages.Home)
@@ -240,11 +252,12 @@ func main() {
 	hlogger := logger.BasicHttpLogger(mux)
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.ApiPort),
-		ReadTimeout:  time.Second * 10,
-		WriteTimeout: time.Second * 10,
-		ErrorLog:     log.Default(),
-		Handler:      cors.Handler(hlogger),
+		Addr:           fmt.Sprintf(":%d", cfg.ApiPort),
+		ReadTimeout:    time.Second * 10,
+		WriteTimeout:   time.Second * 10,
+		ErrorLog:       log.Default(),
+		Handler:        cors.Handler(hlogger),
+		MaxHeaderBytes: 8192,
 	}
 
 	logger.Infof("server running port %d", cfg.ApiPort)
