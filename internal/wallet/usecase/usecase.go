@@ -26,19 +26,28 @@ func NewwalletUC(clientBalanceGRPC proto.WalletServiceClient, logger logger.Logg
 }
 
 func (w *walletUC) RegisterProvider(method string, proccessor wallet.PaymentProcessor) {
-	w.mu.RLock()
+	w.mu.Lock()
 	w.providers[method] = proccessor
-	w.mu.RUnlock()
+	w.mu.Unlock()
 }
 
 func (u *walletUC) Credit(ctx context.Context, in *wallet.ParamCreditInput) (*wallet.ParamCreditOutput, error) {
 
-	ip := proto.ParamCreditWalletRequest{
-		WalletID: in.WalletId,
+	ig := proto.ParamGetWalletByAccountRequest{
+		AccountID: in.AccountId,
+	}
+
+	wlt, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &ig)
+	if err != nil {
+		return nil, fmt.Errorf("u.clientBalanceGPRC.GetWalletByAccount: %w", err)
+	}
+
+	ic := proto.ParamCreditWalletRequest{
+		WalletID: wlt.WalletID,
 		Amount:   in.Amount,
 	}
 
-	resp, err := u.clientBalanceGPRC.Credit(ctx, &ip)
+	resp, err := u.clientBalanceGPRC.Credit(ctx, &ic)
 	if err != nil {
 		return nil, fmt.Errorf("u.clientBalanceGRPC.Credit: %w", err)
 	}
@@ -63,7 +72,12 @@ func (u *walletUC) GeneratePayment(ctx context.Context, in *wallet.ParamGenerate
 
 	u.mu.RUnlock()
 
-	data, err := provider.Proccess(ctx, in.Amount)
+	ppi := wallet.ParamPaymentProcessorInput{
+		AccountId: in.AccountId,
+		Amount:    in.Amount,
+	}
+
+	data, err := provider.Proccess(ctx, &ppi)
 	if err != nil {
 		return nil, err
 	}

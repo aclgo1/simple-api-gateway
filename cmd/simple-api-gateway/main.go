@@ -20,6 +20,7 @@ import (
 	svcOrders "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/orders"
 	svcProduct "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/product"
 	svcUser "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/user"
+	svcPix "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/wallet/pix"
 	svcEx "github.com/aclgo/simple-api-gateway/internal/delivery/websocket/service/ex"
 	"github.com/aclgo/simple-api-gateway/internal/user"
 	"github.com/aclgo/simple-api-gateway/internal/wallet"
@@ -158,10 +159,11 @@ func main() {
 	product := productUC.NewProductUC(logger, productUserService)
 	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger)
 
+	w := walletUC.NewwalletUC(balanceUserService, logger)
+
 	pixProcessor := pixUC.NewpaymentProcessorPix()
 	cardProcessor := cardUC.NewpaymentProcessorCard()
 
-	w := walletUC.NewwalletUC(balanceUserService, logger)
 	w.RegisterProvider(wallet.PaymentMethodPix, pixProcessor)
 	w.RegisterProvider(wallet.PaymentMethodCard, cardProcessor)
 
@@ -169,6 +171,7 @@ func main() {
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
+	walletPixHandler := svcPix.NewwalletServicePix(pixProcessor, w)
 	exHandler := svcEx.NewWS()
 
 	authUC := authUC.NewAuthUC(clientUserService)
@@ -208,6 +211,9 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/{order_id}", authUC.ValidateIsAdmin(ordersHandler.FindById(ctx)))
 	mux.HandleFunc("GET /api/orders/find/account", authUC.ValidateToken(ordersHandler.FindByAccount(ctx)))
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
+
+	mux.HandleFunc("POST /api/payments/pix", authUC.ValidateToken(walletPixHandler.CreatePix(ctx)))
+	mux.HandleFunc("POST /api/webhook/pix", walletPixHandler.WebHookPix(ctx))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 

@@ -1,14 +1,19 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"github.com/aclgo/simple-api-gateway/internal/wallet"
+	"github.com/aclgo/simple-api-gateway/internal/wallet/pix"
+)
 
 type paymentProcessorPix struct {
 }
 
-func NewpaymentProcessorPix() *paymentProcessorPix {
+func NewpaymentProcessorPix() pix.PaymentProcessor {
 	return &paymentProcessorPix{}
 }
 
-func (p *paymentProcessorPix) Proccess(ctx context.Context, amount float64) (any, error) {
+func (p *paymentProcessorPix) Proccess(ctx context.Context, in *wallet.ParamPaymentProcessorInput) (any, error) {
 	return nil, nil
 }
