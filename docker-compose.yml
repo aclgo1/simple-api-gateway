@@ -5,8 +5,8 @@ services:
   simple-api-gateway:
     build: .
     restart: always
-    ports:
-    - "4000:4000"
+    # ports:
+    # - "4000:4000"
     # - "50051:50051"
     # - "50052:50052"
     # - "50053:50053"
@@ -118,3 +118,14 @@ services:
       retries: 5
     volumes:
       - ../simple-api-gateway-data/postgres:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - simple-api-gateway
