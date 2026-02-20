@@ -138,8 +138,8 @@ func main() {
 	redisClient := redis.NewRedisClient(cfg)
 
 	mu := sync.Mutex{}
-	user.SetBaseAPiUrl(cfg.BaseApiUrl)
-	admin.SetBaseAPiUrl(cfg.BaseApiUrl)
+	user.SetConfigUserPackage(cfg.BaseApiUrl, "meusocoro5@gmail.com", time.Hour/2, "gmail")
+	admin.SetConfigUserPackage(cfg.BaseApiUrl, "meusocoro5@gmail.com", time.Hour/2, "gmail")
 
 	////////////////////////////////
 

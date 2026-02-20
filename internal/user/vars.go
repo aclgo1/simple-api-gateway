@@ -8,7 +8,7 @@ var (
 	BASE_API_URL          string
 	DefaultVerifiedNo     = "no"
 	DefaultTimeSendEmails = time.Hour
-	DefaultFromSendMail   = "marcellosanttos2014@gmail.com"
+	DefaultFromSendMail   = ""
 
 	DefaultServiceName         = "gmail"
 	DefaultSubjectSendConfirm  = "Confirm signup"
@@ -42,8 +42,12 @@ var (
         </div>`
 )
 
-func SetBaseAPiUrl(apiurl string) {
+func SetConfigUserPackage(apiurl string, defaultFromSendMail string, defaultTimeSendEmails time.Duration, defaultServiceSendEmailName string) {
 	BASE_API_URL = apiurl
 	DefaulfBodySendConfirm = BASE_API_URL + "/api/user/confirm/%s"
 	DefaultBodyResetPass = BASE_API_URL + "/newpass?code=%s"
+
+	DefaultFromSendMail = defaultFromSendMail
+	DefaultTimeSendEmails = defaultTimeSendEmails
+	DefaultServiceName = defaultServiceSendEmailName
 }

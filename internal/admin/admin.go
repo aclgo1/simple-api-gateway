@@ -124,10 +124,13 @@ func (e ErrFailedVerifyCaptcha) Error() string {
 }
 
 var (
-	DefaultVerfiedNo    = "no"
-	DefaultVerfiedYes   = "yes"
-	BASE_API_URL        = ""
-	DefaultFromSendMail = "simpleapi@gmail.com"
+	DefaultVerfiedNo      = "no"
+	DefaultVerfiedYes     = "yes"
+	BASE_API_URL          = ""
+	DefaultTimeSendEmails = time.Hour
+	DefaultFromSendMail   = ""
+
+	DefaultServiceName = "gmail"
 
 	DefaultSubjectSendConfirm  = "Confirm signup"
 	DefaulfBodySendConfirm     = ""
@@ -146,7 +149,11 @@ var (
 	DefaultServiceSendName = "gmail"
 )
 
-func SetBaseAPiUrl(apiurl string) {
+func SetConfigUserPackage(apiurl string, defaultFromSendMail string, defaultTimeSendEmails time.Duration, defaultServiceSendEmailName string) {
 	BASE_API_URL = apiurl
 	DefaulfBodySendConfirm = BASE_API_URL + "/api/user/confirm/%s"
+
+	DefaultFromSendMail = defaultFromSendMail
+	DefaultTimeSendEmails = defaultTimeSendEmails
+	DefaultServiceName = defaultServiceSendEmailName
 }
