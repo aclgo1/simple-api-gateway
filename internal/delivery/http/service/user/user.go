@@ -236,6 +236,7 @@ func (s *userService) Update(ctx context.Context) http.HandlerFunc {
 			Lastname: ctxData.Lastname,
 			Password: ctxData.Password,
 			Email:    ctxData.Email,
+			Balance:  ctxData.Balance,
 		}
 
 		if err := params.Validate(); err != nil {
