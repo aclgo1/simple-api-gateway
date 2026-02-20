@@ -146,7 +146,6 @@ var (
                If you did not request this email, you can safely ignore it.
             </p>
         </div>`
-	DefaultServiceSendName = "gmail"
 )
 
 func SetConfigUserPackage(apiurl string, defaultFromSendMail string, defaultTimeSendEmails time.Duration, defaultServiceSendEmailName string) {

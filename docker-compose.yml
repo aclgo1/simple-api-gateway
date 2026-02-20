@@ -2,21 +2,21 @@ version: '3.9'
 
 services:
 
-  simple-api-gateway:
-    build: .
-    restart: always
-    ports:
-    - "4000:4000"
-    depends_on:
-      - grpc-mail
-      - redis
-      - mongodb
-      - db
-      - grpc-admin
-      - grpc-user
-      - grpc-orders
-      - grpc-product
-      - grpc-balance
+  # simple-api-gateway:
+  #   build: .
+  #   restart: always
+  #   ports:
+  #   - "4000:4000"
+  #   depends_on:
+  #     - grpc-mail
+  #     - redis
+  #     - mongodb
+  #     - db
+  #     - grpc-admin
+  #     - grpc-user
+  #     - grpc-orders
+  #     - grpc-product
+  #     - grpc-balance
   grpc-user:
     build: ../grpc-jwt-login
     restart: always

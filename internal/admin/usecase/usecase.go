@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/admin"
 	"github.com/aclgo/simple-api-gateway/internal/auth"
@@ -108,7 +107,7 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 			Subject:     admin.DefaultSubjectSendConfirm,
 			Body:        fmt.Sprintf(admin.DefaulfBodySendConfirm, confirmID),
 			Template:    admin.DefaulfTemplateSendConfirm,
-			Servicename: admin.DefaultServiceSendName,
+			Servicename: admin.DefaultServiceName,
 		}
 
 		_, err = u.clientMail.SendService(ctx, &m)
@@ -116,11 +115,11 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 			return nil, err
 		}
 
-		if err := u.redisClient.Set(ctx, params.Email, confirmID, time.Hour).Err(); err != nil {
+		if err := u.redisClient.Set(ctx, params.Email, confirmID, admin.DefaultTimeSendEmails).Err(); err != nil {
 			return nil, err
 		}
 
-		if err := u.redisClient.Set(ctx, confirmID, params.Email, time.Hour).Err(); err != nil {
+		if err := u.redisClient.Set(ctx, confirmID, params.Email, admin.DefaultTimeSendEmails).Err(); err != nil {
 			return nil, err
 		}
 	}
