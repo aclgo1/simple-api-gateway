@@ -91,6 +91,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=wallets
       - MONGO_INITDB_ROOT_PASSWORD=wallets
+    volumes:
+      - ../simple-api-gateway-data/mongo:/data/db
   redis:
     image: redis
     container_name: redis
@@ -114,3 +116,5 @@ services:
       interval: 3s
       timeout: 5s
       retries: 5
+    volumes:
+      - ../simple-api-gateway-data/postgres:/var/lib/postgresql/data
