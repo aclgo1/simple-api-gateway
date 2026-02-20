@@ -231,6 +231,30 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 		return nil, err
 	}
 
+	paramProtoFind := protoBalance.ParamGetWalletByAccountRequest{
+		AccountID: params.UserID,
+	}
+
+	wallet, err := u.clientBalanceGRPC.GetWalletByAccount(ctx, &paramProtoFind)
+	if err != nil {
+		return nil, err
+	}
+
+	newBalance := 0.0
+	if params.Balance > 0 {
+		paramProtoUpdateBalance := protoBalance.ParamCreditWalletRequest{
+			WalletID: wallet.WalletID,
+			Amount:   params.Balance,
+		}
+
+		walletUpdated, err := u.clientBalanceGRPC.Credit(ctx, &paramProtoUpdateBalance)
+		if err != nil {
+			return nil, err
+		}
+
+		newBalance = walletUpdated.Balance
+	}
+
 	return &user.User{
 		UserID:    updated.User.Id,
 		Name:      updated.User.Name,
@@ -238,6 +262,7 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 		Password:  updated.User.Password,
 		Email:     updated.User.Email,
 		Role:      updated.User.Role,
+		Balance:   newBalance,
 		Verified:  updated.User.Verified,
 		CreatedAt: updated.User.CreatedAt.AsTime(),
 		UpdatedAt: updated.User.UpdatedAt.AsTime(),

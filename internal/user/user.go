@@ -142,11 +142,12 @@ func (p *ParamsUserFindByEmail) Validate() error {
 }
 
 type ParamsUserUpdate struct {
-	UserID   string `json:"user_id"`
-	Name     string `json:"name"`
-	Lastname string `json:"lastname"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	UserID   string  `json:"user_id"`
+	Name     string  `json:"name"`
+	Lastname string  `json:"lastname"`
+	Password string  `json:"password"`
+	Email    string  `json:"email"`
+	Balance  float64 `json:"balance"`
 }
 
 func (p *ParamsUserUpdate) Validate() error {

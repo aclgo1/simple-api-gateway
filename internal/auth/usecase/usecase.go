@@ -224,19 +224,27 @@ func (a *authUC) ValidateUpdate(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if params.IdUpdate != "" && params.IdUpdate != paramsToken.UserID && paramsToken.Role != string(auth.ADMIN) {
+		if params.IdUpdate == "" {
+			params.IdUpdate = paramsToken.UserID
+		}
+
+		isOwner := params.IdUpdate == paramsToken.UserID
+		isAdmin := paramsToken.Role == string(auth.ADMIN)
+		isSuper := paramsToken.Role == string(auth.SUPERADMIN)
+
+		if !isOwner && !isAdmin && !isSuper {
 			resp := auth.Response{
-				Error:   http.StatusText(http.StatusUnauthorized),
-				Message: http.StatusText(http.StatusUnauthorized),
+				Error:   http.StatusText(http.StatusForbidden),
+				Message: "usuario nao autorizado fazer esse update",
 			}
 
-			auth.Json(w, resp, http.StatusBadRequest)
+			auth.Json(w, resp, http.StatusForbidden)
 
 			return
 		}
 
-		if params.IdUpdate == "" {
-			params.IdUpdate = paramsToken.UserID
+		if !isAdmin && !isSuper {
+			params.Balance = 0
 		}
 
 		v := context.WithValue(r.Context(), auth.KeyCtxParamsUpdate, &params)

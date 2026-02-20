@@ -54,9 +54,18 @@ message ParamgGetWalletByAccountResponse {
     google.protobuf.Timestamp updatedAT = 5;
 }
 
+message ParamCreateTransactionRequest {
+    string referenceId = 1;
+}
+message ParamCreateTransactionResponse {
+}
+
+
+
 service WalletService {
     rpc Create(ParamCreateWalletRequest) returns (ParamCreateWalletResponse);
     rpc Credit(ParamCreditWalletRequest) returns (ParamCreditWalletResponse);
     rpc Debit(ParamDebitWalletRequest) returns (ParamDebitWalletResponse);
     rpc GetWalletByAccount(ParamGetWalletByAccountRequest) returns (ParamgGetWalletByAccountResponse);
+    rpc CreateTransaction(ParamCreateTransactionRequest) returns (ParamCreateTransactionResponse);
 }

@@ -36,11 +36,12 @@ var (
 
 type ParamsUpdate struct {
 	ParamsToken
-	IdUpdate string `json:"user_id"`
-	Name     string `json:"name"`
-	Lastname string `json:"lastname"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	IdUpdate string  `json:"user_id"`
+	Name     string  `json:"name"`
+	Lastname string  `json:"lastname"`
+	Password string  `json:"password"`
+	Email    string  `json:"email"`
+	Balance  float64 `json:"balance"`
 }
 
 type ParamsCreateAdmin struct {

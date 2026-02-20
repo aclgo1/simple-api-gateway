@@ -55,14 +55,15 @@ type ParamCreditOutput struct {
 }
 
 type ParamPaymentProcessorInput struct {
+	Method    string  `json:"method"`
 	AccountId string  `json:"account_id"`
 	Amount    float64 `json:"amount"`
 }
 
 type ParamGeneratePaymentInput struct {
 	Method    string  `json:"method"`
-	Amount    float64 `json:"amount"`
 	AccountId string  `json:"account_id"`
+	Amount    float64 `json:"amount"`
 }
 
 type ParamGeneratePaymentOutput struct {

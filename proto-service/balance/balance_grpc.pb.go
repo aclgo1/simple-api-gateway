@@ -23,6 +23,7 @@ const (
 	WalletService_Credit_FullMethodName             = "/WalletService/Credit"
 	WalletService_Debit_FullMethodName              = "/WalletService/Debit"
 	WalletService_GetWalletByAccount_FullMethodName = "/WalletService/GetWalletByAccount"
+	WalletService_CreateTransaction_FullMethodName  = "/WalletService/CreateTransaction"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -33,6 +34,7 @@ type WalletServiceClient interface {
 	Credit(ctx context.Context, in *ParamCreditWalletRequest, opts ...grpc.CallOption) (*ParamCreditWalletResponse, error)
 	Debit(ctx context.Context, in *ParamDebitWalletRequest, opts ...grpc.CallOption) (*ParamDebitWalletResponse, error)
 	GetWalletByAccount(ctx context.Context, in *ParamGetWalletByAccountRequest, opts ...grpc.CallOption) (*ParamgGetWalletByAccountResponse, error)
+	CreateTransaction(ctx context.Context, in *ParamCreateTransactionRequest, opts ...grpc.CallOption) (*ParamCreateTransactionResponse, error)
 }
 
 type walletServiceClient struct {
@@ -83,6 +85,16 @@ func (c *walletServiceClient) GetWalletByAccount(ctx context.Context, in *ParamG
 	return out, nil
 }
 
+func (c *walletServiceClient) CreateTransaction(ctx context.Context, in *ParamCreateTransactionRequest, opts ...grpc.CallOption) (*ParamCreateTransactionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ParamCreateTransactionResponse)
+	err := c.cc.Invoke(ctx, WalletService_CreateTransaction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type WalletServiceServer interface {
 	Credit(context.Context, *ParamCreditWalletRequest) (*ParamCreditWalletResponse, error)
 	Debit(context.Context, *ParamDebitWalletRequest) (*ParamDebitWalletResponse, error)
 	GetWalletByAccount(context.Context, *ParamGetWalletByAccountRequest) (*ParamgGetWalletByAccountResponse, error)
+	CreateTransaction(context.Context, *ParamCreateTransactionRequest) (*ParamCreateTransactionResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedWalletServiceServer) Debit(context.Context, *ParamDebitWallet
 }
 func (UnimplementedWalletServiceServer) GetWalletByAccount(context.Context, *ParamGetWalletByAccountRequest) (*ParamgGetWalletByAccountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetWalletByAccount not implemented")
+}
+func (UnimplementedWalletServiceServer) CreateTransaction(context.Context, *ParamCreateTransactionRequest) (*ParamCreateTransactionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateTransaction not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -206,6 +222,24 @@ func _WalletService_GetWalletByAccount_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_CreateTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParamCreateTransactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).CreateTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_CreateTransaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).CreateTransaction(ctx, req.(*ParamCreateTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWalletByAccount",
 			Handler:    _WalletService_GetWalletByAccount_Handler,
+		},
+		{
+			MethodName: "CreateTransaction",
+			Handler:    _WalletService_CreateTransaction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
