@@ -52,32 +52,32 @@ import (
 )
 
 var (
-	AddrServiceAdmin    = ":50051"
+	AddrServiceAdmin    = "grpc-admin:50051"
 	OptionsServiceAdmin = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	AddrServiceUser    = ":50052"
+	AddrServiceUser    = "grpc-user:50052"
 	OptionsServiceUser = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	AddrServiceMail    = ":50053"
+	AddrServiceMail    = "grpc-mail:50053"
 	OptionsServiceMail = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	AddrServiceProduct    = ":50054"
+	AddrServiceProduct    = "grpc-product:50054"
 	OptionsServiceProduct = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	AddrServiceOrders    = ":50055"
+	AddrServiceOrders    = "grpc-orders:50055"
 	OptionsServiceOrders = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	AddrServiceBalance    = ":50056"
+	AddrServiceBalance    = "grpc-balance:50056"
 	OptionsServiceBalance = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}

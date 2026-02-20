@@ -2,23 +2,31 @@ version: '3.9'
 
 services:
 
-  # simple-api-gateway:
-  #   build: .
-  #   restart: always
-  #   ports:
-  #   - "4000:4000"
-  #   depends_on:
-  #     - grpc-mail
-  #     - redis
-  #     - mongodb
-  #     - db
-  #     - grpc-admin
-  #     - grpc-user
-  #     - grpc-orders
-  #     - grpc-product
-  #     - grpc-balance
+  simple-api-gateway:
+    build: .
+    restart: always
+    ports:
+    - "4000:4000"
+    # - "50051:50051"
+    # - "50052:50052"
+    # - "50053:50053"
+    # - "50054:50054"
+    # - "50055:50055"
+    # - "27017:27017"
+    # - "5432:5432"
+    depends_on:
+      - grpc-mail
+      - redis
+      - mongodb
+      - db
+      - grpc-admin
+      - grpc-user
+      - grpc-orders
+      - grpc-product
+      - grpc-balance
   grpc-user:
     build: ../grpc-jwt-login
+    container_name: grpc-jwt-login
     restart: always
     ports:
       - "50052:50052"
@@ -26,6 +34,7 @@ services:
       - grpc-admin
   grpc-admin:
     build: ../grpc-admin
+    container_name: grpc-admin
     restart: always
     ports:
       - "50051:50051"
@@ -34,6 +43,7 @@ services:
 
   grpc-mail:
     build: ../grpc-mail
+    container_name: grpc-mail
     restart: always
     ports:
       - 50053:50053
@@ -43,6 +53,7 @@ services:
   
   grpc-product:
     build: ../grpc-product
+    container_name: grpc-product
     restart: always
     ports:
       - 50054:50054
@@ -52,6 +63,7 @@ services:
       - grpc-mail
   grpc-orders:
     build: ../grpc-orders
+    container_name: grpc-orders
     restart: always
     ports: 
       - 50055:50055
@@ -61,6 +73,7 @@ services:
       - grpc-mail
   grpc-balance:
     build: ../grpc-balance
+    container_name: grpc-balance
     restart: always
     ports: 
       - 50056:50056
