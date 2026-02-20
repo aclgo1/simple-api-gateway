@@ -80,6 +80,7 @@ small {
     <h1>Users</h1>
     <button id="toggleFormButton">Create User</button>
     <div id="formContainer" style="display: none;"></div>
+    <div id="form-update" style="display: none;"></div>
     <div id="list-products" class="grid-products">
     </div>
 </body>
@@ -89,8 +90,13 @@ let access_token = window.localStorage.getItem("access_token")
 let refresh_token = window.localStorage.getItem("refresh_token")
 let isRefreshing =  false
 let refreshSubscribers = [];
+let currentUserId = "";
+let currentUserName = "";
+let currentUserLastname = ""
+let currentUserEmail = ""
+let currentUserBalance = ""
 
-getProducts();
+getUsers();
 addEventFormCreate();
 
 function subscribeTokenRefresh(cb){
@@ -106,6 +112,13 @@ document.getElementById('list-products').addEventListener('click', function (e){
     if(e.target && e.target.classList.contains('btn-delete')){
         const id = e.target.getAttribute('data-id');
         deleteProduct(id);
+    }
+
+     if(e.target && e.target.classList.contains('btn-update')){
+        const id = e.target.getAttribute('data-id');
+        currentUserId = id;
+
+        updateUserForm(e);
     }
 });
 
@@ -185,10 +198,86 @@ function addEventFormCreate(){
 
         createProduct(product);
         e.target.reset();
-        getProducts();
+        // getUsers();
 
     });
 };
+
+function updateUserForm(e){
+    if (e) e.preventDefault();
+
+    const divFormUpdate = document.getElementById('form-update');
+    divFormUpdate.innerHTML = ``
+    divFormUpdate.style.display = "block"
+
+    divFormUpdate.innerHTML = `
+        <h3 class="panel-title">Update User</h3>
+        <form id="form-update-user" style="display: flex; flex-direction: column; gap: 10px;">
+            <label>Name:
+                <input type="text" id="update-name" value="" class="nav-btn" style="width: 100%">
+            </label>
+            <label>Lastname:
+                <input type="text" id="update-lastname" value="" class="nav-btn" style="width: 100%">
+            </label>
+            <label>Email:
+                <input type="text" id="update-email" value="" class="nav-btn" style="width: 100%">
+            </label>
+            <label>Password:
+                <input type="text" id="update-password" value="" class="nav-btn" style="width: 100%">
+            </label>
+            <label>Balance:
+                <input type="text" id="update-balance" value="" class="nav-btn" style="width: 100%">
+            </label>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="submit" id="btn-update-profile-submit" class="nav-btn">Save Changes</button>
+                <button type="button" id="cancel-update" class="nav-btn">Cancel</button>
+            </div>
+        </form>
+    `
+    document.getElementById("cancel-update").onclick = () => {
+        divFormUpdate.innerHTML = ``;
+        divFormUpdate.style.display = 'none';
+    };
+    document.getElementById("form-update-user").onsubmit = (ev) => {
+        ev.preventDefault();
+        if(!confirm("tem certeza que deseja atualizar as informacoes do usuario?")) return;
+
+        const btnSubmit = document.getElementById("btn-update-profile-submit")
+
+        if(btnSubmit){
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = `updating...`
+        }
+
+        const name = document.getElementById("update-name").value
+        const lastname = document.getElementById("update-lastname").value
+        const email = document.getElementById("update-email").value
+        const password = document.getElementById("update-password").value
+        const balance = parseFloat(document.getElementById("update-balance").value)
+
+        const data = {
+            user_id:currentUserId,
+            name:name,
+            lastname:lastname,
+            email:email,
+            password:password,
+            balance:balance,
+        }
+
+        if (password.length > 0 && password.length < 6) {
+            alert("password caracters invalid")
+            return;
+        } 
+
+        updateUser(data);
+
+        btnSubmit.innerText = `Save Changes`
+        btnSubmit.disabled = false;
+
+        divFormUpdate.innerHTML = ``
+
+    }
+}
 
 function createProduct(userData){
     opt = {
@@ -209,7 +298,7 @@ function createProduct(userData){
         })
         .then(data => {
             console.log("user created", data);
-            getProducts();
+            getUsers();
         })
         .catch(error => { console.error(error)});
 };
@@ -234,12 +323,12 @@ function deleteProduct(productID){
         .then(data => {
             window.alert("product deleted")
             console.log(data);
-            getProducts();
+            getUsers();
         })
         .catch(error => {console.error(error)});
 };
 
-function getProducts(){
+function getUsers(){
 
     const data = {
         query:"",
@@ -261,7 +350,7 @@ function getProducts(){
     fetch('/api/admin/search', opt)
     .then(response => {
         if(response.status == 401){
-            return refreshTokens(()=>getProducts());
+            return refreshTokens(()=>getUsers());
         }
         if(!response.ok){
             console.log("error to get products")
@@ -276,7 +365,7 @@ function getProducts(){
         container.innerHTML = '';
 
         if(data == null){
-            console.log("nenhum product cadastred")
+            console.log("nenhum user cadastred")
             return
         }
 
@@ -294,6 +383,7 @@ function getProducts(){
                     <smll>CREATED: ${new Date(user.created_at).toLocaleString('pt-BR')}</small><br>
                     <smll>UPDATED AT: ${new Date(user.updated_at).toLocaleString('pt-BR')}</small>
                     <button class="btn-delete" data-id="${user.id}">DELETE</button>
+                    <button class="btn-update" data-id="${user.id}">UPDATE</button>
                 </div>
             </div>
         `
@@ -305,6 +395,38 @@ function getProducts(){
     .catch(error => {
         console.error(error);
     });
+}
+
+function updateUser(data){
+    opt = {
+        method:'PUT',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token': `Bearer ${access_token}`,
+        },
+        body: JSON.stringify(data),
+    }
+
+    fetch("/api/user/update", opt)
+    .then(response =>{
+        if (response.status == 401){
+            return refreshTokens(()=>updateUser(data))
+        }
+
+        return response.json()
+    })
+    .then(data =>{
+        if (data.error){
+            alert(data.message)
+            return;
+        }
+
+        alert("user updated succes")
+        getUsers()
+    })
+    .catch(error =>{
+        console.log("error de rede", error.message)
+    })
 }
 
 function refreshTokens(fn){
