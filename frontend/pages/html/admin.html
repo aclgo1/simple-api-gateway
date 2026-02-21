@@ -95,6 +95,7 @@ let currentUserName = "";
 let currentUserLastname = ""
 let currentUserEmail = ""
 let currentUserBalance = ""
+let currentUserUpdate = ""
 
 getUsers();
 addEventFormCreate();
@@ -116,7 +117,7 @@ document.getElementById('list-products').addEventListener('click', function (e){
 
      if(e.target && e.target.classList.contains('btn-update')){
         const id = e.target.getAttribute('data-id');
-        currentUserId = id;
+        currentUserUpdate = id;
 
         updateUserForm(e);
     }
@@ -256,7 +257,7 @@ function updateUserForm(e){
         const balance = parseFloat(document.getElementById("update-balance").value)
 
         const data = {
-            user_id:currentUserId,
+            user_id:currentUserUpdate,
             name:name,
             lastname:lastname,
             email:email,

@@ -16,7 +16,7 @@ type exService struct {
 	Upgrader websocket.Upgrader
 }
 
-func NewWS() *exService {
+func NewExService() *exService {
 	return &exService{
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {

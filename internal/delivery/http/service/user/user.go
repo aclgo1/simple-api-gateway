@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -15,14 +16,16 @@ import (
 )
 
 type userService struct {
-	userUC user.UserUC
-	logger logger.Logger
+	userUC     user.UserUC
+	logger     logger.Logger
+	BaseApiUrl string
 }
 
-func NewuserService(user user.UserUC, logger logger.Logger) *userService {
+func NewuserService(user user.UserUC, logger logger.Logger, baseApiUrl string) *userService {
 	return &userService{
-		userUC: user,
-		logger: logger,
+		userUC:     user,
+		logger:     logger,
+		BaseApiUrl: baseApiUrl,
 	}
 }
 
@@ -296,10 +299,11 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 		}
 
 		// resp := map[string]string{
-		// 	"message": "user confirmed signup",
+		// 	"message":  "user confirmed signup",
+		// 	"redirect": "/login",
 		// }
 
-		http.Redirect(w, r, "/login", http.StatusOK)
+		http.Redirect(w, r, fmt.Sprintf("%s/login", s.BaseApiUrl), http.StatusSeeOther)
 	}
 }
 
@@ -399,7 +403,7 @@ func (s *userService) RefreshTokens(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		resp := map[string]interface{}{
+		resp := map[string]any{
 			"message": "tokens refreshed",
 			"tokens": map[string]any{
 				"access_token":  refreshTokens.AccessToken,

@@ -167,12 +167,12 @@ func main() {
 	w.RegisterProvider(wallet.PaymentMethodPix, pixProcessor)
 	w.RegisterProvider(wallet.PaymentMethodCard, cardProcessor)
 
-	userHandler := svcUser.NewuserService(user, logger)
+	userHandler := svcUser.NewuserService(user, logger, cfg.BaseApiUrl)
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
 	walletPixHandler := svcPix.NewwalletServicePix(pixProcessor, w)
-	exHandler := svcEx.NewWS()
+	exHandler := svcEx.NewExService()
 
 	authUC := authUC.NewAuthUC(clientUserService)
 
@@ -181,11 +181,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	//MICROSERVICE GRPC USER
-	mux.HandleFunc("/api/login", userHandler.Login(ctx))
-	mux.HandleFunc("/api/logout", authUC.ValidateTwoToken(userHandler.Logout(ctx)))
-	mux.HandleFunc("/api/refresh", authUC.ValidateTwoToken(userHandler.RefreshTokens(ctx)))
-	mux.HandleFunc("/api/valid_token", authUC.ValidateToken(userHandler.ValidToken(ctx)))
-	mux.HandleFunc("/api/user/register", userHandler.Register(ctx))
+	mux.HandleFunc("POST /api/login", userHandler.Login(ctx))
+	mux.HandleFunc("GET /api/logout", authUC.ValidateTwoToken(userHandler.Logout(ctx)))
+	mux.HandleFunc("GET /api/refresh", authUC.ValidateTwoToken(userHandler.RefreshTokens(ctx)))
+	mux.HandleFunc("GET /api/valid_token", authUC.ValidateToken(userHandler.ValidToken(ctx)))
+	mux.HandleFunc("POST /api/user/register", userHandler.Register(ctx))
 	mux.HandleFunc("GET /api/user/find", authUC.ValidateToken(userHandler.Find(ctx)))
 	mux.HandleFunc("PUT /api/user/update", authUC.ValidateUpdate(userHandler.Update(ctx)))
 
@@ -222,7 +222,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		if e := json.NewEncoder(w).Encode(map[string]any{"path": "/api/ws/card"}); e != nil {
+		if e := json.NewEncoder(w).Encode([]map[string]any{{"path": "/api/ws/card/"}}); e != nil {
 			log.Printf("json.NewEncoder: %v\n", e)
 		}
 	})
