@@ -2,17 +2,19 @@ package config
 
 import (
 	"log"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server     `mapstructure:",squash"`
-	Logger     `mapstructure:",squash"`
-	Redis      `mapstructure:",squash"`
-	DbDriver   string `mapstructure:"DB_DRIVER"`
-	DbUrl      string `mapstructure:"DB_URL"`
-	BaseApiUrl string `mapstructure:"BASE_API_URL"`
+	Server            `mapstructure:",squash"`
+	Logger            `mapstructure:",squash"`
+	Redis             `mapstructure:",squash"`
+	UserAndAdminSetup `mapstructure:",squash"`
+	DbDriver          string `mapstructure:"DB_DRIVER"`
+	DbUrl             string `mapstructure:"DB_URL"`
+	BaseApiUrl        string `mapstructure:"BASE_API_URL"`
 }
 
 type Server struct {
@@ -30,6 +32,12 @@ type Redis struct {
 	RedisUsername string `mapstructure:"REDIS_USERNAME"`
 	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
 	RedisDB       int    `mapstructure:"REDIS_DB"`
+}
+
+type UserAndAdminSetup struct {
+	DefaultEmailSendEmail       string        `mapstructure:"DEFAULT_EMAIL_SEND_EMAIL"`
+	DefaultServiceNameSendEmail string        `mapstructure:"DEFAULT_SERVICE_NAME_SEND_EMAIL"`
+	DefaultTimeSendEmail        time.Duration `mapstructure:"DEFAULT_TIME_SEND_EMAIL"`
 }
 
 func Load(path string) *Config {

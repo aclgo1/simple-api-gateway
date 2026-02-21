@@ -25,7 +25,7 @@ func (s *walletServicePix) CreatePix(ctx context.Context) http.HandlerFunc {
 	}
 }
 
-func (s *walletServicePix) WebHookPix(ctx context.Context) http.HandlerFunc {
+func (s *walletServicePix) WebHookPix() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

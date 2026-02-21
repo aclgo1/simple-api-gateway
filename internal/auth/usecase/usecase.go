@@ -56,6 +56,11 @@ func getRefreshToken(r *http.Request) string {
 	return refreshToken[7:]
 }
 
+func getPixWebHookToken(r *http.Request) string {
+	pixToken := r.Header.Get("pix-token")
+	return pixToken
+}
+
 func (a *authUC) ValidateToken(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		accessToken := getAccessToken(r)
@@ -367,5 +372,23 @@ func (a *authUC) ValidateIsAdmin(next http.HandlerFunc) http.HandlerFunc {
 
 		next.ServeHTTP(w, r.WithContext(v))
 
+	}
+}
+
+func (a *authUC) ValidateWebHookPix(ctxf context.Context, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithCancel(r.Context())
+		defer cancel()
+
+		stop := context.AfterFunc(ctxf, func() { cancel() })
+		defer stop()
+
+		token := getPixWebHookToken(r)
+
+		v := context.WithValue(ctx, "teste", token)
+
+		r = r.WithContext(v)
+
+		next.ServeHTTP(w, r)
 	}
 }

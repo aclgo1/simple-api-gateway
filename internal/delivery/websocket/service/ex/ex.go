@@ -1,4 +1,4 @@
-package ws
+package ex
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type ServiceWs struct {
+type exService struct {
 	Upgrader websocket.Upgrader
 }
 
-func NewWS() *ServiceWs {
-	return &ServiceWs{
+func NewWS() *exService {
+	return &exService{
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -50,7 +50,7 @@ func (c *Client) Send(ctx context.Context, msg any) error {
 	return nil
 }
 
-func (s *ServiceWs) ExWs(ctxF context.Context) http.HandlerFunc {
+func (s *exService) ExWs(ctxF context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := s.Upgrader.Upgrade(w, r, nil)
 		if err != nil {

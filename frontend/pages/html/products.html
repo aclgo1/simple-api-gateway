@@ -162,7 +162,7 @@ function createProduct(productData){
         body: JSON.stringify(productData)
     };
 
-    fetch(BASE_URL + '/api/product/create', opt)
+    fetch('/api/product/create', opt)
         .then(response => {
             if(response.status == 401){
                 return refreshTokens(()=>createProduct(productData));
@@ -186,7 +186,7 @@ function updateProduct(productData){
         body: JSON.stringify(productData)
     }
 
-    fetch(BASE_URL + '/api/product/update', opt)
+    fetch('/api/product/update', opt)
         .then(response =>{
             if(response.status == 401){
                 return refreshTokens(()=>updateProduct(productData));
@@ -212,7 +212,7 @@ function deleteProduct(productID){
         }
     }
 
-    fetch(BASE_URL + '/api/product/delete/' + productID, opt)
+    fetch('/api/product/delete/' + productID, opt)
         .then(response => {
             if(response.status == 401){
                 return refreshTokens(()=>deleteProduct(productID));
@@ -235,7 +235,7 @@ function getProducts(){
         }
     }
 
-    fetch(BASE_URL + '/api/product/findall', opt)
+    fetch('/api/product/findall', opt)
     .then(response => {
         if(response.status == 401){
             return refreshTokens(()=>getProducts());
@@ -306,7 +306,7 @@ function refreshTokens(fn){
         }
     }
 
-    fetch(BASE_API_ENDPOINT + "/api/refresh", opt)
+    fetch("/api/refresh", opt)
     .then(response => {
         if(response.status == 401){
             console.log("unauthorized")

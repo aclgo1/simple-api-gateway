@@ -138,8 +138,8 @@ func main() {
 	redisClient := redis.NewRedisClient(cfg)
 
 	mu := sync.Mutex{}
-	user.SetConfigUserPackage(cfg.BaseApiUrl, "meusocoro5@gmail.com", time.Hour/2, "gmail")
-	admin.SetConfigUserPackage(cfg.BaseApiUrl, "meusocoro5@gmail.com", time.Hour/2, "gmail")
+	user.SetConfigUserPackage(cfg.BaseApiUrl, cfg.DefaultEmailSendEmail, cfg.DefaultTimeSendEmail, cfg.DefaultServiceNameSendEmail)
+	admin.SetConfigUserPackage(cfg.BaseApiUrl, cfg.DefaultEmailSendEmail, cfg.DefaultTimeSendEmail, cfg.DefaultServiceNameSendEmail)
 
 	////////////////////////////////
 
@@ -213,7 +213,7 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
 
 	mux.HandleFunc("POST /api/payments/pix", authUC.ValidateToken(walletPixHandler.CreatePix(ctx)))
-	mux.HandleFunc("POST /api/webhook/pix", walletPixHandler.WebHookPix(ctx))
+	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(ctx, walletPixHandler.WebHookPix()))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 
