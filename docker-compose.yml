@@ -81,6 +81,14 @@ services:
       - grpc-user
       - grpc-admin
       - grpc-mail
+  concurrency-example:
+    build: ../concurrency-example
+    container_name: concurrency-example
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - simple-api-gateway
   
   mongodb:
     image: mongo:4.4

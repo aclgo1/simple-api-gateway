@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,7 +20,6 @@ import (
 	svcProduct "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/product"
 	svcUser "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/user"
 	svcPix "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/wallet/pix"
-	svcEx "github.com/aclgo/simple-api-gateway/internal/delivery/websocket/service/ex"
 	"github.com/aclgo/simple-api-gateway/internal/user"
 	"github.com/aclgo/simple-api-gateway/internal/wallet"
 	migration "github.com/aclgo/simple-api-gateway/migrations"
@@ -172,7 +170,7 @@ func main() {
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
 	walletPixHandler := svcPix.NewwalletServicePix(pixProcessor, w)
-	exHandler := svcEx.NewExService()
+	// exHandler := svcEx.NewExService()
 
 	authUC := authUC.NewAuthUC(clientUserService)
 
@@ -217,15 +215,15 @@ func main() {
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 
-	mux.HandleFunc("GET /api/ws/card/{token}", authUC.ValidateTokenWs(exHandler.ExWs(ctx)))
-	mux.HandleFunc("GET /api/ws/endpoints", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+	// mux.HandleFunc("GET /api/ws/card/{token}", authUC.ValidateTokenWs(exHandler.ExWs(ctx)))
+	// mux.HandleFunc("GET /api/ws/endpoints", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.WriteHeader(http.StatusOK)
 
-		if e := json.NewEncoder(w).Encode([]map[string]any{{"path": "/api/ws/card/"}}); e != nil {
-			log.Printf("json.NewEncoder: %v\n", e)
-		}
-	})
+	// 	if e := json.NewEncoder(w).Encode([]map[string]any{{"path": "/api/ws/card/"}}); e != nil {
+	// 		log.Printf("json.NewEncoder: %v\n", e)
+	// 	}
+	// })
 
 	//FRONTEND SETUP
 

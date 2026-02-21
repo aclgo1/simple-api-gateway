@@ -161,12 +161,13 @@
 <body>
 <header class="navbar">
         <div class="container nav-content">
-            <h1 style="color: var(--primary); margin:0;">Aclgo<span>Brand</span></h1>
+            <h1 style="color: var(--primary); margin:0;">Store<span>Brand</span></h1>
             <nav class="nav-buttons">
                 <button id="you-balance" class="nav-btn"></button>
                 <button id="profile" class="nav-btn">👤 Profile</button>
                 <button id="show-orders" class="nav-btn">📦 You Orders</button>
                 <button id="add-balance" class="nav-btn">Add Balance</button>
+                <button id="open-verificador" class="nav-btn">Open Verificador</button>
                 <button id="logout" class="nav-btn">Logout</button>
             </nav>
         </div>
@@ -211,6 +212,12 @@ let refreshSubscribers = [];
 // CheckTokenExist();
 getBalanceInfo();
 getProducts();
+
+document.getElementById("open-verificador").addEventListener('click', (e) => {
+    e.preventDefault();
+
+    window.location.href = "http://localhost/ex/ws";
+});
 
 logout.addEventListener('click', (e) => {
     e.preventDefault(); 
