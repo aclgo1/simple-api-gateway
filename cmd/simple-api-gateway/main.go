@@ -244,7 +244,7 @@ func main() {
 	mux.HandleFunc("/newpass", pages.NewPass)
 	mux.HandleFunc("/products", pages.Products)
 	mux.HandleFunc("/admin", pages.Admin)
-	mux.HandleFunc("/ws", pages.Ws)
+	// mux.HandleFunc("/ws", pages.Ws)
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},

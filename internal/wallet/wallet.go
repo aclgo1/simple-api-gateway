@@ -66,6 +66,10 @@ type ParamGeneratePaymentInput struct {
 	Amount    float64 `json:"amount"`
 }
 
+func (p *ParamGeneratePaymentInput) Validate() error {
+	return nil
+}
+
 type ParamGeneratePaymentOutput struct {
 	Type string `json:"type"`
 	Data any    `json:"data"`

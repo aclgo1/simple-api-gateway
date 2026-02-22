@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"sync"
@@ -82,6 +83,15 @@ func (u *walletUC) GeneratePayment(ctx context.Context, in *wallet.ParamGenerate
 	}
 
 	u.mu.RUnlock()
+
+	switch in.Amount {
+	case 60.00:
+	case 40.00:
+	case 20.00:
+	case 10.00:
+	default:
+		return nil, errors.New("amount not supported")
+	}
 
 	ppi := wallet.ParamPaymentProcessorInput{
 		AccountId: in.AccountId,
