@@ -15,5 +15,5 @@ func NewpaymentProcessorPix() pix.PaymentProcessor {
 }
 
 func (p *paymentProcessorPix) Proccess(ctx context.Context, in *wallet.ParamPaymentProcessorInput) (any, error) {
-	return nil, nil
+	return &pix.ParamsPixOutput{Teste: "meu pix"}, nil
 }

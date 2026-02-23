@@ -2,17 +2,23 @@
 # Variáveis para facilitar a manutenção
 PROTO_DIR := ./proto-service/orders/proto
 OUT_DIR   := ./proto-service/orders/proto
-# Busca automaticamente todos os arquivos .proto na pasta
 PROTO_FILES := $(wildcard $(PROTO_DIR)/*.proto)
 
+# Lista de repositórios públicos
 REPOS = grpc-admin grpc-jwt-login grpc-mail grpc-orders grpc-product grpc-balance
-BASE_URL = https://github.com/aclgo1
+# Repositório Privado
+PRIVATE_REPO = concurrency-example
+
+BASE_URL = github.com/aclgo1
 PARENT_DIR = ..
+
+# Use: make clone-all GITHUB_TOKEN=seu_token_aqui
+GITHUB_TOKEN ?= default_token
 
 # Garante que o PATH inclua os binários do Go
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
-.PHONY: all clone-all pull-all up down proto api run
+.PHONY: all clone-all pull-all up down proto run
 
 all: clone-all up
 
@@ -28,18 +34,24 @@ proto: $(PROTO_FILES)
 	@echo "Concluído."
 
 clone-all:
-	@echo "Clonando repositórios para $(PARENT_DIR)..."
+	@echo "Clonando repositórios públicos para $(PARENT_DIR)..."
 	@$(foreach repo, $(REPOS), \
 		if [ ! -d "$(PARENT_DIR)/$(repo)" ]; then \
-			git clone $(BASE_URL)/$(repo).git $(PARENT_DIR)/$(repo); \
+			git clone https://$(BASE_URL)/$(repo).git $(PARENT_DIR)/$(repo); \
 		else \
 			echo "$(repo) já existe, pulando clone."; \
 		fi; \
 	)
+	@echo "Clonando repositório privado $(PRIVATE_REPO)..."
+	@if [ ! -d "$(PARENT_DIR)/$(PRIVATE_REPO)" ]; then \
+		git clone https://$(GITHUB_TOKEN)@$(BASE_URL)/$(PRIVATE_REPO).git $(PARENT_DIR)/$(PRIVATE_REPO); \
+	else \
+		echo "$(PRIVATE_REPO) já existe, pulando clone."; \
+	fi
 
 pull-all:
-	@echo "Atualizando repositórios em $(PARENT_DIR)..."
-	@$(foreach repo, $(REPOS), \
+	@echo "Atualizando todos os repositórios em $(PARENT_DIR)..."
+	@$(foreach repo, $(REPOS) $(PRIVATE_REPO), \
 		if [ -d "$(PARENT_DIR)/$(repo)" ]; then \
 			echo "Atualizando $(repo)..."; \
 			cd $(PARENT_DIR)/$(repo) && git pull; \

@@ -9,3 +9,7 @@ import (
 type PaymentProcessor interface {
 	Proccess(context.Context, *wallet.ParamPaymentProcessorInput) (any, error)
 }
+
+type ParamsPixOutput struct {
+	Teste string `json:"teste"`
+}
