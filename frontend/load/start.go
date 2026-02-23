@@ -48,9 +48,9 @@ func (l *load) validate() error {
 		return errors.New("l.Tmpl is nil")
 	}
 
-	if l.PathCss == "" {
-		return errors.New("l.PathCss is empty")
-	}
+	// if l.PathCss == "" {
+	// 	return errors.New("l.PathCss is empty")
+	// }
 
 	return nil
 }
