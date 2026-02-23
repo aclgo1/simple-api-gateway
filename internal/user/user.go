@@ -147,6 +147,7 @@ type ParamsUserUpdate struct {
 	Lastname string  `json:"lastname"`
 	Password string  `json:"password"`
 	Email    string  `json:"email"`
+	Verified string  `json:"verified"`
 	Balance  float64 `json:"balance"`
 }
 
@@ -261,4 +262,8 @@ type RefreshTokens struct {
 
 type ParamsUserDelete struct {
 	UserID string `json:"user_id"`
+}
+
+func FormatKeyRedisWallet(id string) string {
+	return fmt.Sprintf("user:%s:wallet", id)
 }

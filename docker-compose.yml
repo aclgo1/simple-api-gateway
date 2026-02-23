@@ -32,6 +32,7 @@ services:
       - "50052:50052"
     depends_on:
       - grpc-admin
+      - db
   grpc-admin:
     build: ../grpc-admin
     container_name: grpc-admin
@@ -61,6 +62,7 @@ services:
       - grpc-user
       - grpc-admin
       - grpc-mail
+      - db
   grpc-orders:
     build: ../grpc-orders
     container_name: grpc-orders
@@ -71,6 +73,7 @@ services:
       - grpc-user
       - grpc-admin
       - grpc-mail
+      - db
   grpc-balance:
     build: ../grpc-balance
     container_name: grpc-balance
@@ -81,6 +84,7 @@ services:
       - grpc-user
       - grpc-admin
       - grpc-mail
+      - mongodb
   concurrency-example:
     build: ../concurrency-example
     container_name: concurrency-example

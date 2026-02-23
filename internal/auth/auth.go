@@ -41,6 +41,7 @@ type ParamsUpdate struct {
 	Lastname string  `json:"lastname"`
 	Password string  `json:"password"`
 	Email    string  `json:"email"`
+	Verified string  `json:"verified"`
 	Balance  float64 `json:"balance"`
 }
 

@@ -225,6 +225,7 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 			Lastname: params.Lastname,
 			Password: params.Password,
 			Email:    params.Email,
+			Verified: params.Verified,
 		},
 	)
 	if err != nil {
@@ -253,6 +254,11 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 		}
 
 		newBalance = walletUpdated.Balance
+
+		if errRedis := u.redisClient.Del(ctx, user.FormatKeyRedisWallet(params.UserID)).Err(); errRedis != nil {
+			u.logger.Errorf("Erro ao limpar cache do user %s: %v", params.UserID, errRedis)
+		}
+
 	}
 
 	return &user.User{

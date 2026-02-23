@@ -239,6 +239,7 @@ func (s *userService) Update(ctx context.Context) http.HandlerFunc {
 			Lastname: ctxData.Lastname,
 			Password: ctxData.Password,
 			Email:    ctxData.Email,
+			Verified: ctxData.Verified,
 			Balance:  ctxData.Balance,
 		}
 
