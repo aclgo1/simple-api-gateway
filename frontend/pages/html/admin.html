@@ -264,7 +264,11 @@ function updateUserForm(e){
         const email = document.getElementById("update-email").value
         const password = document.getElementById("update-password").value
         const balance = parseFloat(document.getElementById("update-balance").value)
-        const verified = document.getElementById("verified-select").value
+        let verified = document.getElementById("verified-select").value
+
+        if (verified === "no"){
+            verified = ""
+        }
 
         const data = {
             user_id:currentUserUpdate,
