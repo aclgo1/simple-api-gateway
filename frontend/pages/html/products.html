@@ -4,10 +4,152 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aclgo Products</title>
+    <title>Products</title>
 </head>
 <style>
-    
+    /* Centralização do Título */
+    h1, .title-products {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* Remove a visualização inicial do container de update */
+    #formContainerProduct {
+        display: none; /* O JS mudará para 'block' apenas quando clicar em Update */
+        max-width: 500px;
+        margin: 20px auto;
+        background: #fff3cd; /* Cor levemente diferente para destacar que é uma edição */
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ffeeba;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Botão de Criar Produto no Topo (Centralizado) */
+    #toggleFormButton {
+        display: block;
+        margin: 0 auto 30px auto;
+        padding: 12px 24px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    #toggleFormButton:hover {
+        background-color: #218838;
+    }
+
+    /* Container do formulário de criação */
+    #formContainer {
+        display: none; /* Controlado pelo botão via JS */
+        max-width: 500px;
+        margin: 0 auto 30px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Estilo Geral dos Formulários */
+    form input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    form button[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    /* Grid de Produtos */
+    #list-products {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    /* Card do Produto */
+    .card {
+        background: white;
+        border-top: 4px solid #007bff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card .name {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #222;
+        text-align: center; /* Nome do produto centralizado no card */
+    }
+
+    .card .price {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin: 5px 0;
+    }
+
+    .card .description {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 10px 0;
+        min-height: 40px;
+    }
+
+    .card small {
+        color: #999;
+        display: block;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+
+    /* Botões de Ação */
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .btn-update {
+        background-color: #ffc107;
+        color: #212529;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 5px;
+    }
 </style>
 <body>
     <h1>Products</h1>
@@ -88,8 +230,8 @@ function addEventFormCreate(){
         <form id="productForm">
             <input type="text" id="name" placeholder="Name" required>
             <input type="text" id="description" placeholder="Description" required>
-            <input type="number" id="price" placedholder="Price" step="0.01" required>
-            <input type="number" id="quantity" placeholder="Quantity" required>
+            <input type="number" id="price" placeholder="Price" step="0.01" value="0.1" required>
+            <input type="number" id="quantity" placeholder="Quantity" value="1" required>
             <button type="submit">Save</button>
         </form>
     `
@@ -228,7 +370,8 @@ function deleteProduct(productID){
 };
 
 function getProducts(){
-    opt = {
+
+    const opt = {
         method: 'GET',
         headers: {
             'Content-Type':'application/json'
