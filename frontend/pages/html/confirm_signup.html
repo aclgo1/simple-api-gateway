@@ -6,15 +6,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanks For Signup</title>
     <style>
-        h3 {
-            margin-top: 10rem;
-            color: rgb(17, 0, 255);
+        /* Centralização Total */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Container Principal */
+        .confirm-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Ícone de Email */
+        .icon-envelope {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        /* Título */
+        h3 {
+            color: #2d3436;
+            font-size: 1.4rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        /* Texto de apoio */
+        p {
+            color: #636e72;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        /* Botão "Go to Login" */
+        .btn-login {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <h3>Please cofirm you subcribe clicking in the link send for you email. </h3>
-    <a href="/login">Go to Login</a>
+    <div class="confirm-container">
+        <div class="icon-envelope">✉️</div>
+        <h3>Please confirm your subscription by clicking the link sent to your email.</h3>
+        <p>Didn't receive it? Check your spam folder.</p>
+        <a href="/login" class="btn-login">Go to Login</a>
+    </div>
 </body>
 </html>
