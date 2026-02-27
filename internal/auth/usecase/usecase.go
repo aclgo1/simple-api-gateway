@@ -77,6 +77,16 @@ func (a *authUC) ValidateToken(next http.HandlerFunc) http.HandlerFunc {
 
 		paramsToken, err := a.validateToken(context.Background(), accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
@@ -111,6 +121,16 @@ func (a *authUC) ValidateTokenWs(next http.HandlerFunc) http.HandlerFunc {
 
 		paramsToken, err := a.validateToken(context.Background(), accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
@@ -206,6 +226,16 @@ func (a *authUC) ValidateUpdate(next http.HandlerFunc) http.HandlerFunc {
 
 		paramsToken, err := a.validateToken(context.Background(), accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
@@ -273,6 +303,16 @@ func (a *authUC) ValidateCreateAdmin(next http.HandlerFunc) http.HandlerFunc {
 
 		paramsTokenLogged, err := a.validateToken(context.Background(), accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
@@ -344,6 +384,16 @@ func (a *authUC) ValidateIsAdmin(next http.HandlerFunc) http.HandlerFunc {
 
 		paramsToken, err := a.validateToken(context.Background(), accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
