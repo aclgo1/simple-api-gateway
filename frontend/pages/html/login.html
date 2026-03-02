@@ -5,219 +5,165 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css"/>
-    <title>Aclgo Login</title>
+    <title>Store Login</title>
 </head>
-<style>
-    body {
-    margin: 0;
-    padding:0;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    min-height: 100vh;
-    font-family: sans-serif;
-    background-position: center;
-    background-size: cover;
-   /* // background: linear-gradient(to bottom, rgb(54, 41, 130), rgb(34, 31, 33)); */
-    background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/eac2616f-9ca4-4a89-84d5-7bbc482fb1b2/df2dmoo-3403837f-2435-4c6b-9bd6-b82891aabe2d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VhYzI2MTZmLTljYTQtNGE4OS04NGQ1LTdiYmM0ODJmYjFiMlwvZGYyZG1vby0zNDAzODM3Zi0yNDM1LTRjNmItOWJkNi1iODI4OTFhYWJlMmQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Rn4fVOkXvtPjkkBt7uBdxdZlFvRpqVNg3TBuhnr5R_E");
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/eac2616f-9ca4-4a89-84d5-7bbc482fb1b2/df2dmoo-3403837f-2435-4c6b-9bd6-b82891aabe2d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VhYzI2MTZmLTljYTQtNGE4OS04NGQ1LTdiYmM0ODJmYjFiMlwvZGYyZG1vby0zNDAzODM3Zi0yNDM1LTRjNmItOWJkNi1iODI4OTFhYWJlMmQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Rn4fVOkXvtPjkkBt7uBdxdZlFvRpqVNg3TBuhnr5R_E");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
 
-.main {
-    width: 400px;
-    height: 600px;
-    overflow: hidden;
-    border-radius: 40px;
-    box-shadow: 5px 20px 50px blue;
-}
+        .main {
+            width: 320px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
 
-#chk {
-    display: none;
-}
+        #chk_login, #chk_signup { display: none; }
+        .login-form, .signup-form { display: none; }
+        .initial-btns { display: flex; flex-direction: column; }
 
-.create {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
+        #chk_login:checked ~ .login-form { display: block; }
+        #chk_login:checked ~ .initial-btns { display: none; }
+        #chk_signup:checked ~ .signup-form { display: block; }
+        #chk_signup:checked ~ .initial-btns { display: none; }
 
-label {
-    color: white;
-    font-size: 2.3rem;
-    justify-content: center;
-    display: flex;
-    margin:60px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.5s ease in ease-in-out;
-}
-input {
-    width: 60%;
-    height: 35px;
-    margin: 10px auto;
-    justify-content: center;
-    display: block;
-    margin: #fff;
-    background: rgb(54, 41, 130);
-    font-size: 1em;
-    font-weight: bold;
-    margin-top: 15px;
-    outline: none;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-}
+        /* Padronização de Input e Botões */
+        input, button, .btn-label {
+            width: 100%;
+            height: 40px;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            display: block;
+        }
 
-button {
-    width: 60%;
-    height: 40px;
-    margin: 10px auto;
-    justify-content: center;
-    display: block;
-    color: #fff;
-    background: rgb(54, 41, 130);
-    font-size: 1em;
-    font-weight: bold;
-    margin-top: 30px;
-    outline:none;
-    border:none;
-    border-radius: 25px;
-    cursor: pointer;
-    margin-bottom: 30px;
-}
+        button, .btn-label {
+            background: #362982;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            line-height: 20px;
+            border: none;
+        }
 
-button:hover{
-    background: #6d44b8;
-}
+        .btn-secondary {
+            background: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 15px;
+        }
 
-.login {
-    margin-top: 30px;
-    height: 700px;
-    background: #eee;
-    border-radius: 60%/10%;
-    transform: translateY(-180px);
-    transition: 0.8s ease-in-out;
-}
+        /* --- CAPTCHA --- */
+        .captcha-container {
+            text-align: center;
+            margin: 10px 0;
+        }
 
-.login form{
-    text-align: center;
-}
+        #image-captcha-login, #image-captcha-signup {
+            height: 70px; 
+            width: 200px;
+            display: block;
+            margin: 0 auto 8px auto;
+            border: 1px solid #bbb;
+            background: #eee;
+        }
 
-.login label {
-    color: rgb(41, 50, 131);
-    transform: scale(0.6);
-}
+        #awnser-captcha-login, #awnser-captcha-signup {
+            width: 200px;
+            margin: 0 auto;
+        }
 
-#chk:checked ~.login  {
-    transform: translateY(-500px);
-}
+        /* --- ESTILO ALTERADO: FORGOT PASS --- */
+        #forgot {
+            display: block;
+            text-align: center;
+            font-size: 1rem;       /* Maior (era 0.8rem) */
+            color: #ffffff;        /* Branco */
+            text-decoration: none;
+            margin-top: 10px;
+            font-weight: bold;     /* Mais destaque */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Sombra para ler melhor no fundo branco/claro */
+        }
 
-#chk:checked ~ .login label {
-    transform: scale(1);
-}
-
-#chk:checked ~ .signup label {
-    transform: scale(1);
-}
-
-#forgot {
-    font-weight: bold;
-    text-decoration: none;
-}
-
-#forgot:hover{
-    cursor: pointer;
-    color: #6d44b8;
-}
-
-.captcha-container{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
-}
-
-#image-captcha{
-    border-radius: 10px;
-    max-width: 90%;
-    height: auto;
-    border: 1px solid #ccc;
-}
-
-.login #awnser-captcha{
-    background: #fff;
-    border: 1px solid rgb(54, 41 ,130);
-    color: #333;
-    margin-top: 5px;
-}
-
-.captcha-container-signup{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
-}
-
-#image-captcha-signup{
-    border-radius: 10px;
-    max-width: 60%;
-    height: auto;
-    border: 1px solid #ccc;
-}
-
-.login #awnser-captcha-signup{
-    background: #fff;
-    border: 1px solid rgb(54, 41 ,130);
-    color: #333;
-    margin-top: 5px;
-}
-</style>
+        #forgot:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
 <body>
+
     <div class="main">
-        <input type="checkbox" id="chk" aria-hidden="true"/>
-        <div class="create">
+        <input type="checkbox" id="chk_login">
+        <input type="checkbox" id="chk_signup">
+
+        <div class="initial-btns">
+            <label for="chk_login" class="btn-label">LOGIN</label>
+            <label for="chk_signup" class="btn-label" style="background:#444">SIGN UP</label>
+        </div>
+
+        <div class="signup-form">
             <form>
-                <label for="chk" aria-hidden="true">Sign up</label>
-                <input type="text" id="user" name="user" placeholder="Name"/>
-                <input type="text" id="lastname" name="lastname" placeholder="Lastname">
-                <input type="text" id="email" name="email" placeholder="Email"/>
-                <input type="text" id="pass" name="pass" placeholder="Password"/>
-                <!-- <div class="captcha-container-signup">
+                <input type="text" id="user" placeholder="Name"/>
+                <input type="text" id="lastname" placeholder="Lastname">
+                <input type="email" id="email" placeholder="Email"/>
+                <input type="password" id="pass" placeholder="Password"/>
+                
+                <div class="captcha-container">
                     <img id="image-captcha-signup" alt="Captcha">
-                    <input type="text" id="awnser-captcha-signup" placeholder="code captcha">
-                </div> -->
-                <button type="submit" id="createBtn">Sign up</button>
+                    <input type="text" id="awnser-captcha-signup" placeholder="Code">
+                </div>
+                
+                <button type="submit" id="createBtn">Sign Up</button>
+                <label for="chk_login" class="btn-label btn-secondary" onclick="document.getElementById('chk_signup').checked = false">Back to Login</label>
             </form>
         </div>
-        <div class="login">
+
+        <div class="login-form">
             <form>
-                <label for="chk" aria-hidden="true">Login</label>
-                <input type="text" id="user_login" name="user" placeholder="Email or Username"/>
-                <input type="text" id="pass_login" name="pass" placeholder="Password"/>
+                <input type="text" id="user_login" placeholder="Email or Username"/>
+                <input type="password" id="pass_login" placeholder="Password"/>
+
+                <div class="captcha-container">
+                    <img id="image-captcha-login" alt="Captcha">
+                    <input type="text" id="awnser-captcha-login" placeholder="Code">
+                </div>
 
                 <button type="submit" id="loginBtn">Login</button>
                 <a id="forgot" href="/resetpass">Forgot Pass?</a>
+                <label for="chk_signup" class="btn-label btn-secondary" onclick="document.getElementById('chk_login').checked = false">Create Account</label>
             </form>
         </div>
     </div>
+
     <h1 id="message"></h1>
-    <div class="captcha-container">
-        <img id="image-captcha" alt="Captcha">
-        <input type="text" id="awnser-captcha" placeholder="code captcha">
-    </div>
+
 </body>
+</html>
 <script>
 
 getCaptcha();
 const BASE_URL = "http://localhost:4000";
 const createBtn = document.getElementById('createBtn');
 const loginBtn = document.getElementById('loginBtn');
-const main = document.querySelector('.main');
-const chk = document.getElementById('chk');
 let idCaptcha = ""
-let inputCaptcha = document.getElementById("awnser-captcha");
-let inputCaptchaSignup = document.getElementById("awnser-captcha-signup")
+let inputCaptchaSignup = document.getElementById("awnser-captcha-signup");
+let inputCaptchaLogin = document.getElementById("awnser-captcha-login")
 
 createBtn.addEventListener("click", (event)=> {
     event.preventDefault();
@@ -227,12 +173,6 @@ createBtn.addEventListener("click", (event)=> {
 loginBtn.addEventListener("click",(event)=>{
     event.preventDefault();
     Login();
-});
-
-main.addEventListener('click', function(event) {
-    if (event.target === main && chk.checked) {
-        chk.checked = false;
-    }
 });
 
 function checkEmpty(data) {
@@ -265,7 +205,7 @@ function Create(){
         return
     }
 
-    if(inputCaptcha.value== ""){
+    if(inputCaptchaSignup.value== ""){
         window.alert("empty captcha code")
         return;
     }
@@ -276,7 +216,7 @@ function Create(){
         password: ps,
         email: em,
         captcha_id: idCaptcha,
-        captcha_awnser: inputCaptcha.value,
+        captcha_awnser: inputCaptchaSignup.value,
     };
 
     console.log(data);
@@ -321,7 +261,7 @@ function Login(){
 
     const us = document.getElementById('user_login').value;
     const ps = document.getElementById('pass_login').value;
-    if(inputCaptcha.value == ""){
+    if(inputCaptchaLogin.value == ""){
         window.alert("empty captcha code")
         return;
     }
@@ -336,7 +276,7 @@ function Login(){
         email: us,
         password:ps,
         captcha_id: idCaptcha,
-        captcha_awnser: inputCaptcha.value,
+        captcha_awnser: inputCaptchaLogin.value,
     }
 
     loginBtn.disabled =  true;
@@ -405,20 +345,16 @@ function getCaptcha(){
         return response.json()
     })
     .then(data =>{
-        const imageCaptcha = document.getElementById("image-captcha")
-        imageCaptcha.src = data.base64_image;
-        // const imageCaptchaSignup = document.getElementById("image-captcha-signup")
-        // imageCaptchaSignup.src = data.base64_image;
+        const imageCaptchaLogin = document.getElementById("image-captcha-login")
+        const imageCaptchaSignup = document.getElementById("image-captcha-signup")
+        imageCaptchaLogin.src = data.base64_image;
+        imageCaptchaSignup.src = data.base64_image;
 
         idCaptcha = data.id;
-        inputCaptcha.value = "";
+        inputCaptchaSignup.value = "";
+        inputCaptchaLogin.value = ""
         
         console.log(idCaptcha);
-        console.log(inputCaptcha.value);
-        // console.log(inputCaptchaSignup.value);
-
-
-
     })
     .catch(error=>{
         console.log(`error in connection ${error.message}`)
