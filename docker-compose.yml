@@ -145,7 +145,7 @@ services:
   redis:
     image: redis
     container_name: redis
-    command: redis-server --requirepass 1234 --maxmemory 64mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
     deploy:
       resources:
         limits:
