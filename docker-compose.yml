@@ -8,7 +8,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: 180M
     # ports:
     # - "4000:4000"
     # - "50051:50051"
@@ -35,7 +35,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 80M
     ports:
       - "50052:50052"
     depends_on:
@@ -48,7 +48,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 96M
+          memory: 80M
     ports:
       - "50051:50051"
     depends_on:
@@ -75,7 +75,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 80M
     ports:
       - 50054:50054
     depends_on:
@@ -90,7 +90,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 80M
     ports: 
       - 50055:50055
     depends_on:
@@ -105,7 +105,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 80M
     ports: 
       - 50056:50056
     depends_on:
@@ -120,7 +120,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 100M
     ports:
       - 3000:3000
     depends_on:
