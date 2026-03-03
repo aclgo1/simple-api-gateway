@@ -490,10 +490,8 @@ function Logout() {
 
     fetch("/api/logout", opt)
     .then(response => {
-        if(!response.ok){
-            console.log("unauthorized")
-            window.location.assign("/unauthorized")
-            return;
+        if(response.status == 401){
+            return refreshTokens(() => Logout());
         }
         return response.json();
     })
