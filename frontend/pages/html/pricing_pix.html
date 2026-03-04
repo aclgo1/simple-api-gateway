@@ -151,10 +151,22 @@
         let access_token = window.localStorage.getItem("access_token");
         let refresh_token = window.localStorage.getItem("refresh_token");
         let currentUserId = ""
+        let isRefreshing = false;
+        let refreshSubscribers = [];
         window.onload = ()=>{
             GetUserId();
             initCheckout();
         };
+
+        function subscribeTokenRefresh(cb){
+            refreshSubscribers.push(cb);
+        }
+
+        function onTokenRefreshed(){
+            refreshSubscribers.forEach(cb => cb());
+            refreshSubscribers = [];
+        }
+
     
         const PIX_CONFIG = {
             chave: "sua@email.com",
