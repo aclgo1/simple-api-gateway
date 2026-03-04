@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/auth"
 	"github.com/aclgo/simple-api-gateway/internal/delivery/http/service"
@@ -58,31 +57,31 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		err = s.userUC.SendConfirm(
-			ctx,
-			&user.ParamsConfirm{
-				To:           created.User.Email,
-				IntervalSend: time.Hour,
-			},
-		)
+		// err = s.userUC.SendConfirm(
+		// 	ctx,
+		// 	&user.ParamsConfirm{
+		// 		To:           created.User.Email,
+		// 		IntervalSend: time.Hour,
+		// 	},
+		// )
 
-		if err != nil {
+		// if err != nil {
 
-			//SE ERROR SEND EMAIL VERIFICACAO, DELETA O USER CRIADO PARA NAO DA CONFLITO COM O EMAIL
-			errCancel := s.userUC.Delete(ctx, &user.ParamsUserDelete{
-				UserID: created.User.UserID,
-			})
+		// 	//SE ERROR SEND EMAIL VERIFICACAO, DELETA O USER CRIADO PARA NAO DA CONFLITO COM O EMAIL
+		// 	errCancel := s.userUC.Delete(ctx, &user.ParamsUserDelete{
+		// 		UserID: created.User.UserID,
+		// 	})
 
-			if errCancel != nil {
-				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrSendEmailAndCancelNewRegister.Error())
-				service.JSON(w, response, http.StatusInternalServerError)
-				return
-			}
+		// 	if errCancel != nil {
+		// 		response := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrSendEmailAndCancelNewRegister.Error())
+		// 		service.JSON(w, response, http.StatusInternalServerError)
+		// 		return
+		// 	}
 
-			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
-			service.JSON(w, response, http.StatusInternalServerError)
-			return
-		}
+		// 	response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+		// 	service.JSON(w, response, http.StatusInternalServerError)
+		// 	return
+		// }
 
 		resp := map[string]any{
 			"message": "user created",
