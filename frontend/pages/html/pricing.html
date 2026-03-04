@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b;
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        h1 { 
+            margin-bottom: 2vh; 
+            font-size: 1.5rem; 
+            color: #0f172a; 
+        }
+
+        .pricing-grid {
+            display: grid;
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: stretch;
+        }
+
+        .card { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0;
+            border-radius: 12px; 
+            padding: 20px 15px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: #3b82f6; }
+
+        .card h3 { font-size: 0.9rem; color: #64748b; text-transform: uppercase; }
+
+        .price-wrapper { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            margin: 10px 0;
+            color: #1e293b;
+        }
+
+        .price-wrapper span { font-size: 1rem; }
+
+        .btn-buy { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .pricing-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+        }
+
+        /* Celulares Pequenos */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.2rem; margin-bottom: 15px; }
+            .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+            .card { padding: 15px 10px; }
+            .price-wrapper { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Escolha seu Plano</h1>
+
+    <div class="pricing-grid">
+        <div class="card">
+            <h3>Básico</h3>
+            <div class="price-wrapper"><span>R$</span> 10</div>
+            <button class="btn-buy" data-id="10">Assinar</button>
+        </div>
+
+        <div class="card">
+            <h3>Padrão</h3>
+            <div class="price-wrapper"><span>R$</span> 20</div>
+            <button class="btn-buy" data-id="20">Assinar</button>
+        </div>
+
+        <div class="card">
+            <h3>Premium</h3>
+            <div class="price-wrapper"><span>R$</span> 40</div>
+            <button class="btn-buy" data-id="40">Assinar</button>
+        </div>
+
+        <div class="card" style="border: 2px solid #3b82f6;">
+            <h3 style="color: #3b82f6;">Elite</h3>
+            <div class="price-wrapper"><span>R$</span> 60</div>
+            <button class="btn-buy" data-id="60" style="background: #1e293b;">Assinar</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.btn-buy').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const planId = this.getAttribute('data-id');
+                
+                if (planId) {
+                    localStorage.setItem('selected-plan', planId);
+                    window.location.href = '/login';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -86,8 +86,16 @@ func (p *Pages) Products(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *Pages) Ws(w http.ResponseWriter, r *http.Request) {
-	if err := p.tmpl.ExecuteTemplate(w, "websocket.html", nil); err != nil {
+func (p *Pages) Pricing(w http.ResponseWriter, r *http.Request) {
+	if err := p.tmpl.ExecuteTemplate(w, "pricing.html", nil); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+}
+
+func (p *Pages) PricingPix(w http.ResponseWriter, r *http.Request) {
+	if err := p.tmpl.ExecuteTemplate(w, "pricing_pix.html", nil); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
