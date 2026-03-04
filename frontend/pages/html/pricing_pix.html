@@ -3,12 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Pix</title>
+    <title>Store Checkout</title>
     <style>
+        :root {
+            --pix-color: #32bcad;
+            --bg-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
 
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-grad);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #2d3436;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .header img { width: 60px; margin-bottom: 10px; }
+        
+        .amount-tag {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--pix-color);
+            margin: 10px 0;
+        }
+
+        .qr-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #eee;
+        }
+
+        #qrcode img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .pix-code-container {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #636e72;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .copy-box {
+            background: #f1f2f6;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            cursor: pointer;
+            border: 1px solid #dfe6e9;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .copy-box:hover { background: #e2e4e9; }
+
+        .btn-group { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
+
+        .btn {
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.1s;
+        }
+
+        .btn-pix { background: var(--pix-color); color: white; }
+        .btn-home { background: #f1f2f6; color: #636e72; }
+        .btn:active { transform: scale(0.98); }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            background: #2d3436;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            position: fixed;
+            bottom: 30px;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+        #toast.show { visibility: visible; animation: fadeInUp 0.3s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-    <h1>Dados Pix</h1>
+
+<div class="container">
+    <div class="header">
+        <h2>Finalizar Pagamento</h2>
+        <p style="font-size: 0.9rem; color: #636e72;">Pague agora via Pix para processar seu pedido</p>
+    </div>
+
+    <div class="amount-tag"></div>
+
+    <div class="qr-box" id="qrcode">
+        <p style="font-size: 0.8rem; color: #b2bec3;">Gerando QR Code...</p>
+    </div>
+
+    <div class="pix-code-container">
+        <span class="label">Código Pix (Copia e Cola)</span>
+        <div class="copy-box" id="payloadDisplay" onclick="copyToClipboard()">
+            Carregando código...
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-pix" onclick="copyToClipboard()">Copiar Código</button>
+        <a href="/home" class="btn btn-home">Voltar para a Store</a>
+    </div>
+</div>
+
+<div id="toast">Código copiado para a área de transferência!</div>
+
+<script>
+        let access_token = window.localStorage.getItem("access_token");
+        let refresh_token = window.localStorage.getItem("refresh_token");
+        window.onload = initCheckout;
+    
+        const PIX_CONFIG = {
+            chave: "sua@email.com",
+            beneficiario: "NOME DO RECEBEDOR",
+            cidade: "SAO PAULO",
+            valor: "150.00",
+            identificador: "LOJA01"
+        };
+    
+    function initCheckout() {
+
+        let amountPix = window.localStorage.getItem("selected-plan")
+        let amountFloat = parseFloat(amountPix)
+        console.log(amountFloat)
+
+        const data = {
+            method: "pix",
+            amount: amountFloat,
+            account_id:currentUserId,
+        }
+
+        const opt = {
+            method:"POST",
+            headers: {
+                'Content-Type':'application/json',
+                'access-token': access_token,
+            },
+            body: JSON.stringify(data),
+        }
+        
+
+        fetch("", data)
+        .then(response =>{
+            if (response.status == 401){
+                return refreshTokens(()=>initCheckout())
+            }
+        })
+        .then(data =>{
+            if (!data){ return }
+            
+            let amountTag = document.getElementsByClassName("amount-tag")[0]
+            amountTag.innerHTML = `R$ ${amountPix}`
+            const display = document.getElementById('payloadDisplay');
+            const qrBox = document.getElementById('qrcode');
+            
+            const fullPayload = `00020126360014br.gov.bcb.pix0114${PIX_CONFIG.chave}520400005303986540${PIX_CONFIG.valor.length}${PIX_CONFIG.valor}5802BR59${PIX_CONFIG.beneficiario.length}${PIX_CONFIG.beneficiario}60${PIX_CONFIG.cidade.length}${PIX_CONFIG.cidade}62070503***63041234`;
+            display.innerText = fullPayload
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullPayload)}`;
+            qrBox.innerHTML = `<img src="${qrUrl}" alt="QR Code Pix">`;
+            
+            window.localStorage.setItem("selected-plan", "")
+        })
+        .catch(error =>{
+            console.log(error)
+        })
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('payloadDisplay').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById('toast');
+            toast.className = "show";
+            setTimeout(() => { toast.className = ""; }, 3000);
+        });
+    }
+
+    function refreshTokens(fn){
+    
+    if(isRefreshing){
+        return new Promise(resolve =>{
+            subscribeTokenRefresh(()=>{
+                resolve(fn());
+            })
+        })
+    }
+
+    isRefreshing = true;
+
+    const opt = {
+        method: "GET",
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`bearer ${access_token}`,
+            'refresh-token': `bearer ${refresh_token}`
+        }
+    }
+
+    fetch("/api/refresh", opt)
+    .then(response => {
+        if(!response.ok){
+            console.log("unauthorized")
+            window.location.assign("/unauthorized")
+            return;
+        }
+
+        return response.json()
+    })
+
+    .then(data =>{
+        access_token = data.tokens.access_token;
+        refresh_token = data.tokens.refresh_token;
+
+        // localStorage.clear();
+
+        window.localStorage.setItem("access_token", access_token)
+        window.localStorage.setItem("refresh_token", refresh_token)
+
+        console.log("tokens access and refresh new")
+        onTokenRefreshed();
+        return fn()
+    })
+    .catch(error =>{
+        console.error("error in refresh:", error)
+        window.location.assign("/unauthorized")
+    })
+    .finally(
+        isRefreshing = false
+    )  
+}
+</script>
+
 </body>
 </html>

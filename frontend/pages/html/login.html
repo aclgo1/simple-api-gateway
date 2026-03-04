@@ -243,7 +243,14 @@ function Create(){
             getCaptcha();
             return;
         }
-        //    console.log(r.message);
+        
+        let planAmount = localStorage.getItem('selected-plan')
+
+        if(planAmount !== null && planAmount.trim() !== "" && !isNaN(planAmount)){
+            window.location.href("/pricing/pix");
+            return;   
+        }
+
         window.alert(r.message)
         window.location.assign("/confirm_signup")
     })
@@ -319,7 +326,14 @@ function Login(){
             'access-token' : `Baerer ${r.tokens.access_token}`
         }
 
-        window.location.assign("/home", { headers });
+        let planAmount = localStorage.getItem('selected-plan')
+
+        if(planAmount !== null && planAmount.trim() !== "" && !isNaN(planAmount)){
+            window.location.href("/pricing/pix");
+            return;   
+        }
+
+        window.location.href("/home");
 
         })
 
