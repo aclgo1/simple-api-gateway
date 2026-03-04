@@ -250,12 +250,12 @@ function Create(){
         let planAmount = localStorage.getItem('selected-plan')
 
         if(planAmount !== null && planAmount.trim() !== "" && !isNaN(planAmount)){
-            window.location.href("/pricing/pix");
+            window.location.href = "/pricing/pix"
             return;   
         }
 
         window.alert(r.message)
-        window.location.assign("/confirm_signup")
+        window.location.assign("/home")
     })
 
     .catch(error =>{
@@ -332,11 +332,11 @@ function Login(){
         let planAmount = localStorage.getItem('selected-plan')
 
         if(planAmount !== null && planAmount.trim() !== "" && !isNaN(planAmount)){
-            window.location.href("/pricing/pix");
+            window.location.href = "/pricing/pix"
             return;   
         }
 
-        window.location.href("/home");
+        window.location.href = "/home" ;
 
         })
 
