@@ -245,7 +245,7 @@ func main() {
 	mux.HandleFunc("/products", pages.Products)
 	mux.HandleFunc("/admin", pages.Admin)
 	mux.HandleFunc("/pricing", pages.Pricing)
-	mux.HandleFunc("pricing/pix", pages.PricingPix)
+	mux.HandleFunc("/pricing/pix", pages.PricingPix)
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
