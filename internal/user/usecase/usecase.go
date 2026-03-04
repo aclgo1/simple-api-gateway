@@ -42,7 +42,7 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 	}
 }
 
-func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) (*user.User, error) {
+func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) (*user.UserRegisterResponse, error) {
 	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
 		return nil, user.ErrFailedVerifyCaptcha{}
 	}
@@ -67,18 +67,36 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		return nil, fmt.Errorf("u.clientBalanceGRPC.Create: %w", err)
 	}
 
-	return &user.User{
-		UserID:    created.User.Id,
-		Name:      created.User.Name,
-		Lastname:  created.User.LastName,
-		Password:  created.User.Password,
-		Email:     created.User.Email,
-		Role:      created.User.Role,
-		Verified:  created.User.Verified,
-		Balance:   wallet.Balance,
-		CreatedAt: created.User.CreatedAt.AsTime(),
-		UpdatedAt: created.User.UpdatedAt.AsTime(),
-	}, nil
+	paramLogin := protoUser.UserLoginRequest{
+		Email:    created.User.Email,
+		Password: created.User.Password,
+	}
+
+	ttks, err := u.clientUserGRPC.Login(ctx, &paramLogin)
+	if err != nil {
+		return nil, fmt.Errorf("u.clientUserGRPC.Login: %w", err)
+	}
+
+	out := user.UserRegisterResponse{
+		User: &user.User{
+			UserID:    created.User.Id,
+			Name:      created.User.Name,
+			Lastname:  created.User.LastName,
+			Password:  created.User.Password,
+			Email:     created.User.Email,
+			Role:      created.User.Role,
+			Verified:  created.User.Verified,
+			Balance:   wallet.Balance,
+			CreatedAt: created.User.CreatedAt.AsTime(),
+			UpdatedAt: created.User.UpdatedAt.AsTime(),
+		},
+		ParamsUserLoginResponse: &user.ParamsUserLoginResponse{
+			AccessToken:  ttks.Tokens.AccessToken,
+			RefreshToken: ttks.Tokens.RefreshToken,
+		},
+	}
+
+	return &out, nil
 }
 
 func (u *userUc) Login(ctx context.Context, params *user.ParamsUserLoginRequest) (*user.ParamsUserLoginResponse, error) {

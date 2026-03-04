@@ -150,7 +150,11 @@
 <script>
         let access_token = window.localStorage.getItem("access_token");
         let refresh_token = window.localStorage.getItem("refresh_token");
-        window.onload = initCheckout;
+        let currentUserId = ""
+        window.onload = ()=>{
+            GetUserId();
+            initCheckout();
+        };
     
         const PIX_CONFIG = {
             chave: "sua@email.com",
@@ -269,6 +273,37 @@
     .finally(
         isRefreshing = false
     )  
+}
+
+function GetUserId() {
+    console.log("console loaded")
+    opt = {
+        method: "GET",
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`bearer ${access_token}`,
+        }
+    }
+
+    let userId = ""
+
+    fetch("/api/user/find", opt)
+    .then(response => {
+
+        if(response.status == 401){
+            return refreshTokens(()=>GetUserId());
+        }
+        
+        if (!response.ok) {
+            console.log("error to get user info")
+            throw new Error("error to get user info")
+        }
+
+        return response.json();
+    })
+    .then(data => {
+        currentUserId = data.user.user_id;
+    })
 }
 </script>
 

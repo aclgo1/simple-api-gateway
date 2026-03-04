@@ -243,6 +243,9 @@ function Create(){
             getCaptcha();
             return;
         }
+
+        window.localStorage.setItem('access_token', r.created.tokens.access_token);
+        window.localStorage.setItem('refresh_token', r.created.tokens.refresh_token);
         
         let planAmount = localStorage.getItem('selected-plan')
 

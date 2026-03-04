@@ -61,7 +61,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 		err = s.userUC.SendConfirm(
 			ctx,
 			&user.ParamsConfirm{
-				To:           created.Email,
+				To:           created.User.Email,
 				IntervalSend: time.Hour,
 			},
 		)
@@ -70,7 +70,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 
 			//SE ERROR SEND EMAIL VERIFICACAO, DELETA O USER CRIADO PARA NAO DA CONFLITO COM O EMAIL
 			errCancel := s.userUC.Delete(ctx, &user.ParamsUserDelete{
-				UserID: created.UserID,
+				UserID: created.User.UserID,
 			})
 
 			if errCancel != nil {
@@ -86,7 +86,7 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 
 		resp := map[string]any{
 			"message": "user created",
-			"user":    created,
+			"created": created,
 		}
 
 		service.JSON(w, resp, http.StatusOK)

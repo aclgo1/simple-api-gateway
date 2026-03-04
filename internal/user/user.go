@@ -9,7 +9,7 @@ import (
 )
 
 type UserUC interface {
-	Register(ctx context.Context, params *ParamsUserRegister) (*User, error)
+	Register(ctx context.Context, params *ParamsUserRegister) (*UserRegisterResponse, error)
 	Login(ctx context.Context, params *ParamsUserLoginRequest) (*ParamsUserLoginResponse, error)
 	Logout(ctx context.Context, params *ParamsUserLogout) error
 	FindById(ctx context.Context, params *ParamsUserFindById) (*User, error)
@@ -33,6 +33,11 @@ type User struct {
 	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserRegisterResponse struct {
+	User                    *User                    `json:"user"`
+	ParamsUserLoginResponse *ParamsUserLoginResponse `json:"tokens"`
 }
 
 type ParamsUserRegister struct {
