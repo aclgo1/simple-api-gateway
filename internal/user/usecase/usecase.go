@@ -68,8 +68,8 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 	}
 
 	paramLogin := protoUser.UserLoginRequest{
-		Email:    created.User.Email,
-		Password: created.User.Password,
+		Email:    params.Email,
+		Password: params.Password,
 	}
 
 	ttks, err := u.clientUserGRPC.Login(ctx, &paramLogin)
