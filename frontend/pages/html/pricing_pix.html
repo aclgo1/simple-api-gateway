@@ -176,17 +176,17 @@
             account_id:currentUserId,
         }
 
-        const opt = {
-            method:"POST",
-            headers: {
-                'Content-Type':'application/json',
-                'access-token': access_token,
-            },
-            body: JSON.stringify(data),
-        }
+    opt = {
+        method: 'POST',
+        headers: {
+            'Content-Type':'application/json',
+            'access-token' :`Bearer ${access_token}`,
+        },
+        body: JSON.stringify(data)
+    };
         
 
-        fetch("", data)
+        fetch("/api/payments/pix", opt)
         .then(response =>{
             if (response.status == 401){
                 return refreshTokens(()=>initCheckout())
