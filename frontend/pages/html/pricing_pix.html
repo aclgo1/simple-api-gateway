@@ -205,6 +205,11 @@
             }
         })
         .then(data =>{
+
+            if(data.error){
+                alert(data.error)
+                return;
+            }
             
             let amountTag = document.getElementsByClassName("amount-tag")[0]
             amountTag.innerHTML = `R$ ${amountPix}`
@@ -220,7 +225,10 @@
         })
         .catch(error =>{
             console.log(error)
+            window.localStorage.setItem("selected-plan", "")
         })
+
+        window.localStorage.setItem("selected-plan", "")
     }
 
     function copyToClipboard() {
