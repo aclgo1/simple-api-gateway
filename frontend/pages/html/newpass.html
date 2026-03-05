@@ -172,7 +172,8 @@ function SendNewPass(){
             return;
         }
 
-        mError(data.message);
+        window.alert("password updated")
+        window.location.href = "/login"
     })
     .finally(()=>{
         send.disabled = false

@@ -140,7 +140,8 @@ function sendMail(){
 
         message.style.display = "block";
         message.textContent = data.message;
-        getCaptcha();
+        window.alert(data.message)
+        window.location.href = "/login"
     })
     .catch(error =>{
         console.error(error);
