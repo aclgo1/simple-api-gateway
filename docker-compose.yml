@@ -190,6 +190,7 @@ services:
   redis:
     image: redis
     container_name: redis
+    restart: always
     command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
     deploy:
       resources:
@@ -208,6 +209,7 @@ services:
   db:
     image: postgres:15.2-alpine3.17
     container_name: db
+    restart: always
     deploy:
       resources:
         limits:
