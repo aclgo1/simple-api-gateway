@@ -122,6 +122,9 @@ send.onclick = function(e){
 
 function SendNewPass(){
 
+    send.disabled = true
+    send.innerHTML = `wait...`
+
     const search = new URLSearchParams(window.location.search);
     const ccode = search.get("code")
     const newPass = document.getElementById("new-pass").value;
@@ -148,9 +151,6 @@ function SendNewPass(){
         captcha_id: idCaptcha,
         captcha_awnser: inputCaptcha.value,
     }
-
-    send.disabled = true
-    send.innerHTML = `wait...`
 
     const options = {
         method:"POST",
