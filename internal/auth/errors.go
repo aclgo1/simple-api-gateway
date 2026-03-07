@@ -18,5 +18,5 @@ type ErrSessionExpiredOrLoginNewDisp struct {
 }
 
 func (e ErrSessionExpiredOrLoginNewDisp) Error() string {
-	return "session expired or login in new dispositivy"
+	return "login in new dispositivy"
 }
