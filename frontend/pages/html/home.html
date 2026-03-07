@@ -404,12 +404,15 @@ function refreshTokens(fn){
 
     isRefreshing = true;
 
+    let at = window.localStorage.getItem("access_token");
+    let rt = window.localStorage.getItem("refresh_token");
+
     const opt = {
         method: "GET",
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`bearer ${access_token}`,
-            'refresh-token': `bearer ${refresh_token}`
+            'access-token' :`bearer ${at}`,
+            'refresh-token': `bearer ${rt}`
         }
     }
 
@@ -448,12 +451,16 @@ function refreshTokens(fn){
 
 
 function Logout() {
-    opt = {
+
+    let at = window.localStorage.getItem("access_token");
+    let rt = window.localStorage.getItem("refresh_token");
+    
+    const opt = {
         method: "GET",
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`Bearer ${access_token}`,
-            'refresh-token' : `Bearer ${refresh_token}`
+            'access-token' :`Bearer ${at}`,
+            'refresh-token' : `Bearer ${rt}`
         }
     }
 
@@ -479,7 +486,7 @@ function Logout() {
 }
 
 function getBalanceInfo() {
-    opt = {
+    const opt = {
         method: "GET",
         headers: {
             'Content-Type':'application/json',
