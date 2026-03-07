@@ -188,6 +188,17 @@ func (a *authUC) ValidateTwoToken(next http.HandlerFunc) http.HandlerFunc {
 
 		newRefreshParams, err := a.userSvcClient.RefreshTokens(r.Context(), &protoParamRefresh)
 		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
+
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
 				Message: err.Error(),
