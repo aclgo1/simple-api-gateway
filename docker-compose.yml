@@ -9,7 +9,7 @@ services:
       resources:
         limits:
           memory: 180M
-    # ports:
+    # expose:
     # - "4000:4000"
     # - "50051:50051"
     # - "50052:50052"
@@ -41,7 +41,7 @@ services:
       resources:
         limits:
           memory: 80M
-    ports:
+    expose:
       - "50052:50052"
     depends_on:
       - grpc-admin
@@ -59,7 +59,7 @@ services:
       resources:
         limits:
           memory: 80M
-    ports:
+    expose:
       - "50051:50051"
     depends_on:
       - db
@@ -77,7 +77,7 @@ services:
       resources:
         limits:
           memory: 64M
-    ports:
+    expose:
       - 50053:50053
       - 3003:3003
     depends_on:
@@ -96,7 +96,7 @@ services:
       resources:
         limits:
           memory: 80M
-    ports:
+    expose:
       - 50054:50054
     depends_on:
       - grpc-user
@@ -116,7 +116,7 @@ services:
       resources:
         limits:
           memory: 80M
-    ports: 
+    expose: 
       - 50055:50055
     depends_on:
       - grpc-user
@@ -136,7 +136,7 @@ services:
       resources:
         limits:
           memory: 80M
-    ports: 
+    expose: 
       - 50056:50056
     depends_on:
       - grpc-user
@@ -156,7 +156,7 @@ services:
       resources:
         limits:
           memory: 100M
-    ports:
+    expose:
       - 3000:3000
     depends_on:
       - simple-api-gateway
@@ -175,7 +175,7 @@ services:
       resources:
         limits:
           memory: 400M
-    ports:
+    expose:
       - 27017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=wallets
@@ -196,7 +196,7 @@ services:
       resources:
         limits:
           memory: 100M
-    ports:
+    expose:
       - "6379:6379"
     environment:
       - REDIS_PASSWORD=1234
@@ -219,7 +219,7 @@ services:
       POSTGRES_USER: api-gateway
       POSTGRES_DB: api-gateway
 
-    ports:
+    expose:
       - 5432:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U api-gateway"]
