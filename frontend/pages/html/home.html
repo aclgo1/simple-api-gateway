@@ -535,6 +535,23 @@ async function getProducts() {
                     <button class="btn-buy" data-id="${product.product_id}" data-name="${product.name}">Buy Product</button>
                 </div>`;
         });
+
+        container.addEventListener("click", (e) =>{
+            if(e.target.classList.contains("btn-buy")){
+                const bntClickedBuy  = e.target;
+
+                const productId = e.target.getAttribute("data-id");
+                const productName = e.target.closest('.card').querySelector('.name').innerText;
+                const productPrice = e.target.closest('.card').querySelector('.price').innerText;
+                if(!confirm(`tem certeza que deseja comprar o produto ${productName} de valor ${productPrice}`)) return;
+                
+                bntClickedBuy.disabled = true
+                bntClickedBuy.innerText = `Processing...`
+
+
+                createOrder(productId, productName, bntClickedBuy);
+            }
+        });
     } catch (error) {
         console.error("Erro ao listar produtos:", error);
     }
