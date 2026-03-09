@@ -530,9 +530,15 @@ async function getProducts() {
             container.innerHTML += `
                 <div class="card">
                     <p class="name">${product.name}</p>
-                    <p class="description">Description: ${product.description}</p>
+                    <p class="description">Description:${product.description}</p>
                     <p class="price">R$ ${product.price.toFixed(2)}</p>
-                    <button class="btn-buy" data-id="${product.product_id}" data-name="${product.name}">Buy Product</button>
+                    <p class="quantity">Quantity: ${product.quantity}</p>
+                    <div>
+                        <small> ID: ${product.product_id}</small><br>
+                        <small> Created in: ${new Date(product.created_at).toLocaleString('pt-BR')}</small><br>
+                        <small> Updated in: ${new Date(product.updated_at).toLocaleString('pt-BR')}</small><br>
+                        <button class="btn-buy" data-id="${product.product_id}">Buy Product</button>
+                    </div>
                 </div>`;
         });
 
