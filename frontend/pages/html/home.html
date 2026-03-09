@@ -434,7 +434,11 @@ async function getBalanceInfo() {
         if (data?.user) {
             currentUserId = data.user.user_id;
             const balanceEl = document.getElementById("userBalance");
-            if (balanceEl) balanceEl.innerHTML = `Balance: R$ ${data.user.balance.toFixed(2)}`;
+            if (balanceEl) balanceEl.innerHTML = userBalance.innerHTML = `<div class="balance-badge">
+            <span class="dot"></span>
+            <span class="label">Balance:</span>
+            <span class="val">R$ ${data.user.balance.toFixed(2)}</span>
+        </div>`;
         }
     } catch (error) {
         console.error("Erro ao buscar saldo:", error);
