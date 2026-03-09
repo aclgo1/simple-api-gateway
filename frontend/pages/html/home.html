@@ -175,20 +175,13 @@ let currentUserName = "";
 let currentUserLastname = ""
 let currentUserEmail = ""
 let isRefreshing = false;
+let refreshPromise = null;
 let refreshSubscribers = [];
-let refreshPromise = null
 
 
 
-// CheckTokenExist();
-
-// window.onload = async () => {
-//     await getBInfo();
-//     getProducts();
-// }
-
-getBalanceInfo();
-getProducts();
+// getBalanceInfo();
+// getProducts();
 
 document.getElementById("open-verificador").addEventListener('click', (e) => {
     e.preventDefault();
@@ -373,704 +366,337 @@ function updateUserForm(e){
     }
 }
 
-// function CheckTokenExist(){
-
-//     opt = {
-//         method: "GET",
-//         headers: {
-//             'Content-Type':'application/json',
-//             'access-token' :`bearer ${access_token}`,
-//         }
-//     }
-
-//     fetch(BASE_API_ENDPOINT + "/api/valid_token", opt)
-//     .then(response => {
-//         if(response.status == 401){
-//             return refreshTokens(()=>CheckTokenExist())
-//         }
-//         if(!response.ok){
-//             console.log("unauthorized")
-//             window.location.assign("/unauthorized")
-//             return;
-//         }
-
-//         // Profile();
-//         getProducts();
-//     })
-
-// };
-
-function refreshTokens(fn){
-    
-    if(isRefreshing){
-        return new Promise(resolve =>{
-            subscribeTokenRefresh(()=>{
-                resolve(fn());
-            })
-        })
-    }
-
-    isRefreshing = true;
-
-    let at = window.localStorage.getItem("access_token");
-    let rt = window.localStorage.getItem("refresh_token");
-
-    const opt = {
-        method: "GET",
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`bearer ${at}`,
-            'refresh-token': `bearer ${rt}`
-        }
-    }
-
-    fetch("/api/refresh", opt)
-    .then(response => {
-        if(!response.ok){
-            console.log("unauthorized")
-            window.location.assign("/unauthorized")
-            return;
-        }
-
-        return response.json()
-    })
-
-    .then(data =>{
-        access_token = data.tokens.access_token;
-        refresh_token = data.tokens.refresh_token;
-
-        // localStorage.clear();
-
-        window.localStorage.setItem("access_token", access_token)
-        window.localStorage.setItem("refresh_token", refresh_token)
-
-        console.log("tokens access and refresh new")
-        onTokenRefreshed();
-        return fn()
-    })
-    .catch(error =>{
-        console.error("error in refresh:", error)
-        window.location.assign("/unauthorized")
-    })
-    .finally(
-        isRefreshing = false
-    )  
-}
-
-
-function Logout() {
-
-    let at = window.localStorage.getItem("access_token");
-    let rt = window.localStorage.getItem("refresh_token");
-    
-    const opt = {
-        method: "GET",
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`Bearer ${at}`,
-            'refresh-token' : `Bearer ${rt}`
-        }
-    }
-
-    fetch("/api/logout", opt)
-    .then(response => {
-        if(response.status == 401){
-            return refreshTokens(() => Logout());
-        }
-        return response.json();
-    })
-
-    .then(r => {
-        const divProfile = document.getElementById('profile');
-        divProfile.innerHTML = ``
-
-        console.log(r.message)
-        access_token = "";
-        refresh_token = "";
-
-        // const log = document.getElementById('logout');
-        window.location.assign("/login")  
-    });
-}
-
-function getBalanceInfo() {
-
-    const opt = {
-        method: "GET",
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`bearer ${access_token}`,
-        }
-    }
-
-    let userId = ""
-
-    fetch("/api/user/find", opt)
-    .then(response => {
-
-        if(response.status == 401){
-            return refreshTokens(()=> getBalanceInfo());
-        }
-        
-        if (!response.ok) {
-            console.log("error to get user info")
-            throw new Error("error to get user info")
-        }
-
-        return response.json();
-    })
-    .then(data => {
-        if(!data || !data.user) return;
-        currentUserId = data.user.user_id;
-        userId = data.user.user_id;
-        userBalance.innerHTML = `Balance: R$ ${data.user.balance.toFixed(2)}`
-    })
-    .catch(error=>{
-        console.log(error)
-    })
-}
-
-function Profile() {
-    console.log("console loaded")
-
-    let at = window.localStorage.getItem("access_token");
-
-    const opt = {
-        method: "GET",
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`bearer ${at}`,
-        }
-    }
-
-    let userId = ""
-
-    fetch("/api/user/find", opt)
-    .then(response => {
-
-        if(response.status == 401){
-            return refreshTokens(()=>Profile());
-        }
-        
-        if (!response.ok) {
-            console.log("error to get user info")
-            throw new Error("error to get user info")
-        }
-
-        return response.json();
-    })
-    .then(data => {
-        userId = data.user.user_id;
-        currentUserId = data.user.user_id;
-        currentUserName = data.user.name;
-        currentUserLastname = data.user.lastname
-        currentUserEmail = data.user.email
-        userBalance.innerHTML = `Balance: R$ ${data.user.balance.toFixed(2)}`
-        const divProfile = document.getElementById('profile-info')
-
-        divProfile.innerHTML = `
-            <h3 class="panel-title">User Profile</h3>
-
-            <div class="profile-grid">
-                <div class="profile-field">
-                    <span class="profile-label">Full Name</span>
-                    <span class="profile-value">${data.user.name} ${data.user.lastname}</span>
-                </div>
-                
-                <div class="profile-field">
-                    <span class="profile-label">Email Address</span>
-                    <span class="profile-value">${data.user.email}</span>
-                </div>
-
-                <div class="profile-field">
-                    <span class="profile-label">Current Balance</span>
-                    <span class="profile-value" style="color: var(--success)">R$ ${data.user.balance.toFixed(2)}</span>
-                </div>
-
-                <div class="profile-field">
-                    <span class="profile-label">Account Role</span>
-                    <span class="profile-value">
-                        <span class="role-badge">${data.user.role}</span>
-                    </span>
-                </div>
-            </div>
-
-            <div class="profile-footer">
-                <div class="date-group">
-                    <div>Created: ${new Date(data.user.created_at).toLocaleDateString('pt-BR')}</div>
-                    <div>Last Update: ${new Date(data.user.updated_at).toLocaleDateString('pt-BR')}</div>
-                </div>
-                <button id="btn-user-update" class="nav-btn" style="background: var(--primary); color: white; border: none; padding: 10px 20px;">
-                    Edit Profile
-                </button>
-            </div>
-        `;
-        document.getElementById("btn-user-update").onclick = updateUserForm
-
-        // getOrdersProducts(data.user.user_id);
-    })
-}
-
-function getProducts(){
-
-//     const container = document.getElementById('list-products');
-//     container.innerHTML = '';
-//     container.innerHTML = `
-//     <div class="card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; max-width: 250px;">
-//         <p class="name" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; color: #333;">
-//             Teste
-//         </p>
-        
-//         <p class="description" style="font-size: 0.95rem; color: #666; margin-bottom: 10px; line-height: 1.4;">
-//             <strong>Description:</strong> Meu produto teste AAAAAAAAAAAA
-//         </p>
-        
-//         <p class="price" style="font-size: 1.1rem; font-weight: 600; color: var(--success, #28a745); margin-bottom: 15px;">
-//             R$ 12.2
-//         </p>
-        
-//         <div style="display: flex; justify-content: flex-start;">
-//             <button class="btn-buy" data-id="teste-id" 
-//                 style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; border: none; background: #007bff; color: white;">
-//                 Buy Product
-//             </button>
-//         </div>
-//     </div>
-// `
-    const opt = {
-        method: 'GET',
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json'
-        }
-    }
-
-    fetch('/api/product/findall', opt)
-    .then(response => {
-        if(response.status == 401){
-            return refreshTokens(()=>getProducts());
-        }
-
-        return response.json();
-    })
-
-    .then(data => {
-        const container = document.getElementById('list-products');
-        container.innerHTML = '';
-
-        if(data == null ){
-            console.log("nenhum product cadastred")
-            return
-        }
-
-        data.forEach(product => {
-
-            const card = `
-                <div class="card">
-                    <p class="name">${product.name}</p>
-                    <p class="description">Description:${product.description}</p>
-                    <p class="price">R$ ${product.price.toFixed(2)}</p>
-                    <p class="quantity">Quantity: ${product.quantity}</p>
-                    <div>
-                        <small> ID: ${product.product_id}</small><br>
-                        <small> Created in: ${new Date(product.created_at).toLocaleString('pt-BR')}</small><br>
-                        <small> Updated in: ${new Date(product.updated_at).toLocaleString('pt-BR')}</small><br>
-                        <button class="btn-buy" data-id="${product.product_id}">Buy Product</button>
-                    </div>
-                </div>
-            `
-
-            container.innerHTML += card;
-        })
-
-        container.addEventListener("click", (e) =>{
-            if(e.target.classList.contains("btn-buy")){
-                const bntClickedBuy  = e.target;
-
-                const productId = e.target.getAttribute("data-id");
-                const productName = e.target.closest('.card').querySelector('.name').innerText;
-                const productPrice = e.target.closest('.card').querySelector('.price').innerText;
-                if(!confirm(`tem certeza que deseja comprar o produto ${productName} de valor ${productPrice}`)) return;
-                
-                bntClickedBuy.disabled = true
-                bntClickedBuy.innerText = `Processing...`
-
-
-                createOrder(productId, productName, bntClickedBuy);
-            }
-        })
-    })
-
-    .catch(error => {
-        console.error(error);
-    });
-}
-
-function createOrder(productId, productName, bntClickedBuy){
-    console.log("button buy clicked");
-    console.log("product id", productId);
-    console.log("user id", currentUserId);
-
-    const data = {
-        account_id: currentUserId,
-        products_ids: [productId],
-    }
-
-    let act = localStorage.getItem("access_token")
-
-    const opt = {
-        method: "POST",
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token': `Bearer ${act}`
-        },
-
-        body: JSON.stringify(data),
-    }
-
-    fetch("/api/orders", opt)
-    .then(response =>{
-        if (response.status ==401){
-            return refreshTokens(()=>createOrder(productId, productName));
-        }
-        return response.json();
-    })
-    .then(data =>{
-        console.log(data);
-        if(data.error){
-            window.alert(data.message)
-            return;
-        }
-        window.alert(`product buy ${productName}`)
-        Profile();
-        getProducts();
-        // getOrdersProducts(currentUserId);
-    })
-    .finally(()=>{
-        bntClickedBuy.disabled = false
-        bntClickedBuy.innerText = `Buy Product`
-    })
+const getAuthHeaders = () => {
+    const at = window.localStorage.getItem("access_token");
+    const rt = window.localStorage.getItem("refresh_token");
+    return {
+        'Content-Type': 'application/json',
+        'access-token': `bearer ${at}`,
+        'refresh-token': `bearer ${rt}`
+    };
 };
 
-function getOrdersProducts(accountId){
-
-    let act = localStorage.getItem("access_token")
-
-    const opt = {
-        method: "GET",
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`bearer ${act}`,
-        }
-    }
-
-    fetch("/api/orders/find/account", opt)
-    .then(response =>{
-        if(response.status == 401){
-            return refreshTokens(()=>getOrdersProducts(accountId) );
-        }
- 
-        return response.json()
-    })
-    .then(data =>{
-        if(data == null) {
-            console.log("client 0 orders")
-            document.getElementById('orders-list').innerHTML = "<p>client 0 orders</p>";
-            return;
-        }
-        console.log("orders searched")
-        document.getElementById('orders-list').innerHTML = ``
-        data.forEach(order =>{
-            getProductById(order.products_ids[0], order.created_at)
-        })
-    })
-}
-
-function getProductById(productId, orderCreatedAt){
-
-    let act = localStorage.getItem("access_token")
-
-    const opt = {
-        method: "GET",
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`bearer ${act}`,
-        }
-    }
-
-    fetch("/api/product/find/"+ productId, opt)
-    .then(response =>{
-        if(response.status == 401){
-           return refreshTokens(() => getProductById(productId, orderCreatedAt));
-        }
-        return response.json();
-    })
-    .then(data =>{
-        const ordersList = document.getElementById('orders-list')
-        ordersList.innerHTML += ordersList.innerHTML = `
-            <div class="order-card" id="order-${data.product_id}">
-                <div class="order-details">
-                    <h4>${data.name}</h4>
-                    <p>${data.description}</p>
-                    <div class="order-meta">
-                        Buyed in: ${new Date(orderCreatedAt).toLocaleString('pt-BR')}
-                    </div>
-                </div>
-                <div class="order-price">
-                    R$ ${data.price.toFixed(2)}
-                </div>
-            </div>
-        `;
-        // console.log(`product ${JSON.stringify(data)} buyed at ${orderCreatedAt}`)
-    })
-}
-
-function updateUser(data){
-
-    let act = localStorage.getItem("access_token")
-
-    const opt = {
-        method:'PUT',
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token': `Bearer ${act}`,
-        },
-        body: JSON.stringify(data),
-    }
-
-    fetch("/api/user/update", opt)
-    .then(response =>{
-        if (response.status == 401){
-            return refreshTokens(()=>updateUser(data))
-        }
-
-        return response.json()
-    })
-    .then(data =>{
-        if (data.error){
-            alert(data.message)
-            return;
-        }
-
-        alert("user updated succes")
-        console.log(data)
-        Profile();
-    })
-    .catch(error =>{
-        console.log("error de rede", error.message)
-    })
-}
-
-function addBalance(amount, infoDiv) {
-    console.log("addBalance", amount);
-
-    const closeBtn = document.getElementById("close-balance-info");
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            infoDiv.classList.add("hidden");
-            infoDiv.innerHTML = "";
-        };
-    }
-
-    if (!amount || isNaN(amount) || amount <= 0) {
-        throw new Error("invalid amount.");
-    }
-
-    const data = {
-        method: "pix",
-        amount: amount,
-        account_id:currentUserId,
-    }
-
-    let act = localStorage.getItem("access_token")
-
-    const opt = {
-        method: 'POST',
-        cache: 'no-store',
-        headers: {
-            'Content-Type':'application/json',
-            'access-token' :`Bearer ${act}`,
-        },
-        body: JSON.stringify(data)
-    };
-
-    fetch("/api/payments/pix", opt)
-    .then(response =>{
-        if (response.status==401){
-            return refreshTokens(()=>addBalance(amount, infoDiv))
-        }
-
-        return response.json()
-    })
-    .then(data=>{
-        if(!data){
-            return
-        }
-
-        if(data.error){
-            infoDiv.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px; border: 1px solid #ff4d4d; border-radius: 8px; background: #fff5f5;">
-            <div style="color: #ff4d4d; font-size: 2rem;">⚠️</div>
-            <h3 style="color: #d32f2f; margin: 0;">Erro generate PIX</h3>
-            <p style="color: #666; text-align: center; font-size: 0.9rem;">"${data.error}: não foi possível processar o pagamento no momento."</p>
-            <button id="close-balance-info" class="nav-btn" style="width: 100%; background: #666; color: white;">Close</button>
-        </div>`;
-
-            const closeBtn = document.getElementById("close-balance-info");
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    infoDiv.classList.add("hidden");
-                    infoDiv.innerHTML = "";
-                };
-            }   
-            return
-        }
-
-        const pixPayload = `00020101021126580014br.gov.bcb.pix0136seu-pix-aqui-1234-5678-901234567890520400005303986540${amount}.005802BR5913NOME-RECEBEDOR6008BRASILIA62070503***6304`;
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pixPayload)}`;
-
-        infoDiv.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 10px;">
-                <h3 class="panel-title">Payment PIX: $${amount}</h3>
-
-                <div style="background: white; padding: 10px; border-radius: 8px;">
-                    <img src="${qrCodeUrl}" alt="QR Code PIX" style="width: 150px; height: 150px;">
-                </div>
-                <div style="width: 100%;">
-                    <label style="font-size: 0.8rem; margin-bottom: 5px; display: block;">Código PIX (Copia e Cola):</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="text" id="pix-copy-paste" value="${pixPayload}" readonly 
-                            style="flex: 1; padding: 8px; font-size: 0.7rem; border-radius: 4px; border: 1px solid #ccc;">
-                        <button id="btn-copy-pix" class="nav-btn" style="padding: 0 10px; background: var(--success); color: white;">Copiar</button>
-                    </div>
-                    <small id="copy-status" style="color: var(--success); display: none;">Copied!</small>
-                </div>
-                <button id="close-balance-info" class="nav-btn" style="width: 100%;">Close</button>
-            </div>
-        `;
-        document.getElementById("btn-copy-pix").onclick = () => {
-            const copyText = document.getElementById("pix-copy-paste");
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value).then(() => {
-                const status = document.getElementById("copy-status");
-                status.style.display = "block";
-                setTimeout(() => status.style.display = "none", 2000);
-            });
-        };
-
-        const closeBtn = document.getElementById("close-balance-info");
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                infoDiv.classList.add("hidden");
-                infoDiv.innerHTML = "";
-            };
-        }
-    })
-    .catch(error =>{
-            infoDiv.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px; border: 1px solid #ff4d4d; border-radius: 8px; background: #fff5f5;">
-            <div style="color: #ff4d4d; font-size: 2rem;">⚠️</div>
-            <h3 style="color: #d32f2f; margin: 0;">Erro generate PIX</h3>
-            <p style="color: #666; text-align: center; font-size: 0.9rem;">"${error} Não foi possível processar o pagamento no momento."</p>
-            <button id="close-balance-info" class="nav-btn" style="width: 100%; background: #666; color: white;">Close</button>
-        </div>
-    `;
-        const closeBtn = document.getElementById("close-balance-info");
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                infoDiv.classList.add("hidden");
-                infoDiv.innerHTML = "";
-            };
-        }
-    })
-}
-
-async function rf(){
-    if(isRefreshing) return refreshPromise
+/**
+ * 1. SISTEMA DE REFRESH DE TOKEN
+ * Gerencia a renovação automática para evitar deslogar o usuário
+ */
+async function rf() {
+    if (isRefreshing) return refreshPromise;
 
     isRefreshing = true;
-    refreshPromise = (async()=>{
-        try{
-            const a = window.localStorage.getItem("access_token");
-            const r = window.localStorage.getItem("refresh_token");
-
+    refreshPromise = (async () => {
+        try {
             const response = await fetch(`/api/refresh`, {
                 method: "GET",
-                cache: 'no-store',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'access-token': `bearer ${a}`,
-                    'refresh-token': `bearer ${f}`
-                }
+                headers: getAuthHeaders()
             });
 
-            if(response.status === 403){
-                window.location.href = "/unauthorized"
+            if (response.status === 401 || response.status === 403) {
+                window.location.assign("/unauthorized");
                 return false;
             }
 
-            const data  = await response.json();
-
-            if(data?.tokens){
-                window.localStorage.setItem("access_token", data.tokens.access_token)
-                window.localStorage.setItem("refresh_token", data.tokens.refresh_token)
-                console.log("tokens renew success")
-                return true
+            const data = await response.json();
+            if (data?.tokens) {
+                window.localStorage.setItem("access_token", data.tokens.access_token);
+                window.localStorage.setItem("refresh_token", data.tokens.refresh_token);
+                return true;
             }
-
-        } catch(error){
-            console.error("error renew tokens:", error)
-        }finally{   
-            isRefreshing =false
-            refreshPromise = null
+            return false;
+        } catch (error) {
+            console.error("Erro na renovação de token:", error);
+            return false;
+        } finally {
+            isRefreshing = false;
+            refreshPromise = null;
         }
-
-        return false;
     })();
-
-    return refreshPromise
+    return refreshPromise;
 }
 
-async function getBInfo(){
-    try{
-        const t = window.localStorage.getItem("access_token")
-        const response = await fetch(`api/user/find`, {
+/**
+ * 2. FUNÇÕES DE USUÁRIO E PERFIL
+ */
+
+async function getBalanceInfo() {
+    try {
+        const response = await fetch("/api/user/find", {
             method: "GET",
-            cache: 'no-store',
-            headers: {
-                'Content-Type': 'application/json',
-                'access-token': `bearer ${t}`
-            }
+            headers: getAuthHeaders()
         });
 
-        if (response.status === 401){
-            const s = await rf();
-            if(s) return getBInfo();
+        if (response.status === 401) {
+            if (await rf()) return await getBalanceInfo();
             return;
         }
 
-        if (!response.ok) throw new Error("error request balance")
-
         const data = await response.json();
-
-        if(data?.user){
-            userBalance.innerHTML = `
-            <div class="balance-badge">
-                <span class="dot"></span>
-                <span class="label">Balance:</span>
-                <span class="val">R$ ${data.user.balance.toFixed(2)}</span>
-            </div>`;
+        if (data?.user) {
+            currentUserId = data.user.user_id;
+            const balanceEl = document.getElementById("userBalance");
+            if (balanceEl) balanceEl.innerHTML = `Balance: R$ ${data.user.balance.toFixed(2)}`;
         }
-
-    } catch(e){
-        console.error("falha sicronizar saldo", e)
+    } catch (error) {
+        console.error("Erro ao buscar saldo:", error);
     }
 }
+
+async function Profile() {
+    try {
+        const response = await fetch("/api/user/find", {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await Profile();
+            return;
+        }
+
+        const data = await response.json();
+        const divProfile = document.getElementById('profile-info');
+
+        currentUserId = data.user.user_id;
+        currentUserName = data.user.name;
+        currentUserLastname = data.user.lastname;
+        currentUserEmail = data.user.email;
+
+        divProfile.innerHTML = `
+            <h3 class="panel-title">User Profile</h3>
+            <div class="profile-grid">
+                <div class="profile-field"><span class="profile-label">Full Name</span><span class="profile-value">${data.user.name} ${data.user.lastname}</span></div>
+                <div class="profile-field"><span class="profile-label">Email</span><span class="profile-value">${data.user.email}</span></div>
+                <div class="profile-field"><span class="profile-label">Balance</span><span class="profile-value" style="color: var(--success)">R$ ${data.user.balance.toFixed(2)}</span></div>
+            </div>
+            <div class="profile-footer">
+                <button id="btn-user-update" class="nav-btn" style="background: var(--primary); color: white;">Edit Profile</button>
+            </div>
+        `;
+        document.getElementById("btn-user-update").onclick = updateUserForm;
+    } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+    }
+}
+
+async function updateUser(data) {
+    try {
+        const response = await fetch("/api/user/update", {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data)
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await updateUser(data);
+            return;
+        }
+
+        const result = await response.json();
+        if (result.error) {
+            alert(result.message);
+        } else {
+            alert("Usuário atualizado com sucesso!");
+            await Profile();
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar usuário:", error);
+    }
+}
+
+/**
+ * 3. FUNÇÕES DE PRODUTOS E PEDIDOS
+ */
+
+async function getProducts() {
+    try {
+        const response = await fetch('/api/product/findall', { 
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await getProducts();
+            return;
+        }
+
+        const data = await response.json();
+        const container = document.getElementById('list-products');
+        container.innerHTML = '';
+
+        if (!data || data.length === 0) return;
+
+        data.forEach(product => {
+            container.innerHTML += `
+                <div class="card">
+                    <p class="name">${product.name}</p>
+                    <p class="description">Description: ${product.description}</p>
+                    <p class="price">R$ ${product.price.toFixed(2)}</p>
+                    <button class="btn-buy" data-id="${product.product_id}" data-name="${product.name}">Buy Product</button>
+                </div>`;
+        });
+    } catch (error) {
+        console.error("Erro ao listar produtos:", error);
+    }
+}
+
+async function createOrder(productId, productName, btn) {
+    try {
+        const body = { account_id: currentUserId, products_ids: [productId] };
+        const response = await fetch("/api/orders", {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body)
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await createOrder(productId, productName, btn);
+            return;
+        }
+
+        const data = await response.json();
+        if (data.error) {
+            alert(data.message);
+        } else {
+            alert(`Sucesso: ${productName} adquirido!`);
+            await getBalanceInfo();
+            await getProducts();
+        }
+    } catch (error) {
+        console.error("Erro no pedido:", error);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Buy Product";
+        }
+    }
+}
+
+async function getOrdersProducts() {
+    try {
+        const response = await fetch("/api/orders/find/account", {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await getOrdersProducts();
+            return;
+        }
+
+        const data = await response.json();
+        const list = document.getElementById('orders-list');
+        list.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            list.innerHTML = "<p>Nenhum pedido encontrado.</p>";
+            return;
+        }
+
+        for (const order of data) {
+            await getProductByIdForOrder(order.products_ids[0], order.created_at);
+        }
+    } catch (error) {
+        console.error("Erro ao listar pedidos:", error);
+    }
+}
+
+async function getProductByIdForOrder(productId, orderDate) {
+    try {
+        const response = await fetch(`/api/product/find/${productId}`, {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await getProductByIdForOrder(productId, orderDate);
+            return;
+        }
+
+        const data = await response.json();
+        const list = document.getElementById('orders-list');
+        list.innerHTML += `
+            <div class="order-card">
+                <h4>${data.name}</h4>
+                <p>Data: ${new Date(orderDate).toLocaleString('pt-BR')}</p>
+                <strong>R$ ${data.price.toFixed(2)}</strong>
+            </div>`;
+    } catch (error) {
+        console.error("Erro ao buscar detalhes do produto do pedido:", error);
+    }
+}
+
+/**
+ * 4. PAGAMENTOS E DEPÓSITO
+ */
+
+async function addBalance(amount, infoDiv) {
+    try {
+        const response = await fetch("/api/payments/pix", {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ method: "pix", amount, account_id: currentUserId })
+        });
+
+        if (response.status === 401) {
+            if (await rf()) return await addBalance(amount, infoDiv);
+            return;
+        }
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        const pixPayload = "00020101021126580014br.gov.bcb.pix..."; // Exemplo retornado pela sua API
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pixPayload)}`;
+
+        infoDiv.innerHTML = `
+            <div style="text-align:center;">
+                <h3>Pagar R$ ${amount}</h3>
+                <img src="${qrCodeUrl}" style="margin:10px;">
+                <input type="text" id="pix-raw" value="${pixPayload}" readonly style="width:100%">
+                <button id="btn-copy" class="nav-btn">Copiar</button>
+                <button id="btn-close-pix" class="nav-btn">Fechar</button>
+            </div>`;
+
+        document.getElementById("btn-copy").onclick = () => {
+            const input = document.getElementById("pix-raw");
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("Copiado!");
+        };
+
+        document.getElementById("btn-close-pix").onclick = () => {
+            infoDiv.classList.add("hidden");
+        };
+
+    } catch (error) {
+        console.error("Erro ao gerar PIX:", error);
+        infoDiv.innerHTML = `<p style="color:red">Erro ao processar pagamento.</p>`;
+    }
+}
+
+/**
+ * 5. SAÍDA E EVENTOS
+ */
+
+async function Logout() {
+    try {
+        await fetch("/api/logout", {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+    } catch (e) {
+        console.warn("Logout no servidor falhou, limpando localmente.");
+    } finally {
+        window.localStorage.clear();
+        window.location.assign("/login");
+    }
+}
+
+// Inicialização
+window.onload = async () => {
+    await getBalanceInfo();
+    await getProducts();
+};
 
 </script>
 </html>
