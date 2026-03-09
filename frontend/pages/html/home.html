@@ -494,6 +494,7 @@ function Logout() {
 }
 
 function getBalanceInfo() {
+
     const opt = {
         method: "GET",
         headers: {
@@ -531,11 +532,15 @@ function getBalanceInfo() {
 
 function Profile() {
     console.log("console loaded")
-    opt = {
+
+    let at = window.localStorage.getItem("access_token");
+
+    const opt = {
         method: "GET",
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`bearer ${access_token}`,
+            'access-token' :`bearer ${at}`,
         }
     }
 
@@ -633,8 +638,9 @@ function getProducts(){
 //         </div>
 //     </div>
 // `
-    opt = {
+    const opt = {
         method: 'GET',
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json'
         }
@@ -711,11 +717,14 @@ function createOrder(productId, productName, bntClickedBuy){
         products_ids: [productId],
     }
 
-    opt = {
+    let act = localStorage.getItem("access_token")
+
+    const opt = {
         method: "POST",
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token': `Bearer ${access_token}`
+            'access-token': `Bearer ${act}`
         },
 
         body: JSON.stringify(data),
@@ -746,11 +755,15 @@ function createOrder(productId, productName, bntClickedBuy){
 };
 
 function getOrdersProducts(accountId){
-    opt = {
+
+    let act = localStorage.getItem("access_token")
+
+    const opt = {
         method: "GET",
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`bearer ${access_token}`,
+            'access-token' :`bearer ${act}`,
         }
     }
 
@@ -777,11 +790,15 @@ function getOrdersProducts(accountId){
 }
 
 function getProductById(productId, orderCreatedAt){
-    opt = {
+
+    let act = localStorage.getItem("access_token")
+
+    const opt = {
         method: "GET",
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`bearer ${access_token}`,
+            'access-token' :`bearer ${act}`,
         }
     }
 
@@ -813,11 +830,15 @@ function getProductById(productId, orderCreatedAt){
 }
 
 function updateUser(data){
-    opt = {
+
+    let act = localStorage.getItem("access_token")
+
+    const opt = {
         method:'PUT',
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token': `Bearer ${access_token}`,
+            'access-token': `Bearer ${act}`,
         },
         body: JSON.stringify(data),
     }
@@ -866,11 +887,14 @@ function addBalance(amount, infoDiv) {
         account_id:currentUserId,
     }
 
-    opt = {
+    let act = localStorage.getItem("access_token")
+
+    const opt = {
         method: 'POST',
+        cache: 'no-store',
         headers: {
             'Content-Type':'application/json',
-            'access-token' :`Bearer ${access_token}`,
+            'access-token' :`Bearer ${act}`,
         },
         body: JSON.stringify(data)
     };
