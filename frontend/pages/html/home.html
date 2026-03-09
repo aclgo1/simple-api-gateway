@@ -176,9 +176,17 @@ let currentUserLastname = ""
 let currentUserEmail = ""
 let isRefreshing = false;
 let refreshSubscribers = [];
+let refreshPromise = null
+
 
 
 // CheckTokenExist();
+
+// window.onload = async () => {
+//     await getBInfo();
+//     getProducts();
+// }
+
 getBalanceInfo();
 getProducts();
 
@@ -956,6 +964,88 @@ function addBalance(amount, infoDiv) {
             };
         }
     })
+}
+
+async function rf(){
+    if(isRefreshing) return refreshPromise
+
+    isRefreshing = true;
+    refreshPromise = (async()=>{
+        try{
+            const a = window.localStorage.getItem("access_token");
+            const r = window.localStorage.getItem("refresh_token");
+
+            const response = await fetch(`/api/refresh`, {
+                method: "GET",
+                cache: 'no-store',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access-token': `bearer ${a}`,
+                    'refresh-token': `bearer ${f}`
+                }
+            });
+
+            if(response.status === 403){
+                window.location.href = "/unauthorized"
+                return false;
+            }
+
+            const data  = await response.json();
+
+            if(data?.tokens){
+                window.localStorage.setItem("access_token", data.tokens.access_token)
+                window.localStorage.setItem("refresh_token", data.tokens.refresh_token)
+                console.log("tokens renew success")
+                return true
+            }
+
+        } catch(error){
+            console.error("error renew tokens:", error)
+        }finally{   
+            isRefreshing =false
+            refreshPromise = null
+        }
+
+        return false;
+    })();
+
+    return refreshPromise
+}
+
+async function getBInfo(){
+    try{
+        const t = window.localStorage.getItem("access_token")
+        const response = await fetch(`api/user/find`, {
+            method: "GET",
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/json',
+                'access-token': `bearer ${t}`
+            }
+        });
+
+        if (response.status === 401){
+            const s = await rf();
+            if(s) return getBInfo();
+            return;
+        }
+
+        if (!response.ok) throw new Error("error request balance")
+
+        const data = await response.json();
+
+        if(data?.user){
+            userBalance.innerHTML = `
+            <div class="balance-badge">
+                <span class="dot"></span>
+                <span class="label">Balance:</span>
+                <span class="val">R$ ${data.user.balance.toFixed(2)}</span>
+            </div>`;
+        }
+
+    } catch(e){
+        console.error("falha sicronizar saldo", e)
+    }
 }
 
 </script>
