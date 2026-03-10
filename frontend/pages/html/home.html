@@ -189,9 +189,13 @@ document.getElementById("open-verificador").addEventListener('click', (e) => {
     window.location.href = "/ex/ws";
 });
 
-logout.addEventListener('click', (e) => {
-    e.preventDefault(); 
-    Logout();
+logout.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try{
+        await Logout();
+    } catch(error){
+        console.log("error deslogar", error)
+    }
 })
 
 addBalanceBtn.addEventListener('click', (e) => {
@@ -257,12 +261,16 @@ addBalanceBtn.addEventListener('click', (e) => {
                 return;
             }
 
-            addBalance(selectedAmount, infoDiv);
+            try{
+                addBalance(selectedAmount, infoDiv);
+            }catch (error){
+                console.log("error adicionar saldo: ", error)
+            }
         };
     }
 });
 
-profile.addEventListener('click', (e) => {
+profile.addEventListener('click', async (e) => {
     e.preventDefault();
     const infoDiv = document.getElementById("profile-info");
 
@@ -272,11 +280,17 @@ profile.addEventListener('click', (e) => {
     // Se a div foi mostrada (NÃO tem a classe hidden), chama a função Profile
     if (!infoDiv.classList.contains("hidden")) {
         infoDiv.innerHTML = "<p>Carregando perfil...</p>";
-        Profile();
+
+        try{
+            await Profile();
+        }catch (error){
+            infoDiv.innerHTML = "<p>Error carregar perfil...</p>";
+            console.error(error)
+        }
     }
 });
         
-btnOrders.addEventListener('click', (e) => {
+btnOrders.addEventListener('click', async (e) => {
     e.preventDefault();
     const ordersPanel = document.getElementById("orders-info");
     
@@ -285,7 +299,12 @@ btnOrders.addEventListener('click', (e) => {
     // Se abrir, busca os dados
     if (!ordersPanel.classList.contains("hidden")) {
         document.getElementById('orders-list').innerHTML = "<p>Carregando seus pedidos...</p>";
-        getOrdersProducts(currentUserId);
+        try{
+            await getOrdersProducts(currentUserId);
+        }catch (error){
+            document.getElementById('orders-list').innerHTML = "<p>Error carregar pedidos...</p>";
+            console.error(error)
+        }
     }
 });
 
@@ -326,8 +345,11 @@ function updateUserForm(e){
             </div>
         </form>
     `
-    document.getElementById("cancel-update").onclick =()=> Profile();
-    document.getElementById("form-update-user").onsubmit = (ev) => {
+    document.getElementById("cancel-update").onclick = async () => {
+        try { await Profile(); } catch (err) { console.error(err); }
+    };
+
+    document.getElementById("form-update-user").onsubmit = async (ev) => {
         ev.preventDefault();
         if(!confirm("tem certeza que deseja atualizar as informacoes do usuario?")) return;
 
@@ -356,12 +378,18 @@ function updateUserForm(e){
             return;
         } 
 
-        updateUser(data);
-
-        btnSubmit.innerText = `Save Changes`
-        btnSubmit.disabled = false;
-
-        Profile();
+        try {
+            await updateUser(data);
+            await Profile();
+        } catch (error) {
+            alert("Erro ao atualizar usuário");
+            console.error(error);
+        } finally {
+            if(btnSubmit) {
+                btnSubmit.innerText = `Save Changes`;
+                btnSubmit.disabled = false;
+            }
+        }
 
     }
 }
