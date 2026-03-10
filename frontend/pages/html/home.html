@@ -672,7 +672,7 @@ async function getProductByIdForOrder(productId, orderDate) {
                     <h4>${data.name}</h4>
                     <p>${data.description}</p>
                     <div class="order-meta">
-                        Buyed in: ${new Date(orderCreatedAt).toLocaleString('pt-BR')}
+                        Buyed in: ${new Date(data.created_at).toLocaleString('pt-BR')}
                     </div>
                 </div>
                 <div class="order-price">
