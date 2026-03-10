@@ -667,11 +667,19 @@ async function getProductByIdForOrder(productId, orderDate) {
         const data = await response.json();
         const list = document.getElementById('orders-list');
         list.innerHTML += `
-            <div class="order-card">
-                <h4>${data.name}</h4>
-                <p>Data: ${new Date(orderDate).toLocaleString('pt-BR')}</p>
-                <strong>R$ ${data.price.toFixed(2)}</strong>
-            </div>`;
+            <div class="order-card" id="order-${data.product_id}">
+                <div class="order-details">
+                    <h4>${data.name}</h4>
+                    <p>${data.description}</p>
+                    <div class="order-meta">
+                        Buyed in: ${new Date(orderCreatedAt).toLocaleString('pt-BR')}
+                    </div>
+                </div>
+                <div class="order-price">
+                    R$ ${data.price.toFixed(2)}
+                </div>
+            </div>
+        `;
     } catch (error) {
         console.error("Erro ao buscar detalhes do produto do pedido:", error);
     }
