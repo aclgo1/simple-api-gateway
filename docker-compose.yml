@@ -155,7 +155,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: 150M
     expose:
       - "3000"
     depends_on:
