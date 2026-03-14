@@ -9,6 +9,8 @@ REPOS = grpc-admin grpc-jwt-login grpc-mail grpc-orders grpc-product grpc-balanc
 # Repositório Privado
 PRIVATE_REPO = concurrency-example
 
+GATEWAY_REPO = simple-api-gateway
+
 BASE_URL = github.com/aclgo1
 PARENT_DIR = ..
 
@@ -50,6 +52,8 @@ clone-all:
 	fi
 
 pull-all:
+	@echo "Atualizando $(GATEWAY_REPO) (current dir)..."
+	@git pull
 	@echo "Atualizando todos os repositórios em $(PARENT_DIR)..."
 	@$(foreach repo, $(REPOS) $(PRIVATE_REPO), \
 		if [ -d "$(PARENT_DIR)/$(repo)" ]; then \
