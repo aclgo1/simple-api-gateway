@@ -414,3 +414,22 @@ func (s *userService) RefreshTokens(ctx context.Context) http.HandlerFunc {
 		service.JSON(w, resp, http.StatusOK)
 	}
 }
+
+func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		conns, err := s.userUC.GetGlobalConns(r.Context())
+		if err != nil {
+			resp := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+
+			service.JSON(w, resp, http.StatusInternalServerError)
+			return
+		}
+
+		resp := map[string]any{
+			"conns": conns,
+		}
+
+		service.JSON(w, resp, http.StatusOK)
+	}
+}

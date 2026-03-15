@@ -469,3 +469,7 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 
 	return nil
 }
+
+func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
+	return 4, nil
+}

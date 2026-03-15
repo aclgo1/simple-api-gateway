@@ -20,6 +20,7 @@ type UserUC interface {
 	SendConfirmOK(ctx context.Context, params *ParamsConfirmOK) error
 	ResetPass(ctx context.Context, params *ParamsResetPass) error
 	NewPass(ctx context.Context, params *ParamsNewPass) error
+	GetGlobalConns(context.Context) (int, error)
 }
 
 type User struct {

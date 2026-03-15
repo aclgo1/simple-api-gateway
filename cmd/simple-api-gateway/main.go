@@ -186,6 +186,7 @@ func main() {
 	mux.HandleFunc("POST /api/user/register", userHandler.Register(ctx))
 	mux.HandleFunc("GET /api/user/find", authUC.ValidateToken(userHandler.Find(ctx)))
 	mux.HandleFunc("PUT /api/user/update", authUC.ValidateUpdate(userHandler.Update(ctx)))
+	mux.HandleFunc("GET /api/user/stats", userHandler.Stats(ctx))
 
 	//MICROSERVCE GRPC MAIL
 	mux.HandleFunc("GET /api/user/confirm/{confirm_code}", userHandler.UserConfirm(ctx))

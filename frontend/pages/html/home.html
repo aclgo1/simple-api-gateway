@@ -126,6 +126,72 @@
             align-items: center; 
         }
     }
+
+    .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    color: white;
+    padding: 10px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-top: 1px solid #333;
+    z-index: 9999;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px; /* Espaçamento entre os blocos */
+}
+
+/* Estilo para links e textos com ícones */
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.tg-link {
+    color: #0088cc;
+    transition: 0.3s;
+}
+
+.tg-link:hover {
+    opacity: 0.7;
+    transform: translateY(-1px);
+}
+
+.status-container {
+    color: #e0e0e0;
+}
+
+/* Ícones */
+.footer-icon {
+    font-size: 16px;
+}
+
+/* Bolinha pulsante de status */
+.status-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #2ecc71;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 8px #2ecc71;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
 </style>
 <body>
 <header class="navbar">
@@ -156,6 +222,22 @@
         </div>
         <h2 style="margin-top: 30px; text-align: center;">Products</h2>
         <div id="list-products" class="grid-products"></div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <a href="https://t.me/joinchat/sbmTojEHztcyOWQx" target="_blank" class="footer-item tg-link">
+            <i class="fab fa-telegram footer-icon"></i>
+            <span>Telegram</span>
+        </a>
+                <div class="footer-item status-container">
+                    <span class="status-dot"></span>
+                    <i class="fas fa-user footer-icon"></i> 
+                    <span class="status-text">
+                        <span id="conn-info">0</span> Online
+                    </span>
+                </div>
+            </div>
+        </footer>
     </main>
 </body>
 <script>
@@ -752,10 +834,39 @@ async function Logout() {
     }
 }
 
+async function GetStats(){
+    try{
+
+        let statsInfo = document.getElementById("conn-info") 
+
+        const opt = {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+
+        const resp = await fetch("/api/user/stats", opt)
+        if (!resp.ok){
+            statsInfo.innerText = "0"
+            return;
+        }
+
+        const data = await resp.json();
+
+        statsInfo.innerText = data.conns
+
+    }catch(error){
+        console.log("error get stats", error)
+    }
+}
+
 // Inicialização
 window.onload = async () => {
     await getBalanceInfo();
     await getProducts();
+    await GetStats();
+    setInterval(await GetStats, 20000)
 };
 
 </script>
