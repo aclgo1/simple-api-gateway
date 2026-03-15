@@ -471,5 +471,10 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 }
 
 func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
-	return 4, nil
+	s, err := u.clientUserGRPC.GetStatsConns(ctx, &protoUser.GetStatsConnsRequest{})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(s.Conns), nil
 }
