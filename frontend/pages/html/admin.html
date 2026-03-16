@@ -527,5 +527,40 @@ async function GetRegistrationStatus(){
     }
 }
 
+async function UpdateRegistrationStatus(){
+    try{
+
+        let statsInfo = document.getElementById("registration-status")
+
+        let at = window.localStorage.getItem("access_token")
+
+        const param = {
+            enabled: false
+        }
+
+        const opt = {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'access-token' :`Bearer ${at}`
+            },
+
+            body: JSON.stringify(param)
+        }
+
+        const resp = await fetch("/api/admin/register/toggle", opt)
+        if (!resp.ok){
+            return
+        }
+
+        const data = await resp.json();
+
+        statsInfo.innerText = data.enabled
+
+    }catch(error){
+        console.log("error get stats", error)
+    }
+}
+
 </script>
 </html>
