@@ -79,6 +79,7 @@ small {
 <body>
     <h1>Users</h1>
     <button id="toggleFormButton">Create User</button>
+    <b id="registration-status">Registration Status: Not Found</b>
     <div id="formContainer" style="display: none;"></div>
     <div id="form-update" style="display: none;"></div>
     <div id="list-products" class="grid-products">
@@ -98,6 +99,7 @@ let currentUserBalance = ""
 let currentUserUpdate = ""
 
 getUsers();
+GetRegistrationStatus();
 addEventFormCreate();
 
 function subscribeTokenRefresh(cb){
@@ -497,6 +499,32 @@ function refreshTokens(fn){
     .finally(
         isRefreshing = false
     )  
+}
+
+async function GetRegistrationStatus(){
+    try{
+
+        let statsInfo = document.getElementById("registration-status") 
+
+        const opt = {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+
+        const resp = await fetch("/api/user/register/status", opt)
+        if (!resp.ok){
+            return
+        }
+
+        const data = await resp.json();
+
+        statsInfo.innerText = data.enabled
+
+    }catch(error){
+        console.log("error get stats", error)
+    }
 }
 
 </script>
