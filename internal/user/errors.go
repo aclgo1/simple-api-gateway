@@ -68,3 +68,10 @@ func (e ErrFailedVerifyCaptcha) Error() string {
 	e.Message = "failed to verify captcha"
 	return e.Message
 }
+
+type ErrRegistrationDisabled struct {
+}
+
+func (e ErrRegistrationDisabled) Error() string {
+	return "registration disabled"
+}

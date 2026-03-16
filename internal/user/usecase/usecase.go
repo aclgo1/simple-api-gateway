@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/aclgo/simple-api-gateway/internal/captcha"
 	"github.com/aclgo/simple-api-gateway/internal/user"
@@ -22,6 +23,7 @@ type userUc struct {
 	redisClient       *redis.Client
 	baseApiUrl        string
 	logger            logger.Logger
+	sync.Mutex
 }
 
 func NewuserUC(clientUser protoUser.UserServiceClient,
@@ -45,6 +47,10 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) (*user.UserRegisterResponse, error) {
 	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
 		return nil, user.ErrFailedVerifyCaptcha{}
+	}
+
+	if !user.RegistrationEnabled {
+		return &user.UserRegisterResponse{}, nil
 	}
 
 	created, err := u.clientUserGRPC.Register(ctx, &protoUser.CreateUserRequest{
@@ -477,4 +483,16 @@ func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
 	}
 
 	return int(s.Conns), nil
+}
+
+func (u *userUc) RegistrationStatus(ctx context.Context) bool {
+	u.Mutex.Lock()
+	defer u.Mutex.Unlock()
+	return user.RegistrationEnabled
+}
+
+func (u *userUc) UpdateRegistrationStatus(ctx context.Context, param *user.ParamUpdateRegistration) {
+	u.Mutex.Lock()
+	defer u.Mutex.Unlock()
+	user.RegistrationEnabled = param.Enabled
 }

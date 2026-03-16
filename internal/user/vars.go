@@ -6,6 +6,7 @@ import (
 
 var (
 	BASE_API_URL          string
+	RegistrationEnabled   = true
 	DefaultVerifiedNo     = "no"
 	DefaultTimeSendEmails = time.Hour
 	DefaultFromSendMail   = ""

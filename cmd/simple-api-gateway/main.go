@@ -187,6 +187,7 @@ func main() {
 	mux.HandleFunc("GET /api/user/find", authUC.ValidateToken(userHandler.Find(ctx)))
 	mux.HandleFunc("PUT /api/user/update", authUC.ValidateUpdate(userHandler.Update(ctx)))
 	mux.HandleFunc("GET /api/user/stats", userHandler.Stats(ctx))
+	mux.HandleFunc("GET /api/user/register/status", userHandler.GetStatusRegistration(ctx))
 
 	//MICROSERVCE GRPC MAIL
 	mux.HandleFunc("GET /api/user/confirm/{confirm_code}", userHandler.UserConfirm(ctx))
@@ -197,6 +198,7 @@ func main() {
 	mux.HandleFunc("/api/admin/register", authUC.ValidateCreateAdmin(adminHandler.Create(ctx)))
 	mux.HandleFunc("/api/admin/search", authUC.ValidateIsAdmin(adminHandler.Search(ctx)))
 	mux.HandleFunc("DELETE /api/admin/delete/{user_id}", authUC.ValidateIsAdmin(adminHandler.Delete(ctx)))
+	mux.HandleFunc("POST /api/admin/register/toggle", authUC.ValidateIsAdmin(userHandler.ToggleRegistration(ctx)))
 
 	//MICROSERVICE GRPC PRODUCTS
 	mux.HandleFunc("POST /api/product/create", authUC.ValidateIsAdmin(productHandler.Create(ctx)))

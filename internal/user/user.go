@@ -21,6 +21,8 @@ type UserUC interface {
 	ResetPass(ctx context.Context, params *ParamsResetPass) error
 	NewPass(ctx context.Context, params *ParamsNewPass) error
 	GetGlobalConns(context.Context) (int, error)
+	RegistrationStatus(context.Context) bool
+	UpdateRegistrationStatus(context.Context, *ParamUpdateRegistration)
 }
 
 type User struct {
@@ -272,4 +274,12 @@ type ParamsUserDelete struct {
 
 func FormatKeyRedisWallet(id string) string {
 	return fmt.Sprintf("user:%s:wallet", id)
+}
+
+type ParamUpdateRegistration struct {
+	Enabled bool `json:"enabled"`
+}
+
+func (p *ParamUpdateRegistration) Validate() error {
+	return nil
 }

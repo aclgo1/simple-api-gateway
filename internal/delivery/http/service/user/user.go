@@ -433,3 +433,41 @@ func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
 		service.JSON(w, resp, http.StatusOK)
 	}
 }
+
+func (s *userService) GetStatusRegistration(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		resp := map[string]any{
+			"enabled": s.userUC.RegistrationStatus(r.Context()),
+		}
+
+		service.JSON(w, resp, http.StatusOK)
+	}
+}
+
+func (s *userService) ToggleRegistration(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var param user.ParamUpdateRegistration
+
+		if err := json.NewDecoder(r.Body).Decode(&param); err != nil {
+			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+			service.JSON(w, response, http.StatusBadRequest)
+
+			return
+		}
+
+		if err := param.Validate(); err != nil {
+			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+			service.JSON(w, response, http.StatusBadRequest)
+
+			return
+		}
+
+		s.userUC.UpdateRegistrationStatus(r.Context(), &param)
+
+		resp := map[string]any{
+			"enabled": s.userUC.RegistrationStatus(r.Context()),
+		}
+
+		service.JSON(w, resp, http.StatusOK)
+	}
+}
