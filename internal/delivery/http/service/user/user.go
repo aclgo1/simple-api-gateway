@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -50,6 +51,14 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 
 		created, err := s.userUC.Register(ctx, &params)
 		if err != nil {
+			if errors.Is(err, user.ErrRegistrationDisabled{}) {
+				response := service.NewRestError(err.Error(), err.Error())
+
+				service.JSON(w, response, http.StatusOK)
+
+				return
+			}
+
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)

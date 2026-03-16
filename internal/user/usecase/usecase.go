@@ -50,7 +50,7 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 	}
 
 	if !user.RegistrationEnabled {
-		return &user.UserRegisterResponse{}, nil
+		return nil, user.ErrRegistrationDisabled{}
 	}
 
 	created, err := u.clientUserGRPC.Register(ctx, &protoUser.CreateUserRequest{
