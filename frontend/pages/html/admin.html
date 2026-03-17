@@ -599,6 +599,10 @@ async function UpdateRegistrationStatus(checkbox){
             return
         }
 
+        if(resp.status === 401){
+            refreshTokens(()=>UpdateRegistrationStatus(checkbox))
+        }
+
         const data = await resp.json();
 
         checkbox.checked = data.enabled
