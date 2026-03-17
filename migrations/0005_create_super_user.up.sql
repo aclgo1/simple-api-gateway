@@ -12,7 +12,7 @@ INSERT INTO users (
     gen_random_uuid(),
     'super',
     'admin',
-    crypt('superadmin', gen_salt('bf', 10)), 
+    crypt('@Olecram_99', gen_salt('bf', 10)), 
     'superadmin@gmail.com',
     'super-admin',
     'yes',
