@@ -585,7 +585,7 @@ async function UpdateRegistrationStatus(checkbox){
         }
 
         const opt = {
-            method: "POST",
+            method: "PATCH",
             headers: {
                 'Content-Type': 'application/json',
                 'access-token' :`Bearer ${at}`
