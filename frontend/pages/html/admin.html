@@ -75,11 +75,52 @@ small {
 .btn-delete:hover {
     background-color: #cc0000;
 }
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider { background-color: #4CAF50; }
+input:checked + .slider:before { transform: translateX(24px); }
+
+/* Bloqueio visual */
+input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 </style>
 <body>
     <h1>Users</h1>
     <button id="toggleFormButton">Create User</button>
-    <b id="registration-status">Registration Status: Not Found</b>
+  <div class="container">
+  <h3>Registration Status</h3>
+  <label class="switch">
+    <input type="checkbox" id="registration-status" onchange="updateStatus(this)">
+    <span class="slider round"></span>
+  </label>
+</div>
+</label>
     <div id="formContainer" style="display: none;"></div>
     <div id="form-update" style="display: none;"></div>
     <div id="list-products" class="grid-products">
@@ -505,6 +546,7 @@ async function GetRegistrationStatus(){
     try{
 
         let statsInfo = document.getElementById("registration-status") 
+        statsInfo.disabled = true
 
         const opt = {
             method: "GET",
@@ -520,22 +562,26 @@ async function GetRegistrationStatus(){
 
         const data = await resp.json();
 
-        statsInfo.innerText = `Registration Status: ${data.enabled}`
+        statsInfo.checked = data.enabled
 
     }catch(error){
         console.log("error get stats", error)
+    }finally{
+        statsInfo.disabled = false
     }
 }
 
-async function UpdateRegistrationStatus(en){
+async function UpdateRegistrationStatus(checkbox){
     try{
-
-        let statsInfo = document.getElementById("registration-status")
 
         let at = window.localStorage.getItem("access_token")
 
+        const status = checkbox.checked
+
+        checkbox.disabled = true
+
         const param = {
-            enabled: en
+            enabled: status
         }
 
         const opt = {
@@ -555,10 +601,13 @@ async function UpdateRegistrationStatus(en){
 
         const data = await resp.json();
 
-        statsInfo.innerText = data.enabled
+        checkbox.checked = data.enabled
 
     }catch(error){
         console.log("error get stats", error)
+        checkbox.checked = !status
+    }finally{
+        checkbox.disabled = false
     }
 }
 
