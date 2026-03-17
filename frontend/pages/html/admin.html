@@ -520,14 +520,14 @@ async function GetRegistrationStatus(){
 
         const data = await resp.json();
 
-        statsInfo.innerText = data.enabled
+        statsInfo.innerText = `Registration Status: ${data.enabled}`
 
     }catch(error){
         console.log("error get stats", error)
     }
 }
 
-async function UpdateRegistrationStatus(){
+async function UpdateRegistrationStatus(en){
     try{
 
         let statsInfo = document.getElementById("registration-status")
@@ -535,7 +535,7 @@ async function UpdateRegistrationStatus(){
         let at = window.localStorage.getItem("access_token")
 
         const param = {
-            enabled: false
+            enabled: en
         }
 
         const opt = {

@@ -52,9 +52,9 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 		created, err := s.userUC.Register(ctx, &params)
 		if err != nil {
 			if errors.Is(err, user.ErrRegistrationDisabled{}) {
-				response := service.NewRestError(err.Error(), err.Error())
+				response := service.NewRestError(http.StatusText(http.StatusServiceUnavailable), err.Error())
 
-				service.JSON(w, response, http.StatusOK)
+				service.JSON(w, response, http.StatusServiceUnavailable)
 
 				return
 			}
