@@ -20,6 +20,7 @@ var (
 	PaymentMethodPix             = "pix"
 	PaymentMethodCard            = "card"
 	ErrPaymentMethodNotSupported = errors.New("payment method not supported")
+	ErrExceddedLimitGenPix       = errors.New("excedded limit generate pix")
 )
 
 type ParamCreditInput struct {

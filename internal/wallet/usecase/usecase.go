@@ -8,8 +8,10 @@ import (
 	"sync"
 
 	"github.com/aclgo/simple-api-gateway/internal/wallet"
+	"github.com/aclgo/simple-api-gateway/internal/wallet/pix"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
 	proto "github.com/aclgo/simple-api-gateway/proto-service/balance"
+	"github.com/redis/go-redis/v9"
 )
 
 type walletUC struct {
@@ -17,6 +19,7 @@ type walletUC struct {
 	providers         map[string]wallet.PaymentProcessor
 	mu                sync.RWMutex
 	logger            logger.Logger
+	repository        pix.Repository
 }
 
 func NewwalletUC(clientBalanceGRPC proto.WalletServiceClient, logger logger.Logger) wallet.WalletInterface {
@@ -76,6 +79,16 @@ func (u *walletUC) Credit(ctx context.Context, in *wallet.ParamCreditInput) (*wa
 }
 
 func (u *walletUC) GeneratePayment(ctx context.Context, in *wallet.ParamGeneratePaymentInput) (*wallet.ParamGeneratePaymentOutput, error) {
+	err := u.repository.Get(ctx, in.AccountId)
+
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	if err == nil {
+		return nil, wallet.ErrExceddedLimitGenPix
+	}
+
 	u.mu.RLock()
 	provider, ok := u.providers[in.Method]
 	if !ok {
@@ -101,6 +114,10 @@ func (u *walletUC) GeneratePayment(ctx context.Context, in *wallet.ParamGenerate
 	data, err := provider.Proccess(ctx, &ppi)
 	if err != nil {
 		return nil, err
+	}
+
+	if err := u.repository.Set(ctx, in.AccountId); err != nil {
+		u.logger.Errorf("u.repository.Set: %v", err)
 	}
 
 	out := wallet.ParamGeneratePaymentOutput{
