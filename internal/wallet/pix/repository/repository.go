@@ -9,12 +9,12 @@ import (
 )
 
 type pixRepository struct {
-	redis redis.Client
+	redis *redis.Client
 }
 
 func NewPixRepository(rds *redis.Client) pix.Repository {
 	return &pixRepository{
-		redis: *rds,
+		redis: rds,
 	}
 }
 

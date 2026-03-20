@@ -15,5 +15,5 @@ func NewpaymentProcessorCard() card.PaymentProcessor {
 }
 
 func (p *paymentProcessorCard) Proccess(ctx context.Context, in *wallet.ParamPaymentProcessorInput) (any, error) {
-	return nil, nil
+	return &card.CardOutput{}, nil
 }

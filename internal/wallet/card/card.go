@@ -9,3 +9,6 @@ import (
 type PaymentProcessor interface {
 	Proccess(context.Context, *wallet.ParamPaymentProcessorInput) (any, error)
 }
+
+type CardOutput struct {
+}
