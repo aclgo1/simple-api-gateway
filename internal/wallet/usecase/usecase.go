@@ -22,11 +22,12 @@ type walletUC struct {
 	repository        pix.Repository
 }
 
-func NewwalletUC(clientBalanceGRPC proto.WalletServiceClient, logger logger.Logger) wallet.WalletInterface {
+func NewwalletUC(clientBalanceGRPC proto.WalletServiceClient, r pix.Repository, logger logger.Logger) wallet.WalletInterface {
 	return &walletUC{
 		clientBalanceGPRC: clientBalanceGRPC,
 		providers:         make(map[string]wallet.PaymentProcessor),
 		logger:            logger,
+		repository:        r,
 	}
 }
 

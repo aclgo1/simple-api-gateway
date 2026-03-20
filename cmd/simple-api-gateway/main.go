@@ -35,6 +35,7 @@ import (
 	productUC "github.com/aclgo/simple-api-gateway/internal/product/usecase"
 	userUC "github.com/aclgo/simple-api-gateway/internal/user/usecase"
 	cardUC "github.com/aclgo/simple-api-gateway/internal/wallet/card/usecase"
+	pixRepo "github.com/aclgo/simple-api-gateway/internal/wallet/pix/repository"
 	pixUC "github.com/aclgo/simple-api-gateway/internal/wallet/pix/usecase"
 	walletUC "github.com/aclgo/simple-api-gateway/internal/wallet/usecase"
 
@@ -157,7 +158,9 @@ func main() {
 	product := productUC.NewProductUC(logger, productUserService)
 	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger)
 
-	w := walletUC.NewwalletUC(balanceUserService, logger)
+	pixRepository := pixRepo.NewPixRepository(redisClient)
+
+	w := walletUC.NewwalletUC(balanceUserService, pixRepository, logger)
 
 	pixProcessor := pixUC.NewpaymentProcessorPix()
 	cardProcessor := cardUC.NewpaymentProcessorCard()
