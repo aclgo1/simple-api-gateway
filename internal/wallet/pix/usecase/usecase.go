@@ -14,10 +14,13 @@ import (
 )
 
 type paymentProcessorPix struct {
+	PixAuthorization string
 }
 
-func NewpaymentProcessorPix() pix.PaymentProcessor {
-	return &paymentProcessorPix{}
+func NewpaymentProcessorPix(authorization string) pix.PaymentProcessor {
+	return &paymentProcessorPix{
+		PixAuthorization: authorization,
+	}
 }
 
 type DataProccessResponse struct{}
@@ -35,6 +38,7 @@ func (p *paymentProcessorPix) Proccess(ctx context.Context, in *wallet.ParamPaym
 	}
 
 	req.Header.Add("Content-Type:", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.PixAuthorization))
 
 	resp, err := client.Do(req)
 	if err != nil {

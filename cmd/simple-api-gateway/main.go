@@ -162,7 +162,7 @@ func main() {
 
 	w := walletUC.NewwalletUC(balanceUserService, pixRepository, logger)
 
-	pixProcessor := pixUC.NewpaymentProcessorPix()
+	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization)
 	cardProcessor := cardUC.NewpaymentProcessorCard()
 
 	w.RegisterProvider(wallet.PaymentMethodPix, pixProcessor)
