@@ -357,7 +357,7 @@ function getCaptcha(){
         }
     }
 
-    fetch("/api/captcha", opt)
+    fetch(`/api/captcha?t=${new Date().getTime()}`, opt)
     .then(response => {
         return response.json()
     })
