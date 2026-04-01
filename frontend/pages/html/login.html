@@ -357,15 +357,21 @@ function getCaptcha(){
         }
     }
 
-    fetch(`/api/captcha?t=${new Date().getTime()}`, opt)
+    fetch(`/api/captcha`, opt)
     .then(response => {
         return response.json()
     })
     .then(data =>{
         const imageCaptchaLogin = document.getElementById("image-captcha-login")
         const imageCaptchaSignup = document.getElementById("image-captcha-signup")
-        imageCaptchaLogin.src = data.base64_image;
-        imageCaptchaSignup.src = data.base64_image;
+
+        const imgData = data.base64_image.includes('data:image')
+        ? data.base64_image : `data:image/png;base64,${data.base64_image}`
+
+        imageCaptchaLogin.src = imgData
+        imageCaptchaSignup.src = imgData
+
+        console.log(data.base64_image)
 
         idCaptcha = data.id;
         inputCaptchaSignup.value = "";
