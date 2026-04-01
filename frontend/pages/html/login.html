@@ -365,31 +365,32 @@ function getCaptcha(){
     .then(response => {
         return response.json()
     })
-    .then(data => {
-    // 1. Decodifica o base64 (remova o prefixo se ele existir)
-    const base64Data = data.base64_image.replace(/^data:image\/\w+;base64,/, "");
-    
-    // 2. Converte para um array de bytes
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    
-    // 3. Cria o Blob e a URL temporária
-    const blob = new Blob([byteArray], {type: 'image/png'});
-    const blobUrl = URL.createObjectURL(blob);
+    .then(data =>{
+        const imageCaptchaLogin = document.getElementById("image-captcha-login")
+        const imageCaptchaSignup = document.getElementById("image-captcha-signup")
 
-    // 4. Aplica aos elementos
-    const imgLogin = document.getElementById("image-captcha-login");
-    const imgSignup = document.getElementById("image-captcha-signup");
-    
-    imgLogin.src = blobUrl;
-    imgSignup.src = blobUrl;
+        imageCaptchaLogin.src = ""
+        imageCaptchaSignup.src = ""
 
-    // Opcional: Limpar a memória após carregar
-    imgLogin.onload = () => URL.revokeObjectURL(blobUrl);
+        const imgData = data.base64_image; // Sua string base64
+            
+        // Criamos um objeto de imagem temporário para forçar o decode
+        let tempImg = new Image();
+        tempImg.src = imgData;
+        tempImg.decode().then(() => {
+            imgLogin.src = imgData;
+            imgSignup.src = imgData;
+        }).catch(() => {
+            // Fallback caso o decode falhe
+            imgLogin.src = imgData;
+            imgSignup.src = imgData;
+        });
+
+        idCaptcha = data.id;
+        inputCaptchaSignup.value = "";
+        inputCaptchaLogin.value = ""
+        
+        console.log(idCaptcha);
     })
     .catch(error=>{
         console.log(`error in connection ${error.message}`)
