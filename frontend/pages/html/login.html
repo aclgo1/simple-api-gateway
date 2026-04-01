@@ -372,19 +372,10 @@ function getCaptcha(){
         imageCaptchaLogin.src = ""
         imageCaptchaSignup.src = ""
 
-        const imgData = data.base64_image; // Sua string base64
+        imageCaptchaLogin.src = data.base64_image
+        imageCaptchaSignup.src = data.base64_image
 
-        // Criamos um objeto de imagem temporário para forçar o decode
-        let tempImg = new Image();
-        tempImg.src = imgData;
-        tempImg.decode().then(() => {
-            imageCaptchaLogin.src = imgData;
-            imageCaptchaSignup.src = imgData;
-        }).catch(() => {
-            // Fallback caso o decode falhe
-            imageCaptchaLogin.src = imgData;
-            imageCaptchaSignup.src = imgData;
-        });
+        console.log(data.base64_image)
 
         idCaptcha = data.id;
         inputCaptchaSignup.value = "";
