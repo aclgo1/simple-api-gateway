@@ -373,17 +373,17 @@ function getCaptcha(){
         imageCaptchaSignup.src = ""
 
         const imgData = data.base64_image; // Sua string base64
-            
+
         // Criamos um objeto de imagem temporário para forçar o decode
         let tempImg = new Image();
         tempImg.src = imgData;
         tempImg.decode().then(() => {
-            imgLogin.src = imgData;
-            imgSignup.src = imgData;
+            imageCaptchaLogin.src = imgData;
+            imageCaptchaSignup.src = imgData;
         }).catch(() => {
             // Fallback caso o decode falhe
-            imgLogin.src = imgData;
-            imgSignup.src = imgData;
+            imageCaptchaLogin.src = imgData;
+            imageCaptchaSignup.src = imgData;
         });
 
         idCaptcha = data.id;
