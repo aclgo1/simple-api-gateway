@@ -152,10 +152,11 @@ services:
     build: ../concurrency-example
     container_name: concurrency-example
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 150M
+    shm_size: '2gb'
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 150M
     expose:
       - "3000"
     depends_on:
