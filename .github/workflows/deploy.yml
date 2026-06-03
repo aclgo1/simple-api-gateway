@@ -1,0 +1,62 @@
+name: CI/CD pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      
+      - name: download other projects with makefile
+        run: make clone-all GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}
+      
+      - name: validate docker compose config
+        run: docker compose config
+      
+      - name: test build images
+        run: docker compose build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: copy files at server with ssh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{secrets.SSH_HOST}}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "."
+          target: "~/app/my-project"
+
+      - name: execute docker compose in server
+        uses: appleboy/scp-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/app/my-project
+
+            if [ -f .env]; then
+              sed -i 's|BASE_API_URL="http://localhost:80"|BASE_API_URL="http://${{ secrets.SSH_HOST }}:80"|g' .env
+            else
+              echo "file .env not searched"
+            fi
+
+            make clone-all GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}
+            
+            docker compose up -d --build
+            docker image prune -f
+
