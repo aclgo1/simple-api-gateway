@@ -37,6 +37,13 @@ proto: $(PROTO_FILES)
 
 clone-all:
 	@echo "Clonando repositórios públicos para $(PARENT_DIR)..."
+	
+	@if [ ! -d "$(PARENT_DIR)/$(PRIVATE_REPO)" ]; then \
+		git clone https://oauth2:$(GITHUB_TOKEN)@$(BASE_URL)/$(PRIVATE_REPO).git $(PARENT_DIR)/$(PRIVATE_REPO); \
+	else \
+		echo "$(PRIVATE_REPO) já existe, pulando clone."; \
+	fi
+
 	@$(foreach repo, $(REPOS), \
 		if [ ! -d "$(PARENT_DIR)/$(repo)" ]; then \
 			git clone https://$(BASE_URL)/$(repo).git $(PARENT_DIR)/$(repo); \
