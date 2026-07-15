@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/auth"
 	"github.com/aclgo/simple-api-gateway/internal/delivery/http/service"
@@ -440,6 +441,48 @@ func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
 		}
 
 		service.JSON(w, resp, http.StatusOK)
+	}
+}
+
+func (s *userService) StatsSSE(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Contentn-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "o servidor não suporta streaming", http.StatusInternalServerError)
+			return
+		}
+
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				conns, err := s.userUC.GetGlobalConns(r.Context())
+				if err != nil {
+					fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
+					flusher.Flush()
+					continue
+				}
+
+				r := map[string]any{
+					"conns": conns,
+				}
+
+				p, _ := json.Marshal(r)
+
+				fmt.Fprintf(w, "data: %s\n\n", string(p))
+
+				flusher.Flush()
+
+			}
+		}
 	}
 }
 
