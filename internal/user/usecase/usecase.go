@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/captcha"
 	"github.com/aclgo/simple-api-gateway/internal/user"
@@ -24,6 +25,8 @@ type userUc struct {
 	baseApiUrl        string
 	logger            logger.Logger
 	sync.Mutex
+	ChacheConns int64
+	ChacheErr   error
 }
 
 func NewuserUC(clientUser protoUser.UserServiceClient,
@@ -34,7 +37,7 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 	logger logger.Logger,
 ) user.UserUC {
 
-	return &userUc{
+	uc := userUc{
 		clientUserGRPC:    clientUser,
 		clientMailGRPC:    clientMail,
 		clientBalanceGRPC: clientBalance,
@@ -42,6 +45,10 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 		redisClient:       redisClient,
 		logger:            logger,
 	}
+
+	go uc.StartGlobalConnsUpdateCache(context.Background())
+
+	return &uc
 }
 
 func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) (*user.UserRegisterResponse, error) {
@@ -476,13 +483,39 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 	return nil
 }
 
-func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
-	s, err := u.clientUserGRPC.GetStatsConns(ctx, &protoUser.GetStatsConnsRequest{})
-	if err != nil {
-		return 0, err
+func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
+
+	updateCache := func(ctx context.Context) {
+		conns, err := u.clientUserGRPC.GetStatsConns(ctx, &protoUser.GetStatsConnsRequest{})
+
+		u.Mutex.Lock()
+		u.ChacheConns = conns.Conns
+		u.ChacheErr = err
+		u.Mutex.Unlock()
 	}
 
-	return int(s.Conns), nil
+	updateCache(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			updateCache(ctx)
+		}
+	}
+
+}
+
+func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
+	u.Mutex.Lock()
+	c := u.ChacheConns
+	err := u.ChacheErr
+	u.Mutex.Unlock()
+
+	return int(c), err
 }
 
 func (u *userUc) RegistrationStatus(ctx context.Context) bool {
