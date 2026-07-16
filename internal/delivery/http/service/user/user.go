@@ -477,7 +477,7 @@ func (s *userService) StatsSSE(ctx context.Context) http.HandlerFunc {
 
 				p, _ := json.Marshal(r)
 
-				fmt.Fprintf(w, "data: %s\n\n", string(p))
+				fmt.Fprintf(w, "event: conns\ndata: %s\n\n", string(p))
 
 				flusher.Flush()
 

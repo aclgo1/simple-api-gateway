@@ -834,39 +834,64 @@ async function Logout() {
     }
 }
 
+// async function GetStats(){
+//     try{
+
+//         let statsInfo = document.getElementById("conn-info") 
+
+//         const opt = {
+//             method: "GET",
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             }
+//         }
+
+//         const resp = await fetch("/api/user/stats", opt)
+//         if (!resp.ok){
+//             statsInfo.innerText = "0"
+//             return;
+//         }
+
+//         const data = await resp.json();
+
+//         statsInfo.innerText = data.conns
+
+//     }catch(error){
+//         console.log("error get stats", error)
+//     }
+// }
+
 async function GetStats(){
+    const stats = document.getElementById("conn-info")
+
     try{
+        const src = new EventSource("/api/user/stats-sse")
 
-        let statsInfo = document.getElementById("conn-info") 
-
-        const opt = {
-            method: "GET",
-            headers: {
-                'Content-Type': 'application/json'
+        src.addEventListener("conns", (event)=>{
+            try{
+                const data = JSON.parse(event.data);
+                stats.innerText = data.conns
+            }catch(parseError){
+                console.error("error parse JSON event conn: ", parseError)
             }
-        }
+        })
 
-        const resp = await fetch("/api/user/stats", opt)
-        if (!resp.ok){
-            statsInfo.innerText = "0"
-            return;
-        }
-
-        const data = await resp.json();
-
-        statsInfo.innerText = data.conns
+        src.addEventListener("error", (event)=>{
+            console.error("error conn sse", event)
+            stats.innerText = "-2"
+            src.close()
+        })
 
     }catch(error){
-        console.log("error get stats", error)
+        console.error("error init eventsource")
     }
 }
-
 // Inicialização
 window.onload = async () => {
     await getBalanceInfo();
     await getProducts();
     await GetStats();
-    setInterval(GetStats, 20000)
+    // setInterval(GetStats, 20000)
 };
 
 </script>

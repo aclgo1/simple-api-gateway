@@ -489,10 +489,15 @@ func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {
 
 	updateCache := func(ctx context.Context) {
 		conns, err := u.clientUserGRPC.GetStatsConns(ctx, &protoUser.GetStatsConnsRequest{})
+		if err != nil {
+			u.Mutex.Lock()
+			u.ChacheConns = -1
+			u.Mutex.Unlock()
+			return
+		}
 
 		u.Mutex.Lock()
 		u.ChacheConns = conns.Conns
-		u.ChacheErr = err
 		u.Mutex.Unlock()
 	}
 
@@ -511,11 +516,9 @@ func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {
 
 func (u *userUc) GetGlobalConns(ctx context.Context) (int, error) {
 	u.Mutex.Lock()
-	c := u.ChacheConns
-	err := u.ChacheErr
-	u.Mutex.Unlock()
+	defer u.Mutex.Unlock()
 
-	return int(c), err
+	return int(u.ChacheConns), nil
 }
 
 func (u *userUc) RegistrationStatus(ctx context.Context) bool {
