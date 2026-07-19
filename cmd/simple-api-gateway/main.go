@@ -104,7 +104,7 @@ func main() {
 
 	logger.Info("logger initialized")
 
-	authGrpc := grpcauth.NewGrpcAuth()
+	authGrpc := grpcauth.NewGrpcAuth(cfg)
 	authOption := grpc.WithPerRPCCredentials(authGrpc)
 
 	OptionsServiceUser = append(OptionsServiceUser, authOption)

@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aclgo/simple-api-gateway/config"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -19,9 +20,9 @@ type grpcAuth struct {
 	privateKey *rsa.PrivateKey
 }
 
-func NewGrpcAuth() *grpcAuth {
+func NewGrpcAuth(cfg *config.Config) *grpcAuth {
 
-	privKeyData, err := os.ReadFile("certs/priv_key.pem")
+	privKeyData, err := os.ReadFile(cfg.PathPrivatePem)
 	if err != nil {
 		log.Fatalf("os.ReadFile: %v", err)
 	}

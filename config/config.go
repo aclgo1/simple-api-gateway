@@ -13,6 +13,7 @@ type Config struct {
 	Redis             `mapstructure:",squash"`
 	UserAndAdminSetup `mapstructure:",squash"`
 	PixSetup          `mapstructure:",squash"`
+	AuthGrpc          `mapstructure:",squash"`
 	DbDriver          string `mapstructure:"DB_DRIVER"`
 	DbUrl             string `mapstructure:"DB_URL"`
 	BaseApiUrl        string `mapstructure:"BASE_API_URL"`
@@ -43,6 +44,10 @@ type UserAndAdminSetup struct {
 
 type PixSetup struct {
 	PixAuthorization string `mapstructure:"PIX_AUTHORIZATION"`
+}
+
+type AuthGrpc struct {
+	PathPrivatePem string `mapstructure:"PATH_PRIVATE_PEM"`
 }
 
 func Load(path string) *Config {
