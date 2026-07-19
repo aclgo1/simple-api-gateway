@@ -5,6 +5,7 @@ go 1.24.0
 toolchain go1.24.4
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/jmoiron/sqlx v1.4.0
@@ -14,7 +15,6 @@ require (
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/rs/cors v1.10.1
 	github.com/spf13/viper v1.18.2
-	go.mongodb.org/mongo-driver v1.17.6
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.19.0
 	go.opentelemetry.io/otel/sdk v1.38.0

@@ -39,6 +39,7 @@ import (
 	pixUC "github.com/aclgo/simple-api-gateway/internal/wallet/pix/usecase"
 	walletUC "github.com/aclgo/simple-api-gateway/internal/wallet/usecase"
 
+	grpcauth "github.com/aclgo/simple-api-gateway/pkg/grpc-auth"
 	redis "github.com/aclgo/simple-api-gateway/pkg/rredis"
 
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
@@ -102,6 +103,16 @@ func main() {
 	}
 
 	logger.Info("logger initialized")
+
+	authGrpc := grpcauth.NewGrpcAuth()
+	authOption := grpc.WithPerRPCCredentials(authGrpc)
+
+	OptionsServiceUser = append(OptionsServiceUser, authOption)
+	OptionsServiceAdmin = append(OptionsServiceAdmin, authOption)
+	OptionsServiceMail = append(OptionsServiceMail, authOption)
+	OptionsServiceProduct = append(OptionsServiceProduct, authOption)
+	OptionsServiceOrders = append(OptionsServiceOrders, authOption)
+	OptionsServiceBalance = append(OptionsServiceBalance, authOption)
 
 	//	CONNECTING IN MICROSERVICES
 	connUser, err := grpc.NewClient(AddrServiceUser, OptionsServiceUser...)
