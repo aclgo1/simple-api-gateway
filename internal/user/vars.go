@@ -8,6 +8,7 @@ var (
 	BASE_API_URL          string
 	RegistrationEnabled   = true
 	DefaultVerifiedNo     = "no"
+	DefaultVerifiedYes    = "yes"
 	DefaultTimeSendEmails = time.Hour
 	DefaultFromSendMail   = ""
 

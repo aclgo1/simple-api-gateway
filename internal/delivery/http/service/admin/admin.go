@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/aclgo/simple-api-gateway/internal/admin"
@@ -72,16 +71,15 @@ func (s *adminService) Create(ctx context.Context) http.HandlerFunc {
 	}
 }
 
-func (s *adminService) Search(ctx context.Context) http.HandlerFunc {
+func (s *adminService) FindUsers(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := admin.ParamsSearch{}
 
-		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
+		page := r.URL.Query().Get("page")
+		limit := r.URL.Query().Get("limit")
 
-			service.JSON(w, response, http.StatusBadRequest)
-
-			return
+		params := admin.ParamsSearch{
+			Page:  page,
+			Limit: limit,
 		}
 
 		if err := params.Validate(); err != nil {
@@ -101,12 +99,7 @@ func (s *adminService) Search(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		resp := map[string]any{
-			"message": "users searched",
-			"users":   search,
-		}
-
-		service.JSON(w, resp, http.StatusOK)
+		service.JSON(w, search, http.StatusOK)
 	}
 }
 

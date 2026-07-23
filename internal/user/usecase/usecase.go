@@ -65,6 +65,7 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		LastName: params.Lastname,
 		Password: params.Password,
 		Email:    params.Email,
+		Verified: user.DefaultVerifiedYes,
 	})
 
 	if err != nil {

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"strconv"
 	"time"
 )
 
 type AdminUC interface {
 	Create(ctx context.Context, params *ParamsCreateAdmin) (*Admin, error)
-	Search(ctx context.Context, params *ParamsSearch) ([]*Admin, error)
+	Search(ctx context.Context, params *ParamsSearch) (*ParamsFindUsers, error)
 	Delete(ctx context.Context, params *ParamsDeleteUser) (string, error)
 }
 
@@ -79,15 +80,38 @@ type Admin struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type ParamsSearch struct {
-	Query  string `json:"query"`
-	Role   string `json:"role"`
-	Page   int    `json:"page"`
-	OffSet int    `json:"offset"`
-	Limit  int    `json:"limit"`
+type ParamsFindUsers struct {
+	Users      []*Admin `json:"users"`
+	Page       int      `json:"page"`
+	Limit      int      `json:"limit"`
+	TotalItens int      `json:"total_itens"`
+	TotalPages int      `json:"total_pages"`
 }
 
-func (p *ParamsSearch) Validate() error { return nil }
+type ParamsSearch struct {
+	Page     string `json:"page"`
+	Limit    string `json:"limit"`
+	PageInt  int
+	LimitInt int
+}
+
+func (p *ParamsSearch) Validate() error {
+	page, err := strconv.Atoi(p.Page)
+	if err != nil {
+		return err
+	}
+
+	p.PageInt = page
+
+	limit, err := strconv.Atoi(p.Limit)
+	if err != nil {
+		return err
+	}
+
+	p.LimitInt = limit
+
+	return nil
+}
 
 type ParamsDeleteUser struct {
 	UserId string

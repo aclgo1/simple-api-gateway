@@ -138,28 +138,25 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 	}, nil
 }
 
-func (u *adminUC) Search(ctx context.Context, params *admin.ParamsSearch) ([]*admin.Admin, error) {
+func (u *adminUC) Search(ctx context.Context, params *admin.ParamsSearch) (*admin.ParamsFindUsers, error) {
 
-	in := protoAdmin.ParamsSearchRequest{
-		Query:  params.Query,
-		Role:   params.Role,
-		Page:   int32(params.Page),
-		Offset: int32(params.OffSet),
-		Limit:  int32(params.Limit),
+	in := protoUser.FindAllRequest{
+		Page:  int32(params.PageInt),
+		Limit: int32(params.LimitInt),
 	}
 
-	users, err := u.clientAdmin.Search(ctx, &in)
+	users, err := u.clientUser.FindAll(ctx, &in)
 	if err != nil {
 		return nil, err
 	}
 
-	items := make([]*admin.Admin, len(users.Users))
+	items := make([]*admin.Admin, len(users.Data))
 
 	var errs []error
 
-	for i := 0; i < int(users.Total); i++ {
+	for i := 0; i < len(users.Data); i++ {
 		paramWallet := protoBalance.ParamGetWalletByAccountRequest{
-			AccountID: users.Users[i].UserId,
+			AccountID: users.Data[i].Id,
 		}
 
 		wallet, err := u.clientBalance.GetWalletByAccount(ctx, &paramWallet)
@@ -168,20 +165,28 @@ func (u *adminUC) Search(ctx context.Context, params *admin.ParamsSearch) ([]*ad
 		}
 
 		items[i] = &admin.Admin{
-			UserID:    users.Users[i].UserId,
-			Name:      users.Users[i].Name,
-			Lastname:  users.Users[i].Lastname,
-			Password:  users.Users[i].Password,
-			Email:     users.Users[i].Email,
-			Role:      users.Users[i].Role,
+			UserID:    users.Data[i].Id,
+			Name:      users.Data[i].Name,
+			Lastname:  users.Data[i].LastName,
+			Password:  users.Data[i].Password,
+			Email:     users.Data[i].Email,
+			Role:      users.Data[i].Role,
 			Balance:   wallet.Balance,
-			Verified:  users.Users[i].Verified,
-			CreatedAt: users.Users[i].CreatedAt.AsTime(),
-			UpdatedAt: users.Users[i].UpdatedAt.AsTime(),
+			Verified:  users.Data[i].Verified,
+			CreatedAt: users.Data[i].CreatedAt.AsTime(),
+			UpdatedAt: users.Data[i].UpdatedAt.AsTime(),
 		}
 	}
 
-	return items, errors.Join(errs...)
+	resp := admin.ParamsFindUsers{
+		Users:      items,
+		Page:       int(users.Page),
+		Limit:      int(users.Limit),
+		TotalItens: int(users.TotalItems),
+		TotalPages: int(users.TotalPages),
+	}
+
+	return &resp, errors.Join(errs...)
 }
 
 func (u *adminUC) Delete(ctx context.Context, params *admin.ParamsDeleteUser) (string, error) {

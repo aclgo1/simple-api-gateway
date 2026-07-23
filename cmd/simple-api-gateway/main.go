@@ -211,7 +211,7 @@ func main() {
 
 	//MICROSERVICE GRPC ADMINs
 	mux.HandleFunc("/api/admin/register", authUC.ValidateCreateAdmin(adminHandler.Create(ctx)))
-	mux.HandleFunc("/api/admin/search", authUC.ValidateIsAdmin(adminHandler.Search(ctx)))
+	mux.HandleFunc("GET /api/admin", authUC.ValidateIsAdmin(adminHandler.FindUsers(ctx)))
 	mux.HandleFunc("DELETE /api/admin/delete/{user_id}", authUC.ValidateIsAdmin(adminHandler.Delete(ctx)))
 	mux.HandleFunc("PATCH /api/admin/register/toggle", authUC.ValidateIsAdmin(userHandler.ToggleRegistration(ctx)))
 
