@@ -126,6 +126,7 @@ func (e ErrFailedVerifyCaptcha) Error() string {
 var (
 	DefaultVerfiedNo      = "no"
 	DefaultVerfiedYes     = "yes"
+	DefaultRoleAdmin      = "admin"
 	BASE_API_URL          = ""
 	DefaultTimeSendEmails = time.Hour
 	DefaultFromSendMail   = ""

@@ -29,7 +29,7 @@ func NewGrpcAuth(cfg *config.Config) *grpcAuth {
 
 	privKey, err := jwt.ParseRSAPrivateKeyFromPEM(privKeyData)
 	if err != nil {
-		log.Fatalf("jwt.ParseEdPrivateKeyFromPEM: %v", err)
+		log.Fatalf("jwt.ParseRSAPrivateKeyFromPEM: %v", err)
 	}
 
 	g := grpcAuth{

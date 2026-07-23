@@ -52,16 +52,16 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 	// 	return nil, admin.ErrFailedVerifyCaptcha{}
 	// }
 
-	in := protoAdmin.ParamsCreateAdmin{
+	in := protoUser.CreateUserRequest{
 		Name:     params.Name,
-		Lastname: params.Lastname,
+		LastName: params.Lastname,
 		Password: params.Password,
 		Email:    params.Email,
-		Role:     params.Role,
-		Verified: params.Verified,
+		Role:     admin.DefaultRoleAdmin,
+		Verified: admin.DefaultVerfiedYes,
 	}
 
-	created, err := u.clientAdmin.Register(ctx, &in)
+	created, err := u.clientUser.Register(ctx, &in)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 	// fmt.Printf("%+v\n", created)
 
 	paramProtoBalance := protoBalance.ParamCreateWalletRequest{
-		AccountID: created.UserId,
+		AccountID: created.User.Id,
 	}
 
 	newWallet, err := u.clientBalance.Create(ctx, &paramProtoBalance)
@@ -94,7 +94,7 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 	}
 
 	if params.Verified == admin.DefaultVerfiedNo {
-		err = u.redisClient.Get(ctx, created.Email).Err()
+		err = u.redisClient.Get(ctx, created.User.Email).Err()
 		if err != nil && err != redis.Nil {
 			return nil, err
 		}
@@ -125,16 +125,16 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 	}
 
 	return &admin.Admin{
-		UserID:    created.UserId,
-		Name:      created.Name,
-		Lastname:  created.Lastname,
-		Password:  created.Password,
-		Email:     created.Email,
-		Role:      created.Role,
-		Verified:  created.Verified,
+		UserID:    created.User.Id,
+		Name:      created.User.Name,
+		Lastname:  created.User.LastName,
+		Password:  created.User.Password,
+		Email:     created.User.Email,
+		Role:      created.User.Role,
+		Verified:  created.User.Verified,
 		Balance:   newBalance,
-		CreatedAt: created.CreatedAt.AsTime(),
-		UpdatedAt: created.UpdatedAt.AsTime(),
+		CreatedAt: created.User.CreatedAt.AsTime(),
+		UpdatedAt: created.User.UpdatedAt.AsTime(),
 	}, nil
 }
 

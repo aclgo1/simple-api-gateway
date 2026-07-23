@@ -1,6 +1,6 @@
 syntax =  "proto3";
 
-option go_package = "github.com/aclgo/simple-api-gateway/proto-service/user";  
+option go_package = "github.com/aclgo/grpc-jwt/proto";  
 
 import "google/protobuf/timestamp.proto";
 
@@ -21,6 +21,8 @@ message CreateUserRequest {
     string last_name = 2;
     string password = 3;
     string email = 4;
+    string role = 5;
+    string verified = 6;
 }
 
 message CreatedUserResponse {
@@ -48,6 +50,19 @@ message UserLogoutRequest{
 
 message UserLogoutResponse{
 
+}
+
+message FindAllRequest {
+    int32 page = 1;
+    int32 limit = 2;
+}
+
+message FindAllResponse {
+    repeated User data = 1;
+    int32 page = 2;
+    int32 limit = 3;
+    int32 total_items = 4;
+    int32 total_pages = 5;
 }
 
 message FindByIdRequest {
@@ -117,6 +132,7 @@ service UserService {
     rpc Register(CreateUserRequest) returns (CreatedUserResponse);
     rpc Login(UserLoginRequest)returns (UserLoginResponse);
     rpc Logout(UserLogoutRequest) returns (UserLogoutResponse);
+    rpc FindAll(FindAllRequest) returns (FindAllResponse);
     rpc FindById(FindByIdRequest) returns (FindByIdResponse);
     rpc FindByEmail(FindByEmailRequest) returns (FindByEmailResponse);
     rpc Update(UpdateRequest) returns (UpdateResponse);
