@@ -51,23 +51,23 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  grpc-admin:
-    build: ../grpc-admin
-    container_name: grpc-admin
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 80M
-    expose:
-      - "50051"
-    depends_on:
-      - db
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # grpc-admin:
+  #   build: ../grpc-admin
+  #   container_name: grpc-admin
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 80M
+  #   expose:
+  #     - "50051"
+  #   depends_on:
+  #     - db
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
   grpc-mail:
     build: ../grpc-mail

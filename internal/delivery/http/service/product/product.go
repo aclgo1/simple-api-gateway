@@ -77,7 +77,10 @@ func (s *productService) Find(ctx context.Context) http.HandlerFunc {
 func (s *productService) FindAll(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var param product.ParamFindAllInput
+		param := product.ParamFindAllInput{
+			Page:  r.URL.Query().Get("page"),
+			Limit: r.URL.Query().Get("limit"),
+		}
 
 		if err := param.Validate(); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())

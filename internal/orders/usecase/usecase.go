@@ -49,9 +49,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 		if err != nil {
 			return nil, fmt.Errorf("u.clientProductsGRPC.Find: %w", err)
 		}
-		u.mu.Lock()
 		amountProducts = amountProducts + product.Product.Price
-		u.mu.Unlock()
 	}
 
 	paramProtoFindAccount := protoBalance.ParamGetWalletByAccountRequest{
@@ -72,14 +70,22 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 		Amount:   amountProducts,
 	}
 
-	u.mu.Lock()
-
 	_, err = u.clientBalanceGPRC.Debit(ctx, &paramProtoDebit)
 	if err != nil {
 		return nil, fmt.Errorf("u.clientBalanceGPRC.Debit: %w", err)
 	}
 
-	u.mu.Unlock()
+	for i := range in.ProductsIDS {
+		paramProductProto := protoProduct.ProductUpdateRequest{
+			Id:         in.ProductsIDS[i],
+			HasOrdered: true,
+		}
+
+		_, err := u.clientProductsGRPC.Update(ctx, &paramProductProto)
+		if err != nil {
+			return nil, fmt.Errorf("u.clientProductsGRPC.Find: %w", err)
+		}
+	}
 
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
 		AccountID:   in.AccountId,

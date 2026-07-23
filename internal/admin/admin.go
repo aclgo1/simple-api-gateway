@@ -96,19 +96,24 @@ type ParamsSearch struct {
 }
 
 func (p *ParamsSearch) Validate() error {
-	page, err := strconv.Atoi(p.Page)
-	if err != nil {
-		return err
+
+	if p.Page != "" {
+		page, err := strconv.Atoi(p.Page)
+		if err != nil {
+			return err
+		}
+
+		p.PageInt = page
 	}
 
-	p.PageInt = page
+	if p.Limit != "" {
+		limit, err := strconv.Atoi(p.Limit)
+		if err != nil {
+			return err
+		}
 
-	limit, err := strconv.Atoi(p.Limit)
-	if err != nil {
-		return err
+		p.LimitInt = limit
 	}
-
-	p.LimitInt = limit
 
 	return nil
 }

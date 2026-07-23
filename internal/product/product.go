@@ -3,6 +3,7 @@ package product
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -72,9 +73,31 @@ type ParamFindOutput struct {
 }
 
 type ParamFindAllInput struct {
+	Page     string
+	Limit    string
+	PageInt  int
+	LimitInt int
 }
 
 func (p *ParamFindAllInput) Validate() error {
+	if p.Page != "" {
+		page, err := strconv.Atoi(p.Page)
+		if err != nil {
+			return err
+		}
+
+		p.PageInt = page
+	}
+
+	if p.Limit != "" {
+		limit, err := strconv.Atoi(p.Limit)
+		if err != nil {
+			return err
+		}
+
+		p.LimitInt = limit
+	}
+
 	return nil
 }
 

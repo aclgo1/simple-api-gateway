@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/aclgo/simple-api-gateway/proto-service/product";
+option go_package = "github.com/aclgo/product/proto";
 
 import "google/protobuf/timestamp.proto";
 
@@ -10,8 +10,9 @@ message Product {
     double price = 3;
     int64 quantity = 4;
     string description = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
+    bool has_ordered = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
 }
 
 message ProductInsertRequest {
@@ -35,11 +36,17 @@ message ProductFindResponse {
 }
 
 message ProductFindAllRequest {
-
+    int32 page = 1;
+    int32 limit = 2;
 }
 
 message ProductFindAllResponse {
     repeated Product products = 1;
+    int32 page = 2;
+    int32 limit = 3;
+    int32 total_pages  = 4;
+    int32 total_items = 5;
+
 }
 
 message ProductUpdateRequest {
@@ -48,6 +55,7 @@ message ProductUpdateRequest {
     double price = 3;
     int64 quantity = 4;
     string description = 5;
+    bool has_ordered = 6;
 }
 
 message ProductUpdateResponse {

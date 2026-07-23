@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: product.proto
 
-package product
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -29,8 +29,9 @@ type Product struct {
 	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
 	Quantity      int64                  `protobuf:"varint,4,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	HasOrdered    bool                   `protobuf:"varint,6,opt,name=has_ordered,json=hasOrdered,proto3" json:"has_ordered,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -98,6 +99,13 @@ func (x *Product) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *Product) GetHasOrdered() bool {
+	if x != nil {
+		return x.HasOrdered
+	}
+	return false
 }
 
 func (x *Product) GetCreatedAt() *timestamppb.Timestamp {
@@ -316,6 +324,8 @@ func (x *ProductFindResponse) GetProduct() *Product {
 
 type ProductFindAllRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -350,9 +360,27 @@ func (*ProductFindAllRequest) Descriptor() ([]byte, []int) {
 	return file_product_proto_rawDescGZIP(), []int{5}
 }
 
+func (x *ProductFindAllRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ProductFindAllRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
 type ProductFindAllResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Products      []*Product             `protobuf:"bytes,1,rep,name=products,proto3" json:"products,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	TotalPages    int32                  `protobuf:"varint,4,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"`
+	TotalItems    int32                  `protobuf:"varint,5,opt,name=total_items,json=totalItems,proto3" json:"total_items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -394,6 +422,34 @@ func (x *ProductFindAllResponse) GetProducts() []*Product {
 	return nil
 }
 
+func (x *ProductFindAllResponse) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ProductFindAllResponse) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ProductFindAllResponse) GetTotalPages() int32 {
+	if x != nil {
+		return x.TotalPages
+	}
+	return 0
+}
+
+func (x *ProductFindAllResponse) GetTotalItems() int32 {
+	if x != nil {
+		return x.TotalItems
+	}
+	return 0
+}
+
 type ProductUpdateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -401,6 +457,7 @@ type ProductUpdateRequest struct {
 	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
 	Quantity      int64                  `protobuf:"varint,4,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	HasOrdered    bool                   `protobuf:"varint,6,opt,name=has_ordered,json=hasOrdered,proto3" json:"has_ordered,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -468,6 +525,13 @@ func (x *ProductUpdateRequest) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *ProductUpdateRequest) GetHasOrdered() bool {
+	if x != nil {
+		return x.HasOrdered
+	}
+	return false
 }
 
 type ProductUpdateResponse struct {
@@ -606,17 +670,19 @@ var File_product_proto protoreflect.FileDescriptor
 
 const file_product_proto_rawDesc = "" +
 	"\n" +
-	"\rproduct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf7\x01\n" +
+	"\rproduct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x98\x02\n" +
 	"\aProduct\x12\x0e\n" +
 	"\x02Id\x18\x01 \x01(\tR\x02Id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1a\n" +
 	"\bquantity\x18\x04 \x01(\x03R\bquantity\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x129\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vhas_ordered\x18\x06 \x01(\bR\n" +
+	"hasOrdered\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"~\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"~\n" +
 	"\x14ProductInsertRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05price\x18\x02 \x01(\x01R\x05price\x12\x1a\n" +
@@ -627,16 +693,26 @@ const file_product_proto_rawDesc = "" +
 	"\x12ProductFindRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"9\n" +
 	"\x13ProductFindResponse\x12\"\n" +
-	"\aproduct\x18\x01 \x01(\v2\b.ProductR\aproduct\"\x17\n" +
-	"\x15ProductFindAllRequest\">\n" +
+	"\aproduct\x18\x01 \x01(\v2\b.ProductR\aproduct\"A\n" +
+	"\x15ProductFindAllRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"\xaa\x01\n" +
 	"\x16ProductFindAllResponse\x12$\n" +
-	"\bproducts\x18\x01 \x03(\v2\b.ProductR\bproducts\"\x8e\x01\n" +
+	"\bproducts\x18\x01 \x03(\v2\b.ProductR\bproducts\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x1f\n" +
+	"\vtotal_pages\x18\x04 \x01(\x05R\n" +
+	"totalPages\x12\x1f\n" +
+	"\vtotal_items\x18\x05 \x01(\x05R\n" +
+	"totalItems\"\xaf\x01\n" +
 	"\x14ProductUpdateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1a\n" +
 	"\bquantity\x18\x04 \x01(\x03R\bquantity\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\";\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vhas_ordered\x18\x06 \x01(\bR\n" +
+	"hasOrdered\";\n" +
 	"\x15ProductUpdateResponse\x12\"\n" +
 	"\aproduct\x18\x01 \x01(\v2\b.ProductR\aproduct\"&\n" +
 	"\x14ProductDeleteRequest\x12\x0e\n" +
@@ -648,7 +724,7 @@ const file_product_proto_rawDesc = "" +
 	"\x04Find\x12\x13.ProductFindRequest\x1a\x14.ProductFindResponse\x12:\n" +
 	"\aFindAll\x12\x16.ProductFindAllRequest\x1a\x17.ProductFindAllResponse\x127\n" +
 	"\x06Update\x12\x15.ProductUpdateRequest\x1a\x16.ProductUpdateResponse\x127\n" +
-	"\x06Delete\x12\x15.ProductDeleteRequest\x1a\x16.ProductDeleteResponseB;Z9github.com/aclgo/simple-api-gateway/proto-service/productb\x06proto3"
+	"\x06Delete\x12\x15.ProductDeleteRequest\x1a\x16.ProductDeleteResponseB Z\x1egithub.com/aclgo/product/protob\x06proto3"
 
 var (
 	file_product_proto_rawDescOnce sync.Once
