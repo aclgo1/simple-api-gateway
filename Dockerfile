@@ -17,6 +17,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/simple-api-gateway ./
 COPY --from=builder /app/.env ./
 COPY --from=builder /app/frontend ./ 
+COPY --from=builder /app/certs ./certs
 
 EXPOSE 4000
 EXPOSE 50051

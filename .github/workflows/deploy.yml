@@ -15,6 +15,9 @@ jobs:
       - name: download other projects with makefile
         run: make clone-all GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}
       
+      - name: generate private and public key
+        run: make keys
+      
       - name: validate docker compose config
         run: docker compose config
       

@@ -60,7 +60,7 @@ func (a *grpcAuth) GetRequestMetadata(ctx context.Context, uri ...string) (map[s
 }
 
 func (a *grpcAuth) RequireTransportSecurity() bool {
-	return true
+	return false
 }
 
 func (a *grpcAuth) GenToken(context.Context) (string, error) {

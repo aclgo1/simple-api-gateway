@@ -636,7 +636,7 @@ async function getProducts() {
 
         if (!data || data.length === 0) return;
 
-        data.forEach(product => {
+        data.products.forEach(product => {
             container.innerHTML += `
                 <div class="card">
                     <p class="name">${product.name}</p>
@@ -861,29 +861,45 @@ async function Logout() {
 //     }
 // }
 
-async function GetStats(){
-    const stats = document.getElementById("conn-info")
 
-    try{
-        const src = new EventSource("/api/user/stats-sse")
+let statsSource = null;
 
-        src.addEventListener("conns", (event)=>{
-            try{
+async function GetStats() {
+    const stats = document.getElementById("conn-info");
+    
+    if (!stats) {
+        console.error("ERRO: Elemento com id 'conn-info' não foi encontrado no HTML!");
+        return;
+    }
+
+    if (statsSource) return;
+
+    try {
+        statsSource = new EventSource("/api/user/stats-sse");
+
+        statsSource.addEventListener("conns", (event) => {
+            console.log("dado recebido via sse:", event.data);
+            
+            try {
                 const data = JSON.parse(event.data);
-                stats.innerText = data.conns
-            }catch(parseError){
-                console.error("error parse JSON event conn: ", parseError)
+                stats.innerText = data.conns;
+            } catch (parseError) {
+                console.error("Erro ao fazer parse do JSON: ", parseError);
             }
-        })
+        });
 
-        src.addEventListener("error", (event)=>{
-            console.error("error conn sse", event)
-            stats.innerText = "-2"
-            src.close()
-        })
+        statsSource.addEventListener("error", (event) => {
+            if (document.readyState === 'loading' || document.hidden) return;
 
-    }catch(error){
-        console.error("error init eventsource")
+            if (statsSource.readyState === EventSource.CLOSED) {
+                console.error("Conexão SSE encerrada");
+                stats.innerText = "-2";
+                statsSource = null;
+            }
+        });
+
+    } catch (error) {
+        console.error("Erro ao iniciar EventSource", error);
     }
 }
 // Inicialização

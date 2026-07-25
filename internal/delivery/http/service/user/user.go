@@ -446,9 +446,14 @@ func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
 
 func (s *userService) StatsSSE(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Contentn-Type", "text/event-stream")
+
+		rc := http.NewResponseController(w)
+		rc.SetWriteDeadline(time.Time{})
+
+		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("X-Accel-Buffering", "no")
 
 		flusher, ok := w.(http.Flusher)
 		if !ok {
@@ -459,28 +464,38 @@ func (s *userService) StatsSSE(ctx context.Context) http.HandlerFunc {
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
+
+		sendData := func() {
+			conns, err := s.userUC.GetGlobalConns(r.Context())
+			if err != nil {
+				fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
+				flusher.Flush()
+				return
+			}
+
+			payload := map[string]any{
+				"conns": conns,
+			}
+
+			p, _ := json.Marshal(payload)
+
+			fmt.Fprintf(w, "event: conns\ndata: %s\n\n", string(p))
+
+			flusher.Flush()
+		}
+
+		sendData()
+
 		for {
 			select {
 			case <-ctx.Done():
 				return
+			case <-r.Context().Done():
+				return
 			case <-ticker.C:
-				conns, err := s.userUC.GetGlobalConns(r.Context())
-				if err != nil {
-					fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
-					flusher.Flush()
-					continue
-				}
-
-				r := map[string]any{
-					"conns": conns,
-				}
-
-				p, _ := json.Marshal(r)
-
-				fmt.Fprintf(w, "event: conns\ndata: %s\n\n", string(p))
-
-				flusher.Flush()
-
+				sendData()
 			}
 		}
 	}

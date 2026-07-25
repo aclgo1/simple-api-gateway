@@ -12,7 +12,7 @@ import (
 type Product interface {
 	Create(context.Context, *ParamCreateInput) (*ParamCreateOutput, error)
 	Find(context.Context, *ParamFindInput) (*ParamFindOutput, error)
-	FindAll(context.Context, *ParamFindAllInput) ([]*ParamFindAllOutput, error)
+	FindAll(context.Context, *ParamFindAllInput) (*ParamFindAllOutput, error)
 	Update(context.Context, *ParamUpdateInput) (*ParamUpdateOutput, error)
 	Delete(context.Context, *ParamDeleteInput) (*ParamDeleteOutput, error)
 }
@@ -50,6 +50,7 @@ type ParamCreateOutput struct {
 	Price       float64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
+	HasOrdered  bool      `json:"has_ordered"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -68,6 +69,7 @@ type ParamFindOutput struct {
 	Price       float64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
+	HasOrdered  bool      `json:"has_ordered"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -101,14 +103,23 @@ func (p *ParamFindAllInput) Validate() error {
 	return nil
 }
 
-type ParamFindAllOutput struct {
+type ParamProductOutput struct {
 	Id          string    `json:"product_id"`
 	Name        string    `json:"name"`
 	Price       float64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
+	HasOrdered  bool      `json:"has_ordered"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type ParamFindAllOutput struct {
+	Products   []*ParamProductOutput `json:"products"`
+	Page       int                   `json:"page"`
+	Limit      int                   `json:"limit"`
+	TotalItens int                   `json:"total_itens"`
+	TotalPages int                   `json:"total_pages"`
 }
 
 type ParamUpdateInput struct {
@@ -117,6 +128,7 @@ type ParamUpdateInput struct {
 	Price       float64 `json:"price"`
 	Quantity    int64   `json:"quantity"`
 	Description string  `json:"description"`
+	HasOrdered  bool    `json:"has_ordered"`
 }
 
 func (p *ParamUpdateInput) Validate() error {
@@ -137,6 +149,7 @@ type ParamUpdateOutput struct {
 	Price       float64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
+	HasOrdered  bool      `json:"has_ordered"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

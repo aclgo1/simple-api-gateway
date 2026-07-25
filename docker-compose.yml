@@ -23,7 +23,7 @@ services:
       - redis
       - mongodb
       - db
-      - grpc-admin
+      # - grpc-admin
       - grpc-user
       - grpc-orders
       - grpc-product
@@ -44,7 +44,7 @@ services:
     expose:
       - "50052"
     depends_on:
-      - grpc-admin
+      # - grpc-admin
       - db
     logging:
       driver: "json-file"
@@ -100,7 +100,7 @@ services:
       - "50054"
     depends_on:
       - grpc-user
-      - grpc-admin
+      # - grpc-admin
       - grpc-mail
       - db
     logging:
@@ -120,7 +120,7 @@ services:
       - "50055"
     depends_on:
       - grpc-user
-      - grpc-admin
+      # - grpc-admin
       - grpc-mail
       - db
     logging:
@@ -140,7 +140,7 @@ services:
       - "50056"
     depends_on:
       - grpc-user
-      - grpc-admin
+      # - grpc-admin
       - grpc-mail
       - mongodb
     logging:

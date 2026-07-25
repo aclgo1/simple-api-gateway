@@ -5,7 +5,7 @@ OUT_DIR   := ./proto-service/orders/proto
 PROTO_FILES := $(wildcard $(PROTO_DIR)/*.proto)
 
 # Lista de repositórios públicos
-REPOS = grpc-admin grpc-jwt-login grpc-mail grpc-orders grpc-product grpc-balance
+REPOS = grpc-jwt-login grpc-mail grpc-orders grpc-product grpc-balance
 # Repositório Privado
 PRIVATE_REPO = concurrency-example
 
@@ -20,7 +20,7 @@ GITHUB_TOKEN ?= default_token
 # Garante que o PATH inclua os binários do Go
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
-.PHONY: all clone-all pull-all up down proto run
+.PHONY: all clone-all pull-all up down proto run keys
 
 all: clone-all up
 
@@ -76,3 +76,23 @@ up:
 down:
 	@echo "Parando serviços..."
 	docker-compose down
+keys:
+	@echo "Limpando e recriando pasta certs no API Gateway..."
+	@rm -rf certs
+	@mkdir -p certs
+	@echo "Gerando chave privada RSA (.pem)..."
+	@openssl genpkey -algorithm RSA -out certs/private_key.pem -pkeyopt rsa_keygen_bits:2048
+	@echo "Gerando chave pública RSA (.pem)..."
+	@openssl rsa -pubout -in certs/private_key.pem -out certs/public_key.pem
+	@echo "Limpando e copiando chave PÚBLICA para os microserviços..."
+	@$(foreach repo, $(REPOS) $(PRIVATE_REPO), \
+		if [ -d "$(PARENT_DIR)/$(repo)" ]; then \
+			echo "Atualizando certs em $(PARENT_DIR)/$(repo)..."; \
+			rm -rf $(PARENT_DIR)/$(repo)/certs; \
+			mkdir -p $(PARENT_DIR)/$(repo)/certs; \
+			cp certs/public_key.pem $(PARENT_DIR)/$(repo)/certs/public_key.pem; \
+		else \
+			echo "Aviso: Diretório $(repo) não encontrado. Pulando envio."; \
+		fi; \
+	)
+	@echo "Chaves limpas, recriadas e distribuídas com sucesso!"

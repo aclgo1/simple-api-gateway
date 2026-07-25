@@ -43,7 +43,6 @@ import (
 	redis "github.com/aclgo/simple-api-gateway/pkg/rredis"
 
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
-	protoAdmin "github.com/aclgo/simple-api-gateway/proto-service/admin"
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
 	protoMail "github.com/aclgo/simple-api-gateway/proto-service/mail"
 	protoOrders "github.com/aclgo/simple-api-gateway/proto-service/orders"
@@ -118,31 +117,37 @@ func main() {
 	connUser, err := grpc.NewClient(AddrServiceUser, OptionsServiceUser...)
 	if err != nil {
 		logger.Errorf("grpc.Dial: connection in user service: %v", err)
+		return
 	}
 
-	connAdmin, err := grpc.NewClient(AddrServiceAdmin, OptionsServiceAdmin...)
-	if err != nil {
-		logger.Errorf("grpc.Dial: connection in admin service: %v", err)
-	}
+	// connAdmin, err := grpc.NewClient(AddrServiceAdmin, OptionsServiceAdmin...)
+	// if err != nil {
+	// 	logger.Errorf("grpc.Dial: connection in admin service: %v", err)
+	// 	return
+	// }
 
 	connMail, err := grpc.NewClient(AddrServiceMail, OptionsServiceMail...)
 	if err != nil {
 		logger.Errorf("grpc.Dial: connection in mail service: %v", err)
+		return
 	}
 
 	connProduct, err := grpc.NewClient(AddrServiceProduct, OptionsServiceProduct...)
 	if err != nil {
 		logger.Errorf("grpc.Dial: connection in product service: %v", err)
+		return
 	}
 
 	connOrders, err := grpc.NewClient(AddrServiceOrders, OptionsServiceOrders...)
 	if err != nil {
-		logger.Errorf("grpc.Dial: connection in product service: %v", err)
+		logger.Errorf("grpc.Dial: connection in orders service: %v", err)
+		return
 	}
 
 	connBalance, err := grpc.NewClient(AddrServiceBalance, OptionsServiceBalance...)
 	if err != nil {
-		logger.Errorf("grpc.Dial: connection in product service: %v", err)
+		logger.Errorf("grpc.Dial: connection in balance service: %v", err)
+		return
 	}
 
 	redisClient := redis.NewRedisClient(cfg)
@@ -154,7 +159,7 @@ func main() {
 	////////////////////////////////
 
 	clientUserService := protoUser.NewUserServiceClient(connUser)
-	adminUserService := protoAdmin.NewAdminServiceClient(connAdmin)
+	// adminUserService := protoAdmin.NewAdminServiceClient(nil)
 	mailUserService := protoMail.NewMailServiceClient(connMail)
 	productUserService := protoProduct.NewProductServiceClient(connProduct)
 	ordersUserService := protoOrders.NewServiceOrderClient(connOrders)
@@ -165,7 +170,7 @@ func main() {
 	cptSvc := svcCaptcha.NewCaptchaService(cptUC)
 
 	user := userUC.NewuserUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
-	admin := adminUC.NewadminUC(adminUserService, clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
+	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
 	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger)
 
@@ -211,7 +216,7 @@ func main() {
 
 	//MICROSERVICE GRPC ADMINs
 	mux.HandleFunc("/api/admin/register", authUC.ValidateCreateAdmin(adminHandler.Create(ctx)))
-	mux.HandleFunc("GET /api/admin", authUC.ValidateIsAdmin(adminHandler.FindUsers(ctx)))
+	mux.HandleFunc("GET /api/admin/search", authUC.ValidateIsAdmin(adminHandler.FindUsers(ctx)))
 	mux.HandleFunc("DELETE /api/admin/delete/{user_id}", authUC.ValidateIsAdmin(adminHandler.Delete(ctx)))
 	mux.HandleFunc("PATCH /api/admin/register/toggle", authUC.ValidateIsAdmin(userHandler.ToggleRegistration(ctx)))
 
@@ -276,8 +281,8 @@ func main() {
 
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%d", cfg.ApiPort),
-		ReadTimeout:    time.Second * 10,
-		WriteTimeout:   time.Second * 10,
+		ReadTimeout:    time.Second * 15,
+		WriteTimeout:   time.Second * 15,
 		ErrorLog:       log.Default(),
 		Handler:        cors.Handler(hlogger),
 		MaxHeaderBytes: 8192,

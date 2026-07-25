@@ -9,7 +9,6 @@ import (
 	"github.com/aclgo/simple-api-gateway/internal/auth"
 	"github.com/aclgo/simple-api-gateway/internal/captcha"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
-	protoAdmin "github.com/aclgo/simple-api-gateway/proto-service/admin"
 	protoUser "github.com/aclgo/simple-api-gateway/proto-service/user"
 
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
@@ -19,7 +18,7 @@ import (
 )
 
 type adminUC struct {
-	clientAdmin   protoAdmin.AdminServiceClient
+	// clientAdmin   protoAdmin.AdminServiceClient
 	clientUser    protoUser.UserServiceClient
 	clientMail    protoMail.MailServiceClient
 	clientBalance protoBalance.WalletServiceClient
@@ -28,7 +27,8 @@ type adminUC struct {
 	logger        logger.Logger
 }
 
-func NewadminUC(clientAdmin protoAdmin.AdminServiceClient,
+func NewadminUC(
+	// clientAdmin protoAdmin.AdminServiceClient,
 	clientUser protoUser.UserServiceClient,
 	clientMail protoMail.MailServiceClient,
 	clientBalance protoBalance.WalletServiceClient,
@@ -36,7 +36,7 @@ func NewadminUC(clientAdmin protoAdmin.AdminServiceClient,
 	redisClient *redis.Client,
 	logger logger.Logger) admin.AdminUC {
 	return &adminUC{
-		clientAdmin:   clientAdmin,
+		// clientAdmin:   clientAdmin,
 		clientUser:    clientUser,
 		clientMail:    clientMail,
 		clientBalance: clientBalance,
@@ -205,14 +205,14 @@ func (u *adminUC) Delete(ctx context.Context, params *admin.ParamsDeleteUser) (s
 		return "", errors.New("user role unsuported delete")
 	}
 
-	i := protoAdmin.ParamsDeleteUserRequest{
-		UserId: params.UserId,
+	i := protoUser.DeleteRequest{
+		Id: params.UserId,
 	}
 
-	o, err := u.clientAdmin.DeleteUser(ctx, &i)
+	_, err = u.clientUser.Delete(ctx, &i)
 	if err != nil {
 		return "", err
 	}
 
-	return o.Msg, nil
+	return "", nil
 }

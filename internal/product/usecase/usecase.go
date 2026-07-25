@@ -41,6 +41,7 @@ func (u *productUC) Create(ctx context.Context, in *product.ParamCreateInput) (*
 		Price:       create.Product.Price,
 		Quantity:    create.Product.Quantity,
 		Description: create.Product.Description,
+		HasOrdered:  create.Product.HasOrdered,
 		CreatedAt:   create.Product.CreatedAt.AsTime(),
 		UpdatedAt:   create.Product.UpdatedAt.AsTime(),
 	}
@@ -63,38 +64,51 @@ func (u *productUC) Find(ctx context.Context, in *product.ParamFindInput) (*prod
 		Price:       find.Product.Price,
 		Quantity:    find.Product.Quantity,
 		Description: find.Product.Description,
+		HasOrdered:  find.Product.HasOrdered,
 		CreatedAt:   find.Product.CreatedAt.AsTime(),
 		UpdatedAt:   find.Product.UpdatedAt.AsTime(),
 	}
 
 	return &out, nil
 }
-func (u *productUC) FindAll(ctx context.Context, in *product.ParamFindAllInput) ([]*product.ParamFindAllOutput, error) {
+func (u *productUC) FindAll(ctx context.Context, in *product.ParamFindAllInput) (*product.ParamFindAllOutput, error) {
 
-	ip := proto.ProductFindAllRequest{}
+	ip := proto.ProductFindAllRequest{
+		Page:  int32(in.PageInt),
+		Limit: int32(in.LimitInt),
+	}
 
 	all, err := u.clientProductGRPC.FindAll(ctx, &ip)
 	if err != nil {
 		return nil, fmt.Errorf("u.clientProductGRPC.FindAll: %w", err)
 	}
 
-	var products []*product.ParamFindAllOutput
+	products := make([]*product.ParamProductOutput, len(all.Products))
 
 	for i := range all.Products {
-		product := product.ParamFindAllOutput{
+		product := product.ParamProductOutput{
 			Id:          all.Products[i].Id,
 			Name:        all.Products[i].Name,
 			Price:       all.Products[i].Price,
 			Quantity:    all.Products[i].Quantity,
 			Description: all.Products[i].Description,
+			HasOrdered:  all.Products[i].HasOrdered,
 			CreatedAt:   all.Products[i].CreatedAt.AsTime(),
 			UpdatedAt:   all.Products[i].UpdatedAt.AsTime(),
 		}
 
-		products = append(products, &product)
+		products[i] = &product
 	}
 
-	return products, nil
+	resp := product.ParamFindAllOutput{
+		Products:   products,
+		Page:       int(all.Page),
+		Limit:      int(all.Limit),
+		TotalItens: int(all.TotalItems),
+		TotalPages: int(all.TotalPages),
+	}
+
+	return &resp, nil
 }
 func (u *productUC) Update(ctx context.Context, in *product.ParamUpdateInput) (*product.ParamUpdateOutput, error) {
 	protoParamUpdate := proto.ProductUpdateRequest{
@@ -103,6 +117,7 @@ func (u *productUC) Update(ctx context.Context, in *product.ParamUpdateInput) (*
 		Price:       in.Price,
 		Quantity:    in.Quantity,
 		Description: in.Description,
+		HasOrdered:  in.HasOrdered,
 	}
 
 	updated, err := u.clientProductGRPC.Update(ctx, &protoParamUpdate)
@@ -116,6 +131,7 @@ func (u *productUC) Update(ctx context.Context, in *product.ParamUpdateInput) (*
 		Price:       updated.Product.Price,
 		Quantity:    updated.Product.Quantity,
 		Description: updated.Product.Description,
+		HasOrdered:  updated.Product.HasOrdered,
 		CreatedAt:   updated.Product.CreatedAt.AsTime(),
 		UpdatedAt:   updated.Product.UpdatedAt.AsTime(),
 	}
