@@ -41,7 +41,7 @@ func (s *ordersService) Create(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		ord, err := s.ordersUC.Create(ctx, &param)
+		ord, err := s.ordersUC.CreateWithSaga(ctx, &param)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 

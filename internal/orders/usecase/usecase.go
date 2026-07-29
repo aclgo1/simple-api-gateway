@@ -36,6 +36,8 @@ func NeworderUC(
 	}
 }
 
+
+//version create order v1 simple
 func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
 
 	var amountProducts float64
@@ -116,6 +118,13 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 
 	return &out, nil
 }
+
+//create order v2 using saga orc
+func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
+	saga := NewOrderCreateSaga(u.clientProductsGRPC,u.clientOrdersGRPC,u.clientBalanceGPRC)
+	return saga.Execute(ctx,in)
+}
+
 func (u *orderUC) FindById(ctx context.Context, in *orders.OrderFindByIdInput) (*orders.OrderFindByIdOutput, error) {
 
 	paramProto := protoOrders.ParamFindOrderRequest{

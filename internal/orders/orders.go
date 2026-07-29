@@ -10,6 +10,7 @@ import (
 
 type Orders interface {
 	Create(context.Context, *OrderCreateInput) (*OrderCreateOutput, error)
+CreateWithSaga(ctx context.Context, in *OrderCreateInput)(*OrderCreateOutput,error)
 	FindById(context.Context, *OrderFindByIdInput) (*OrderFindByIdOutput, error)
 	FindByAccount(context.Context, *OrderByAccountInput) ([]*OrderByAccountOutput, error)
 	FindByProduct(context.Context, *OrderByProductInput) (*OrderByProductOutput, error)
