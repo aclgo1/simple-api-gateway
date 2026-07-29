@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/aclgo/simple-api-gateway/internal/orders"
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
@@ -15,15 +14,19 @@ type OrderCreateSagaUC struct {
 	clientProductsGRPC protoProduct.ProductServiceClient
 	clientOrdersGRPC   protoOrders.ServiceOrderClient
 	clientBalanceGPRC  protoBalance.WalletServiceClient
+	sagaWorkerCompensate orders.SagaWorker
 }
 
 func NewOrderCreateSaga(clientProductsGRPC protoProduct.ProductServiceClient,
 	clientOrdersGRPC   protoOrders.ServiceOrderClient,
-	clientBalanceGPRC  protoBalance.WalletServiceClient) *OrderCreateSagaUC{
+	clientBalanceGPRC  protoBalance.WalletServiceClient,
+	sagaWorkerCompensate orders.SagaWorker,
+	) *OrderCreateSagaUC{
 	return &OrderCreateSagaUC{
 		clientProductsGRPC: clientProductsGRPC,
 		clientOrdersGRPC: clientOrdersGRPC,
 		clientBalanceGPRC: clientBalanceGPRC,
+		sagaWorkerCompensate: sagaWorkerCompensate,
 	}
 }
 
@@ -49,12 +52,10 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 	var compensations []func(context.Context)error
 
 	rollback := func(originalErr error)error{
-		for i := len(compensations)-1;i>=0;i--{
-			if compErr:= compensations[i](ctx); compErr != nil {
-				log.Printf("saga compensation failed! manual intervention required. error: %v", compErr)
-			}
-		}
-
+		u.sagaWorkerCompensate.AppendTask(&orders.CompensationTask{
+			OriginalErr: err,
+			Compensations: compensations,
+		})
 		return originalErr
 	}
 
@@ -117,3 +118,4 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 
 	return out,nil
 }
+

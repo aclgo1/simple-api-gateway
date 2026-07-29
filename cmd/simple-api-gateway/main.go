@@ -84,6 +84,8 @@ var (
 
 func main() {
 
+	ctx := context.Background()
+	
 	cfg := config.Load(".")
 
 	db, err := sqlx.Open(cfg.DbDriver, cfg.DbUrl)
@@ -169,10 +171,13 @@ func main() {
 	cptUC := captchaUC.NewCaptchaUC(cptRepo)
 	cptSvc := svcCaptcha.NewCaptchaService(cptUC)
 
+	sagaWorkerCompensate := ordersUC.NewSagaWorker(3, time.Minute)
+	sagaWorkerCompensate.Start(ctx)
+
 	user := userUC.NewuserUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
-	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger)
+	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate)
 
 	pixRepository := pixRepo.NewPixRepository(redisClient)
 
@@ -193,7 +198,6 @@ func main() {
 
 	authUC := authUC.NewAuthUC(clientUserService)
 
-	ctx := context.Background()
 
 	mux := http.NewServeMux()
 

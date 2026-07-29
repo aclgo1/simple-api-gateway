@@ -18,6 +18,7 @@ type orderUC struct {
 	clientProductsGRPC protoProduct.ProductServiceClient
 	mu                 *sync.Mutex
 	logger             logger.Logger
+	WorkerSaga orders.SagaWorker
 }
 
 func NeworderUC(
@@ -26,6 +27,7 @@ func NeworderUC(
 	clientBalanceGRPC protoBalance.WalletServiceClient,
 	mu *sync.Mutex,
 	logger logger.Logger,
+	workerSaga orders.SagaWorker,
 ) *orderUC {
 	return &orderUC{
 		clientOrdersGRPC:   clientOrdersGRPC,
@@ -33,6 +35,7 @@ func NeworderUC(
 		clientProductsGRPC: clientProductsGRPC,
 		mu:                 mu,
 		logger:             logger,
+		WorkerSaga:workerSaga,
 	}
 }
 
@@ -121,7 +124,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 
 //create order v2 using saga orc
 func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
-	saga := NewOrderCreateSaga(u.clientProductsGRPC,u.clientOrdersGRPC,u.clientBalanceGPRC)
+	saga := NewOrderCreateSaga(u.clientProductsGRPC,u.clientOrdersGRPC,u.clientBalanceGPRC,u.WorkerSaga)
 	return saga.Execute(ctx,in)
 }
 

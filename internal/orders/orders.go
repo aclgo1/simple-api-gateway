@@ -10,7 +10,7 @@ import (
 
 type Orders interface {
 	Create(context.Context, *OrderCreateInput) (*OrderCreateOutput, error)
-CreateWithSaga(ctx context.Context, in *OrderCreateInput)(*OrderCreateOutput,error)
+	CreateWithSaga(ctx context.Context, in *OrderCreateInput)(*OrderCreateOutput,error)
 	FindById(context.Context, *OrderFindByIdInput) (*OrderFindByIdOutput, error)
 	FindByAccount(context.Context, *OrderByAccountInput) ([]*OrderByAccountOutput, error)
 	FindByProduct(context.Context, *OrderByProductInput) (*OrderByProductOutput, error)
@@ -112,3 +112,13 @@ type OrderByProductOutput struct {
 	ProductsIDS []string  `json:"products_ids"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+type SagaWorker interface {
+	AppendTask(task *CompensationTask)
+}
+
+type CompensationTask struct {
+	Compensations []func(context.Context)error
+	OriginalErr error
+}
+
