@@ -367,21 +367,21 @@ func (u *userUc) SendConfirm(ctx context.Context, params *user.ParamsConfirm) er
 	return user.ErrEmailSentCheckInbox{}
 }
 
-func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK) error {
+func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK) (*user.ParamsUserLoginResponse,error) {
 
 	userEmail, err := u.redisClient.Get(ctx, params.ConfirmCode).Result()
 	if err != nil && err != redis.Nil {
-		return err
+		return nil, err
 	}
 
 	if err == redis.Nil {
-		return user.ErrInvalidCode{}
+		return nil, user.ErrInvalidCode{}
 	}
 
 	foundUser, err := u.clientUserGRPC.FindByEmail(ctx, &protoUser.FindByEmailRequest{Email: userEmail})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	in := protoUser.UpdateRequest{
@@ -391,10 +391,26 @@ func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK
 
 	_, err = u.clientUserGRPC.Update(ctx, &in)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	pLogin := protoUser.UserLoginRequest{
+		Email: foundUser.User.Email,
+		Password: foundUser.User.Password,
+	}
+
+	tokens,err := u.clientUserGRPC.Login(ctx, &pLogin)
+	if err != nil {
+		return nil,err
+	}
+
+	resp := user.ParamsUserLoginResponse{
+		AccessToken: tokens.Tokens.AccessToken,
+		RefreshToken: tokens.Tokens.RefreshToken,
+	}
+
+
+	return &resp,nil
 }
 
 func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) error {
@@ -448,23 +464,23 @@ func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) er
 
 }
 
-func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error {
+func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user.ParamsUserLoginResponse,error) {
 	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
-		return user.ErrFailedVerifyCaptcha{}
+		return nil, user.ErrFailedVerifyCaptcha{}
 	}
 
 	idUser, err := u.redisClient.Get(ctx, params.NewPassCode).Result()
 	if err != nil && err != redis.Nil {
-		return err
+		return nil,err
 	}
 
 	if err == redis.Nil {
-		return user.ErrInvalidCode{}
+		return nil, user.ErrInvalidCode{}
 	}
 
-	_, err = u.clientUserGRPC.FindById(ctx, &protoUser.FindByIdRequest{Id: idUser})
+	find, err := u.clientUserGRPC.FindById(ctx, &protoUser.FindByIdRequest{Id: idUser})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = u.clientUserGRPC.Update(ctx, &protoUser.UpdateRequest{
@@ -473,15 +489,32 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) error 
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	errDel := u.redisClient.Del(ctx, params.NewPassCode).Err()
 	if errDel != nil {
-		return errDel
+		return nil, errDel
 	}
 
-	return nil
+
+	pLogin := protoUser.UserLoginRequest{
+		Email: find.User.Email,
+		Password: find.User.Password,
+	}
+
+	tokens,err := u.clientUserGRPC.Login(ctx, &pLogin)
+	if err != nil {
+		return nil,err
+	}
+
+	resp := user.ParamsUserLoginResponse{
+		AccessToken: tokens.Tokens.AccessToken,
+		RefreshToken: tokens.Tokens.RefreshToken,
+	}
+
+
+	return &resp,nil
 }
 
 func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {

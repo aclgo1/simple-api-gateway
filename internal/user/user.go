@@ -17,9 +17,9 @@ type UserUC interface {
 	Update(ctx context.Context, params *ParamsUserUpdate) (*User, error)
 	Delete(ctx context.Context, params *ParamsUserDelete) error
 	SendConfirm(ctx context.Context, params *ParamsConfirm) error
-	SendConfirmOK(ctx context.Context, params *ParamsConfirmOK) error
+	SendConfirmOK(ctx context.Context, params *ParamsConfirmOK) (*ParamsUserLoginResponse,error)
 	ResetPass(ctx context.Context, params *ParamsResetPass) error
-	NewPass(ctx context.Context, params *ParamsNewPass) error
+	NewPass(ctx context.Context, params *ParamsNewPass) (*ParamsUserLoginResponse,error)
 	GetGlobalConns(context.Context) (int, error)
 	RegistrationStatus(context.Context) bool
 	UpdateRegistrationStatus(context.Context, *ParamUpdateRegistration)

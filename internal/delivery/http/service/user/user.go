@@ -300,7 +300,8 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		if err := s.userUC.SendConfirmOK(ctx, &params); err != nil {
+		tokens, err := s.userUC.SendConfirmOK(ctx, &params)
+		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -308,12 +309,14 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		// resp := map[string]string{
-		// 	"message":  "user confirmed signup",
-		// 	"redirect": "/login",
-		// }
+		resp := map[string]any{
+			"message":  "user confirmed signup",
+			"tokens":tokens,
+		}
 
-		http.Redirect(w, r, fmt.Sprintf("%s/login", s.BaseApiUrl), http.StatusSeeOther)
+		// http.Redirect(w, r, fmt.Sprintf("%s/login", s.BaseApiUrl), http.StatusSeeOther)
+
+		service.JSON(w,resp,http.StatusOK)
 	}
 }
 
@@ -380,7 +383,8 @@ func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		if err := s.userUC.NewPass(ctx, &params); err != nil {
+		tokens, err := s.userUC.NewPass(ctx, &params)
+		if err != nil {
 			if err == (user.ErrInvalidCode{}) {
 				response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 				service.JSON(w, response, http.StatusBadRequest)
@@ -394,8 +398,9 @@ func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		resp := map[string]string{
+		resp := map[string]any{
 			"message": "user updated pass",
+			"tokens": tokens,
 		}
 
 		service.JSON(w, resp, http.StatusOK)

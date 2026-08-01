@@ -53,7 +53,7 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 
 	rollback := func(originalErr error)error{
 		u.sagaWorkerCompensate.AppendTask(&orders.CompensationTask{
-			OriginalErr: err,
+			OriginalErr: originalErr,
 			Compensations: compensations,
 		})
 		return originalErr
@@ -75,17 +75,7 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 		return err
 	})
 
-	var successfullyUpdatedProducts []string
-	for _, pID := range in.ProductsIDS {
-		_, err := u.clientProductsGRPC.Update(ctx, &protoProduct.ProductUpdateRequest{
-			Id:         pID,
-			HasOrdered: true,
-		})
-		if err != nil {
-			return nil, rollback(fmt.Errorf("failed to update product %s: %w", pID, err))
-		}
-		successfullyUpdatedProducts = append(successfullyUpdatedProducts, pID)
-	}
+	successfullyUpdatedProducts:= make([]string, 0,len(in.ProductsIDS))
 
 	compensations = append(compensations, func(ctx context.Context) error {
 		for _, pId := range successfullyUpdatedProducts{
@@ -100,6 +90,17 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 
 		return nil
 	})
+
+	for _, pID := range in.ProductsIDS {
+		_, err := u.clientProductsGRPC.Update(ctx, &protoProduct.ProductUpdateRequest{
+			Id:         pID,
+			HasOrdered: true,
+		})
+		if err != nil {
+			return nil, rollback(fmt.Errorf("failed to update product %s: %w", pID, err))
+		}
+		successfullyUpdatedProducts = append(successfullyUpdatedProducts, pID)
+	}
 
 	orderCreate, err := u.clientOrdersGRPC.Create(ctx, &protoOrders.ParamCreateOrderRequest{
 		AccountID:   in.AccountId,
