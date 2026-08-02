@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/aclgo/simple-api-gateway/config"
-	"github.com/aclgo/simple-api-gateway/frontend/load"
 
 	"github.com/aclgo/simple-api-gateway/internal/admin"
 	captchaRepo "github.com/aclgo/simple-api-gateway/internal/captcha/repository"
@@ -80,6 +81,9 @@ var (
 	OptionsServiceBalance = []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
+
+	//go:embed frontend-dist/*
+	frontendAssets embed.FS
 )
 
 func main() {
@@ -254,25 +258,32 @@ func main() {
 
 	//FRONTEND SETUP
 
-	load := load.NewLoad("html", "css", "./")
+	// load := load.NewLoad("html", "css", "./")
 
-	pages, err := load.Start()
-	if err != nil {
-		log.Fatalf("load.Start: %v", err)
-	}
+	// pages, err := load.Start()
+	// if err != nil {
+	// 	log.Fatalf("load.Start: %v", err)
+	// }
 
 	// mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(load.PathCss))))
 
-	mux.HandleFunc("/login", pages.Login)
-	mux.HandleFunc("/home", pages.Home)
-	mux.HandleFunc("/unauthorized", pages.Unauthorized)
-	mux.HandleFunc("/confirm_signup", pages.ConfirmSignup)
-	mux.HandleFunc("/resetpass", pages.ResetPass)
-	mux.HandleFunc("/newpass", pages.NewPass)
-	mux.HandleFunc("/products", pages.Products)
-	mux.HandleFunc("/admin", pages.Admin)
-	mux.HandleFunc("/pricing", pages.Pricing)
-	mux.HandleFunc("/pricing/pix", pages.PricingPix)
+	// mux.HandleFunc("/login", pages.Login)
+	// mux.HandleFunc("/home", pages.Home)
+	// mux.HandleFunc("/unauthorized", pages.Unauthorized)
+	// mux.HandleFunc("/confirm_signup", pages.ConfirmSignup)
+	// mux.HandleFunc("/resetpass", pages.ResetPass)
+	// mux.HandleFunc("/newpass", pages.NewPass)
+	// mux.HandleFunc("/products", pages.Products)
+	// mux.HandleFunc("/admin", pages.Admin)
+	// mux.HandleFunc("/pricing", pages.Pricing)
+	// mux.HandleFunc("/pricing/pix", pages.PricingPix)
+
+	distFiles,err := fs.Sub(frontendAssets, "frontend-dist")
+	if err != nil {
+		log.Fatalf("error loading static files: %v",err)
+	}
+
+	mux.Handle("/", http.FileServer(http.FS(distFiles)))
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
