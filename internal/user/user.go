@@ -23,6 +23,7 @@ type UserUC interface {
 	GetGlobalConns(context.Context) (int, error)
 	RegistrationStatus(context.Context) bool
 	UpdateRegistrationStatus(context.Context, *ParamUpdateRegistration)
+	CancelSubscription(ctx context.Context, params *ParamsCancelSubscriptionInput)(*ParamsCancelSubscriptionOutput,error)
 }
 
 type User struct {
@@ -33,7 +34,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	Verified  string    `json:"verified"`
-	Balance   float64   `json:"balance"`
+	Balance   int64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -156,7 +157,7 @@ type ParamsUserUpdate struct {
 	Password string  `json:"password"`
 	Email    string  `json:"email"`
 	Verified string  `json:"verified"`
-	Balance  float64 `json:"balance"`
+	Balance  int64 `json:"balance"`
 }
 
 func (p *ParamsUserUpdate) Validate() error {
@@ -283,3 +284,22 @@ type ParamUpdateRegistration struct {
 func (p *ParamUpdateRegistration) Validate() error {
 	return nil
 }
+
+type ParamsCancelSubscriptionInput struct{
+	UserId string
+}
+
+func(p *ParamsCancelSubscriptionInput)Validate()error{
+	if p.UserId == ""{
+		return errors.New("user id empty")
+	}
+	return nil
+}
+
+type ParamsCancelSubscriptionOutput struct{
+	SubscriptionId string `json:"subscription_id"`
+	UserId string `json:"user_id"`
+	Status string `json:"status"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+

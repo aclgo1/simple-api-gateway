@@ -430,6 +430,41 @@ func (s *userService) RefreshTokens(ctx context.Context) http.HandlerFunc {
 	}
 }
 
+func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		paramsCtx,ok := r.Context().Value(auth.KeyCtxParamsToken).(*auth.ParamsToken)
+		if !ok{
+			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrNoParamsInCtx.Error())
+
+			service.JSON(w, response, http.StatusInternalServerError)
+
+			return
+		}
+
+		p := user.ParamsCancelSubscriptionInput{
+			UserId: paramsCtx.UserID,
+		}
+
+		if err := p.Validate(); err != nil {
+			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+			service.JSON(w, response, http.StatusInternalServerError)
+
+			return
+		}
+
+		canceled, err := s.userUC.CancelSubscription(ctx, &p)
+		if err != nil {
+			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+			service.JSON(w, response, http.StatusInternalServerError)
+
+			return
+		}
+
+		service.JSON(w,canceled,http.StatusOK)
+
+	}
+}
+
 func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

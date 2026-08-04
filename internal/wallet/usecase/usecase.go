@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"sync"
 
 	"github.com/aclgo/simple-api-gateway/internal/wallet"
@@ -39,15 +38,6 @@ func (w *walletUC) RegisterProvider(method string, proccessor wallet.PaymentProc
 
 func (u *walletUC) Credit(ctx context.Context, in *wallet.ParamCreditInput) (*wallet.ParamCreditOutput, error) {
 
-	in.Amount = math.Abs(in.Amount)
-
-	pct := proto.ParamCreateTransactionRequest{
-		ReferenceId: in.ReferenceId,
-	}
-
-	if _, err := u.clientBalanceGPRC.CreateTransaction(ctx, &pct); err != nil {
-		return nil, fmt.Errorf("u.clientBalanceGPRC.CreateTransaction: %w", err)
-	}
 
 	ig := proto.ParamGetWalletByAccountRequest{
 		AccountID: in.AccountId,

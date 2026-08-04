@@ -26,7 +26,7 @@ type Product struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
 	Quantity      int64                  `protobuf:"varint,4,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
 	HasOrdered    bool                   `protobuf:"varint,6,opt,name=has_ordered,json=hasOrdered,proto3" json:"has_ordered,omitempty"`
@@ -80,7 +80,7 @@ func (x *Product) GetName() string {
 	return ""
 }
 
-func (x *Product) GetPrice() float64 {
+func (x *Product) GetPrice() int64 {
 	if x != nil {
 		return x.Price
 	}
@@ -125,7 +125,7 @@ func (x *Product) GetUpdatedAt() *timestamppb.Timestamp {
 type ProductInsertRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Price         float64                `protobuf:"fixed64,2,opt,name=price,proto3" json:"price,omitempty"`
+	Price         int64                  `protobuf:"varint,2,opt,name=price,proto3" json:"price,omitempty"`
 	Quantity      int64                  `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -169,7 +169,7 @@ func (x *ProductInsertRequest) GetName() string {
 	return ""
 }
 
-func (x *ProductInsertRequest) GetPrice() float64 {
+func (x *ProductInsertRequest) GetPrice() int64 {
 	if x != nil {
 		return x.Price
 	}
@@ -454,7 +454,7 @@ type ProductUpdateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
 	Quantity      int64                  `protobuf:"varint,4,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
 	HasOrdered    bool                   `protobuf:"varint,6,opt,name=has_ordered,json=hasOrdered,proto3" json:"has_ordered,omitempty"`
@@ -506,7 +506,7 @@ func (x *ProductUpdateRequest) GetName() string {
 	return ""
 }
 
-func (x *ProductUpdateRequest) GetPrice() float64 {
+func (x *ProductUpdateRequest) GetPrice() int64 {
 	if x != nil {
 		return x.Price
 	}
@@ -674,7 +674,7 @@ const file_product_proto_rawDesc = "" +
 	"\aProduct\x12\x0e\n" +
 	"\x02Id\x18\x01 \x01(\tR\x02Id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1a\n" +
+	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x1a\n" +
 	"\bquantity\x18\x04 \x01(\x03R\bquantity\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1f\n" +
 	"\vhas_ordered\x18\x06 \x01(\bR\n" +
@@ -685,7 +685,7 @@ const file_product_proto_rawDesc = "" +
 	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"~\n" +
 	"\x14ProductInsertRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05price\x18\x02 \x01(\x01R\x05price\x12\x1a\n" +
+	"\x05price\x18\x02 \x01(\x03R\x05price\x12\x1a\n" +
 	"\bquantity\x18\x03 \x01(\x03R\bquantity\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\";\n" +
 	"\x15ProductInsertResponse\x12\"\n" +
@@ -708,7 +708,7 @@ const file_product_proto_rawDesc = "" +
 	"\x14ProductUpdateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x1a\n" +
+	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x1a\n" +
 	"\bquantity\x18\x04 \x01(\x03R\bquantity\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1f\n" +
 	"\vhas_ordered\x18\x06 \x01(\bR\n" +

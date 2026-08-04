@@ -95,29 +95,29 @@ func getMigrationsEntry(fsys fs.FS) ([]*migrationEntry, error) {
 
 func checkIfTableExists(tx *sql.Tx) (bool, error) {
 	const query = `SELECT count(*) FROM information_schema.tables
-	WHERE table_schema = 'public' AND table_name = 'schema_migrations'`
+	WHERE table_schema = 'public' AND table_name = 'schema_migrations_simple_api_gateway'`
 
 	var count int
 	if err := tx.QueryRow(query).Scan(&count); err != nil {
-		return false, fmt.Errorf("failed to check if schema_migrations exists: %w", err)
+		return false, fmt.Errorf("failed to check if schema_migrations_simple_api_gateway exists: %w", err)
 	}
 
 	return count > 0, nil
 }
 
 func createMigrationsTable(tx *sql.Tx) error {
-	const query = `CREATE TABLE IF NOT EXISTS schema_migrations
+	const query = `CREATE TABLE IF NOT EXISTS schema_migrations_simple_api_gateway
 	(id TEXT PRIMARY KEY, applied_at TEXT DEFAULT CURRENT_TIMESTAMP)`
 
 	if _, err := tx.Exec(query); err != nil {
-		return fmt.Errorf("failed to create schema_migrations: %w", err)
+		return fmt.Errorf("failed to create schema_migrations_simple_api_gateway: %w", err)
 	}
 
 	return nil
 }
 
 func getAppliedMigrations(tx *sql.Tx) (map[string]bool, error) {
-	const query = `SELECT id FROM schema_migrations`
+	const query = `SELECT id FROM schema_migrations_simple_api_gateway`
 
 	rows, err := tx.Query(query)
 	if err != nil {
@@ -145,7 +145,7 @@ func getAppliedMigrations(tx *sql.Tx) (map[string]bool, error) {
 }
 
 func recordMigration(id string, tx *sql.Tx) error {
-	const query = `INSERT INTO schema_migrations (id) VALUES ($1);`
+	const query = `INSERT INTO schema_migrations_simple_api_gateway (id) VALUES ($1);`
 	if _, err := tx.Exec(query, id); err != nil {
 		return fmt.Errorf("failed to record migration %q: %w", id, err)
 	}

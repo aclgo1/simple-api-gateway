@@ -19,7 +19,7 @@ type Product interface {
 
 type ParamCreateInput struct {
 	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
+	Price       int64 `json:"price"`
 	Quantity    int64   `json:"quantity"`
 	Description string  `json:"description"`
 }
@@ -47,7 +47,7 @@ func (p *ParamCreateInput) Validate() error {
 type ParamCreateOutput struct {
 	Id          string    `json:"product_id"`
 	Name        string    `json:"name"`
-	Price       float64   `json:"price"`
+	Price       int64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
 	HasOrdered  bool      `json:"has_ordered"`
@@ -66,7 +66,7 @@ func (p *ParamFindInput) Validate() error {
 type ParamFindOutput struct {
 	Id          string    `json:"product_id"`
 	Name        string    `json:"name"`
-	Price       float64   `json:"price"`
+	Price       int64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
 	HasOrdered  bool      `json:"has_ordered"`
@@ -106,7 +106,7 @@ func (p *ParamFindAllInput) Validate() error {
 type ParamProductOutput struct {
 	Id          string    `json:"product_id"`
 	Name        string    `json:"name"`
-	Price       float64   `json:"price"`
+	Price       int64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
 	HasOrdered  bool      `json:"has_ordered"`
@@ -125,7 +125,7 @@ type ParamFindAllOutput struct {
 type ParamUpdateInput struct {
 	Id          string  `json:"product_id"`
 	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
+	Price       int64 `json:"price"`
 	Quantity    int64   `json:"quantity"`
 	Description string  `json:"description"`
 	HasOrdered  bool    `json:"has_ordered"`
@@ -146,7 +146,7 @@ func (p *ParamUpdateInput) Validate() error {
 type ParamUpdateOutput struct {
 	Id          string    `json:"product_id"`
 	Name        string    `json:"name"`
-	Price       float64   `json:"price"`
+	Price       int64   `json:"price"`
 	Quantity    int64     `json:"quantity"`
 	Description string    `json:"description"`
 	HasOrdered  bool      `json:"has_ordered"`

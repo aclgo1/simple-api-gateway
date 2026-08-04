@@ -1,3 +1,7 @@
 export default function Error() {
-  return <h1>Pagina Inesxitente</h1>;
+  return (
+    <>
+      <h1>Pagina inxistente</h1>
+    </>
+  );
 }

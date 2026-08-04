@@ -8,6 +8,7 @@ import (
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
 	protoOrders "github.com/aclgo/simple-api-gateway/proto-service/orders"
 	protoProduct "github.com/aclgo/simple-api-gateway/proto-service/product"
+	"github.com/google/uuid"
 )
 
 type OrderCreateSagaUC struct {
@@ -31,7 +32,7 @@ func NewOrderCreateSaga(clientProductsGRPC protoProduct.ProductServiceClient,
 }
 
 func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInput)(*orders.OrderCreateOutput,error){
-	var amountProducts float64
+	var amountProducts int64
 	for _, pID := range in.ProductsIDS {
 		product, err := u.clientProductsGRPC.Find(ctx, &protoProduct.ProductFindRequest{Id: pID})
 		if err != nil {
@@ -46,7 +47,7 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 	}
 
 	if wallet.Balance < amountProducts {
-		return nil, fmt.Errorf("insufficient funds: amount is %.2f, balance is %.2f", amountProducts, wallet.Balance)
+		return nil, fmt.Errorf("insufficient funds: amount is %d, balance is %d", amountProducts, wallet.Balance)
 	}
 
 	var compensations []func(context.Context)error
@@ -59,18 +60,24 @@ func(u *OrderCreateSagaUC)Execute(ctx context.Context, in *orders.OrderCreateInp
 		return originalErr
 	}
 
+	referenceId := uuid.NewString()
+
 	_, err = u.clientBalanceGPRC.Debit(ctx, &protoBalance.ParamDebitWalletRequest{
 		WalletID: wallet.WalletID,
 		Amount:   amountProducts,
+		ReferenceID: referenceId,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to debit wallet: %w", err)
 	}
 
+	referenceIdCreditCompensate := uuid.NewString()
+
 	compensations = append(compensations, func(ctx context.Context) error {
 		_, err := u.clientBalanceGPRC.Credit(ctx, &protoBalance.ParamCreditWalletRequest{
 			WalletID: wallet.WalletID,
 			Amount:   amountProducts,
+			ReferenceID: referenceIdCreditCompensate,
 		})
 		return err
 	})

@@ -26,7 +26,7 @@ var (
 type ParamCreditInput struct {
 	Type        string  `json:"type"`
 	AccountId   string  `json:"account_id"`
-	Amount      float64 `json:"amount"`
+	Amount      int64 `json:"amount"`
 	ReferenceId string  `json:"reference_id"`
 }
 
@@ -50,7 +50,7 @@ func (i *ParamCreditInput) Validate() error {
 type ParamCreditOutput struct {
 	WalletID  string    `json:"wallet_id"`
 	AccountID string    `json:"account_id"`
-	Balance   float64   `json:"balance"`
+	Balance   int64   `json:"balance"`
 	CreatedAT time.Time `json:"created_at"`
 	UpdatedAT time.Time `json:"updated_at"`
 }

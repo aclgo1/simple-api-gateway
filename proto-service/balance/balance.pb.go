@@ -70,7 +70,7 @@ type ParamCreateWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
 	AccountID     string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Balance       int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
 	CreatedAT     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
 	UpdatedAT     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updatedAT,proto3" json:"updatedAT,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -121,7 +121,7 @@ func (x *ParamCreateWalletResponse) GetAccountID() string {
 	return ""
 }
 
-func (x *ParamCreateWalletResponse) GetBalance() float64 {
+func (x *ParamCreateWalletResponse) GetBalance() int64 {
 	if x != nil {
 		return x.Balance
 	}
@@ -145,7 +145,8 @@ func (x *ParamCreateWalletResponse) GetUpdatedAT() *timestamppb.Timestamp {
 type ParamCreditWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
-	Amount        float64                `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	ReferenceID   string                 `protobuf:"bytes,2,opt,name=referenceID,proto3" json:"referenceID,omitempty"`
+	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -187,7 +188,14 @@ func (x *ParamCreditWalletRequest) GetWalletID() string {
 	return ""
 }
 
-func (x *ParamCreditWalletRequest) GetAmount() float64 {
+func (x *ParamCreditWalletRequest) GetReferenceID() string {
+	if x != nil {
+		return x.ReferenceID
+	}
+	return ""
+}
+
+func (x *ParamCreditWalletRequest) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
 	}
@@ -198,7 +206,7 @@ type ParamCreditWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
 	AccountID     string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Balance       int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
 	CreatedAT     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
 	UpdatedAT     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updatedAT,proto3" json:"updatedAT,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -249,7 +257,7 @@ func (x *ParamCreditWalletResponse) GetAccountID() string {
 	return ""
 }
 
-func (x *ParamCreditWalletResponse) GetBalance() float64 {
+func (x *ParamCreditWalletResponse) GetBalance() int64 {
 	if x != nil {
 		return x.Balance
 	}
@@ -273,7 +281,8 @@ func (x *ParamCreditWalletResponse) GetUpdatedAT() *timestamppb.Timestamp {
 type ParamDebitWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
-	Amount        float64                `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	ReferenceID   string                 `protobuf:"bytes,2,opt,name=referenceID,proto3" json:"referenceID,omitempty"`
+	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -315,7 +324,14 @@ func (x *ParamDebitWalletRequest) GetWalletID() string {
 	return ""
 }
 
-func (x *ParamDebitWalletRequest) GetAmount() float64 {
+func (x *ParamDebitWalletRequest) GetReferenceID() string {
+	if x != nil {
+		return x.ReferenceID
+	}
+	return ""
+}
+
+func (x *ParamDebitWalletRequest) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
 	}
@@ -326,7 +342,7 @@ type ParamDebitWalletResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
 	AccountID     string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Balance       int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
 	CreatedAT     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
 	UpdatedAT     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updatedAT,proto3" json:"updatedAT,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -377,7 +393,7 @@ func (x *ParamDebitWalletResponse) GetAccountID() string {
 	return ""
 }
 
-func (x *ParamDebitWalletResponse) GetBalance() float64 {
+func (x *ParamDebitWalletResponse) GetBalance() int64 {
 	if x != nil {
 		return x.Balance
 	}
@@ -446,7 +462,7 @@ type ParamgGetWalletByAccountResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WalletID      string                 `protobuf:"bytes,1,opt,name=walletID,proto3" json:"walletID,omitempty"`
 	AccountID     string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Balance       int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
 	CreatedAT     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
 	UpdatedAT     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updatedAT,proto3" json:"updatedAT,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -497,7 +513,7 @@ func (x *ParamgGetWalletByAccountResponse) GetAccountID() string {
 	return ""
 }
 
-func (x *ParamgGetWalletByAccountResponse) GetBalance() float64 {
+func (x *ParamgGetWalletByAccountResponse) GetBalance() int64 {
 	if x != nil {
 		return x.Balance
 	}
@@ -518,86 +534,6 @@ func (x *ParamgGetWalletByAccountResponse) GetUpdatedAT() *timestamppb.Timestamp
 	return nil
 }
 
-type ParamCreateTransactionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ReferenceId   string                 `protobuf:"bytes,1,opt,name=referenceId,proto3" json:"referenceId,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ParamCreateTransactionRequest) Reset() {
-	*x = ParamCreateTransactionRequest{}
-	mi := &file_balance_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ParamCreateTransactionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ParamCreateTransactionRequest) ProtoMessage() {}
-
-func (x *ParamCreateTransactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_balance_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ParamCreateTransactionRequest.ProtoReflect.Descriptor instead.
-func (*ParamCreateTransactionRequest) Descriptor() ([]byte, []int) {
-	return file_balance_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *ParamCreateTransactionRequest) GetReferenceId() string {
-	if x != nil {
-		return x.ReferenceId
-	}
-	return ""
-}
-
-type ParamCreateTransactionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ParamCreateTransactionResponse) Reset() {
-	*x = ParamCreateTransactionResponse{}
-	mi := &file_balance_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ParamCreateTransactionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ParamCreateTransactionResponse) ProtoMessage() {}
-
-func (x *ParamCreateTransactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_balance_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ParamCreateTransactionResponse.ProtoReflect.Descriptor instead.
-func (*ParamCreateTransactionResponse) Descriptor() ([]byte, []int) {
-	return file_balance_proto_rawDescGZIP(), []int{9}
-}
-
 var File_balance_proto protoreflect.FileDescriptor
 
 const file_balance_proto_rawDesc = "" +
@@ -608,25 +544,27 @@ const file_balance_proto_rawDesc = "" +
 	"\x19ParamCreateWalletResponse\x12\x1a\n" +
 	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x1c\n" +
 	"\taccountID\x18\x02 \x01(\tR\taccountID\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x128\n" +
+	"\abalance\x18\x03 \x01(\x03R\abalance\x128\n" +
 	"\tcreatedAT\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\x128\n" +
-	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"N\n" +
+	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"p\n" +
 	"\x18ParamCreditWalletRequest\x12\x1a\n" +
-	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x01R\x06amount\"\xe3\x01\n" +
+	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12 \n" +
+	"\vreferenceID\x18\x02 \x01(\tR\vreferenceID\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\"\xe3\x01\n" +
 	"\x19ParamCreditWalletResponse\x12\x1a\n" +
 	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x1c\n" +
 	"\taccountID\x18\x02 \x01(\tR\taccountID\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x128\n" +
+	"\abalance\x18\x03 \x01(\x03R\abalance\x128\n" +
 	"\tcreatedAT\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\x128\n" +
-	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"M\n" +
+	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"o\n" +
 	"\x17ParamDebitWalletRequest\x12\x1a\n" +
-	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x01R\x06amount\"\xe2\x01\n" +
+	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12 \n" +
+	"\vreferenceID\x18\x02 \x01(\tR\vreferenceID\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\"\xe2\x01\n" +
 	"\x18ParamDebitWalletResponse\x12\x1a\n" +
 	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x1c\n" +
 	"\taccountID\x18\x02 \x01(\tR\taccountID\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x128\n" +
+	"\abalance\x18\x03 \x01(\x03R\abalance\x128\n" +
 	"\tcreatedAT\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\x128\n" +
 	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\">\n" +
 	"\x1eParamGetWalletByAccountRequest\x12\x1c\n" +
@@ -634,18 +572,14 @@ const file_balance_proto_rawDesc = "" +
 	" ParamgGetWalletByAccountResponse\x12\x1a\n" +
 	"\bwalletID\x18\x01 \x01(\tR\bwalletID\x12\x1c\n" +
 	"\taccountID\x18\x02 \x01(\tR\taccountID\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x128\n" +
+	"\abalance\x18\x03 \x01(\x03R\abalance\x128\n" +
 	"\tcreatedAT\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\x128\n" +
-	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"A\n" +
-	"\x1dParamCreateTransactionRequest\x12 \n" +
-	"\vreferenceId\x18\x01 \x01(\tR\vreferenceId\" \n" +
-	"\x1eParamCreateTransactionResponse2\xff\x02\n" +
+	"\tupdatedAT\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT2\xa9\x02\n" +
 	"\rWalletService\x12?\n" +
 	"\x06Create\x12\x19.ParamCreateWalletRequest\x1a\x1a.ParamCreateWalletResponse\x12?\n" +
 	"\x06Credit\x12\x19.ParamCreditWalletRequest\x1a\x1a.ParamCreditWalletResponse\x12<\n" +
 	"\x05Debit\x12\x18.ParamDebitWalletRequest\x1a\x19.ParamDebitWalletResponse\x12X\n" +
-	"\x12GetWalletByAccount\x12\x1f.ParamGetWalletByAccountRequest\x1a!.ParamgGetWalletByAccountResponse\x12T\n" +
-	"\x11CreateTransaction\x12\x1e.ParamCreateTransactionRequest\x1a\x1f.ParamCreateTransactionResponseB$Z\"github.com/aclgo/gprc-Wallet/protob\x06proto3"
+	"\x12GetWalletByAccount\x12\x1f.ParamGetWalletByAccountRequest\x1a!.ParamgGetWalletByAccountResponseB$Z\"github.com/aclgo/gprc-Wallet/protob\x06proto3"
 
 var (
 	file_balance_proto_rawDescOnce sync.Once
@@ -659,7 +593,7 @@ func file_balance_proto_rawDescGZIP() []byte {
 	return file_balance_proto_rawDescData
 }
 
-var file_balance_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_balance_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_balance_proto_goTypes = []any{
 	(*ParamCreateWalletRequest)(nil),         // 0: ParamCreateWalletRequest
 	(*ParamCreateWalletResponse)(nil),        // 1: ParamCreateWalletResponse
@@ -669,31 +603,27 @@ var file_balance_proto_goTypes = []any{
 	(*ParamDebitWalletResponse)(nil),         // 5: ParamDebitWalletResponse
 	(*ParamGetWalletByAccountRequest)(nil),   // 6: ParamGetWalletByAccountRequest
 	(*ParamgGetWalletByAccountResponse)(nil), // 7: ParamgGetWalletByAccountResponse
-	(*ParamCreateTransactionRequest)(nil),    // 8: ParamCreateTransactionRequest
-	(*ParamCreateTransactionResponse)(nil),   // 9: ParamCreateTransactionResponse
-	(*timestamppb.Timestamp)(nil),            // 10: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil),            // 8: google.protobuf.Timestamp
 }
 var file_balance_proto_depIdxs = []int32{
-	10, // 0: ParamCreateWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
-	10, // 1: ParamCreateWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
-	10, // 2: ParamCreditWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
-	10, // 3: ParamCreditWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
-	10, // 4: ParamDebitWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
-	10, // 5: ParamDebitWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
-	10, // 6: ParamgGetWalletByAccountResponse.createdAT:type_name -> google.protobuf.Timestamp
-	10, // 7: ParamgGetWalletByAccountResponse.updatedAT:type_name -> google.protobuf.Timestamp
+	8,  // 0: ParamCreateWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
+	8,  // 1: ParamCreateWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
+	8,  // 2: ParamCreditWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
+	8,  // 3: ParamCreditWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
+	8,  // 4: ParamDebitWalletResponse.createdAT:type_name -> google.protobuf.Timestamp
+	8,  // 5: ParamDebitWalletResponse.updatedAT:type_name -> google.protobuf.Timestamp
+	8,  // 6: ParamgGetWalletByAccountResponse.createdAT:type_name -> google.protobuf.Timestamp
+	8,  // 7: ParamgGetWalletByAccountResponse.updatedAT:type_name -> google.protobuf.Timestamp
 	0,  // 8: WalletService.Create:input_type -> ParamCreateWalletRequest
 	2,  // 9: WalletService.Credit:input_type -> ParamCreditWalletRequest
 	4,  // 10: WalletService.Debit:input_type -> ParamDebitWalletRequest
 	6,  // 11: WalletService.GetWalletByAccount:input_type -> ParamGetWalletByAccountRequest
-	8,  // 12: WalletService.CreateTransaction:input_type -> ParamCreateTransactionRequest
-	1,  // 13: WalletService.Create:output_type -> ParamCreateWalletResponse
-	3,  // 14: WalletService.Credit:output_type -> ParamCreditWalletResponse
-	5,  // 15: WalletService.Debit:output_type -> ParamDebitWalletResponse
-	7,  // 16: WalletService.GetWalletByAccount:output_type -> ParamgGetWalletByAccountResponse
-	9,  // 17: WalletService.CreateTransaction:output_type -> ParamCreateTransactionResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
+	1,  // 12: WalletService.Create:output_type -> ParamCreateWalletResponse
+	3,  // 13: WalletService.Credit:output_type -> ParamCreditWalletResponse
+	5,  // 14: WalletService.Debit:output_type -> ParamDebitWalletResponse
+	7,  // 15: WalletService.GetWalletByAccount:output_type -> ParamgGetWalletByAccountResponse
+	12, // [12:16] is the sub-list for method output_type
+	8,  // [8:12] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
@@ -710,7 +640,7 @@ func file_balance_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_balance_proto_rawDesc), len(file_balance_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

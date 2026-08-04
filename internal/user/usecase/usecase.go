@@ -18,6 +18,7 @@ import (
 
 type userUc struct {
 	clientUserGRPC    protoUser.UserServiceClient
+	subscriptionGRPC protoUser.SubscriptionServiceClient
 	clientMailGRPC    mail.MailServiceClient
 	clientBalanceGRPC protoBalance.WalletServiceClient
 	captchaRepo       captcha.Repository
@@ -30,6 +31,7 @@ type userUc struct {
 }
 
 func NewuserUC(clientUser protoUser.UserServiceClient,
+	subscriptionGRPC protoUser.SubscriptionServiceClient,
 	clientMail mail.MailServiceClient,
 	clientBalance protoBalance.WalletServiceClient,
 	captchaRepo captcha.Repository,
@@ -39,6 +41,7 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 
 	uc := userUc{
 		clientUserGRPC:    clientUser,
+		subscriptionGRPC: subscriptionGRPC,
 		clientMailGRPC:    clientMail,
 		clientBalanceGRPC: clientBalance,
 		captchaRepo:       captchaRepo,
@@ -273,11 +276,13 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 		return nil, err
 	}
 
-	newBalance := 0.0
+	var newBalance int64
+	refenceId := uuid.NewString()
 	if params.Balance > 0 {
 		paramProtoUpdateBalance := protoBalance.ParamCreditWalletRequest{
 			WalletID: wallet.WalletID,
 			Amount:   params.Balance,
+			ReferenceID: refenceId,
 		}
 
 		walletUpdated, err := u.clientBalanceGRPC.Credit(ctx, &paramProtoUpdateBalance)
@@ -515,6 +520,26 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user
 
 
 	return &resp,nil
+}
+
+func(u *userUc) CancelSubscription(ctx context.Context, params *user.ParamsCancelSubscriptionInput)(*user.ParamsCancelSubscriptionOutput,error){
+	po := protoUser.CancelSubscriptionRequest{
+		UserId: params.UserId,
+	}
+
+	canceled, err := u.subscriptionGRPC.CancelSubscription(ctx, &po)
+	if err != nil {
+		return nil,err
+	}
+
+	out := user.ParamsCancelSubscriptionOutput{
+		SubscriptionId:canceled.SubscriptionId,
+    	UserId:canceled.UserId,
+    	Status:canceled.Status,
+    	UpdatedAt:canceled.UpdatedAt.AsTime(),
+	}
+
+	return &out,nil
 }
 
 func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {

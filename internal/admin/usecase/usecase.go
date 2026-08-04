@@ -77,7 +77,7 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 		return nil, fmt.Errorf("u.clientBalance.Create: %w", err)
 	}
 
-	var newBalance float64
+	var newBalance int64
 	if params.Balance > 0 {
 		iw := protoBalance.ParamCreditWalletRequest{
 			WalletID: newWallet.WalletID,

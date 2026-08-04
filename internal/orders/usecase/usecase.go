@@ -10,6 +10,7 @@ import (
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
 	protoOrders "github.com/aclgo/simple-api-gateway/proto-service/orders"
 	protoProduct "github.com/aclgo/simple-api-gateway/proto-service/product"
+	"github.com/google/uuid"
 )
 
 type orderUC struct {
@@ -43,7 +44,7 @@ func NeworderUC(
 //version create order v1 simple
 func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
 
-	var amountProducts float64
+	var amountProducts int64
 
 	for i := range in.ProductsIDS {
 		paramProductProto := protoProduct.ProductFindRequest{
@@ -67,12 +68,15 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 	}
 
 	if wallet.Balance < amountProducts {
-		return nil, fmt.Errorf("amount of products is %.2f balance in account %.2f", amountProducts, wallet.Balance)
+		return nil, fmt.Errorf("amount of products is %d balance in account %d", amountProducts, wallet.Balance)
 	}
 
+	refrenceId := uuid.NewString()
+	
 	paramProtoDebit := protoBalance.ParamDebitWalletRequest{
 		WalletID: wallet.WalletID,
 		Amount:   amountProducts,
+		ReferenceID: refrenceId,
 	}
 
 	_, err = u.clientBalanceGPRC.Debit(ctx, &paramProtoDebit)
@@ -195,4 +199,10 @@ func (u *orderUC) FindByProduct(ctx context.Context, in *orders.OrderByProductIn
 	}
 
 	return &out, nil
+}
+
+
+func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
+	params *orders.ParamsCreateOrderSubscriptionInput)(*orders.ParamsCreateOrderSubscriptionOutput,error){
+	return nil,nil
 }

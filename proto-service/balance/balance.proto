@@ -1,6 +1,6 @@
 syntax  = "proto3";
 
-option go_package = "github.com/aclgo/simple-api-gateway/proto-service/balance";
+option go_package = "github.com/aclgo/gprc-Wallet/proto";
 
 import "google/protobuf/timestamp.proto";
 
@@ -11,33 +11,35 @@ message ParamCreateWalletRequest {
 message ParamCreateWalletResponse {
     string walletID = 1;
     string accountID = 2;
-    double balance = 3;
+    int64 balance = 3;
     google.protobuf.Timestamp createdAT = 4;
     google.protobuf.Timestamp updatedAT = 5;
 }
 
 message ParamCreditWalletRequest {
     string walletID = 1;
-    double amount = 2;
+    string referenceID = 2;
+    int64 amount = 3;
 }
 
 message ParamCreditWalletResponse {
     string walletID = 1;
     string accountID = 2;
-    double balance = 3;
+    int64 balance = 3;
     google.protobuf.Timestamp createdAT = 4;
     google.protobuf.Timestamp updatedAT = 5;
 }
 
 message ParamDebitWalletRequest {
     string walletID = 1;
-    double amount = 2;
+    string referenceID = 2;
+    int64 amount = 3;
 }
 
 message ParamDebitWalletResponse {
     string walletID = 1;
     string accountID = 2;
-    double balance = 3;
+    int64 balance = 3;
     google.protobuf.Timestamp createdAT = 4;
     google.protobuf.Timestamp updatedAT = 5;
 }
@@ -49,23 +51,14 @@ message ParamGetWalletByAccountRequest {
 message ParamgGetWalletByAccountResponse {
     string walletID = 1;
     string accountID = 2;
-    double balance = 3;
+    int64 balance = 3;
     google.protobuf.Timestamp createdAT = 4;
     google.protobuf.Timestamp updatedAT = 5;
 }
-
-message ParamCreateTransactionRequest {
-    string referenceId = 1;
-}
-message ParamCreateTransactionResponse {
-}
-
-
 
 service WalletService {
     rpc Create(ParamCreateWalletRequest) returns (ParamCreateWalletResponse);
     rpc Credit(ParamCreditWalletRequest) returns (ParamCreditWalletResponse);
     rpc Debit(ParamDebitWalletRequest) returns (ParamDebitWalletResponse);
     rpc GetWalletByAccount(ParamGetWalletByAccountRequest) returns (ParamgGetWalletByAccountResponse);
-    rpc CreateTransaction(ParamCreateTransactionRequest) returns (ParamCreateTransactionResponse);
 }

@@ -42,7 +42,7 @@ type ParamsUpdate struct {
 	Password string  `json:"password"`
 	Email    string  `json:"email"`
 	Verified string  `json:"verified"`
-	Balance  float64 `json:"balance"`
+	Balance  int64 `json:"balance"`
 }
 
 type ParamsCreateAdmin struct {
@@ -52,7 +52,7 @@ type ParamsCreateAdmin struct {
 	Email         string  `json:"email"`
 	Role          string  `json:"role"`
 	Verified      string  `json:"verified"`
-	Balance       float64 `json:"balance"`
+	Balance       int64 `json:"balance"`
 	CaptchaId     string  `json:"captcha_id"`
 	CaptchaAwnser string  `json:"captcha_awnser"`
 }

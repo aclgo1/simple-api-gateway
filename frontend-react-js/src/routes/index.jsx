@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import App from "../App";
+import Error from "../pages/Error";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import ConfirmSignup from "../pages/ConfirmSignup";
@@ -11,6 +12,7 @@ import Products from "../pages/Products";
 import Admin from "../pages/Admin";
 import Checkout from "../pages/Checkout";
 import AddBalance from "../pages/AddBalance";
+import RoutePrivate from "../components/PrivateRoute";
 
 export const router = createBrowserRouter([
   {
@@ -23,8 +25,12 @@ export const router = createBrowserRouter([
         element: <Pricing />,
       },
       {
-        path: "/home",
-        element: <Home />,
+        path: "home",
+        element: (
+          <RoutePrivate>
+            <Home />
+          </RoutePrivate>
+        ),
       },
       {
         path: "login",
@@ -44,19 +50,35 @@ export const router = createBrowserRouter([
       },
       {
         path: "products",
-        element: <Products />,
+        element: (
+          <RoutePrivate>
+            <Products />
+          </RoutePrivate>
+        ),
       },
       {
         path: "admin",
-        element: <Admin />,
+        element: (
+          <RoutePrivate>
+            <Admin />
+          </RoutePrivate>
+        ),
       },
       {
         path: "checkout",
-        element: <Checkout />,
+        element: (
+          <RoutePrivate>
+            <Checkout />
+          </RoutePrivate>
+        ),
       },
       {
         path: "balance",
-        element: <AddBalance />,
+        element: (
+          <RoutePrivate>
+            <AddBalance />
+          </RoutePrivate>
+        ),
       },
     ],
   },

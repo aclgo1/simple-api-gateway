@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/aclgo/simple-api-gateway/internal/admin"
 	captchaRepo "github.com/aclgo/simple-api-gateway/internal/captcha/repository"
 	captchaUC "github.com/aclgo/simple-api-gateway/internal/captcha/usecase"
+	"github.com/aclgo/simple-api-gateway/internal/delivery/http/service"
 	svcAdmin "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/admin"
 	svcCaptcha "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/captcha"
 	svcOrders "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/orders"
@@ -85,6 +85,8 @@ var (
 	//go:embed frontend-dist/*
 	frontendAssets embed.FS
 )
+
+
 
 func main() {
 
@@ -165,6 +167,7 @@ func main() {
 	////////////////////////////////
 
 	clientUserService := protoUser.NewUserServiceClient(connUser)
+	clientSubscriptionService := protoUser.NewSubscriptionServiceClient(connUser)
 	// adminUserService := protoAdmin.NewAdminServiceClient(nil)
 	mailUserService := protoMail.NewMailServiceClient(connMail)
 	productUserService := protoProduct.NewProductServiceClient(connProduct)
@@ -178,7 +181,7 @@ func main() {
 	sagaWorkerCompensate := ordersUC.NewSagaWorker(3, time.Minute)
 	sagaWorkerCompensate.Start(ctx)
 
-	user := userUC.NewuserUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
+	user := userUC.NewuserUC(clientUserService,clientSubscriptionService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
 	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate)
@@ -278,12 +281,9 @@ func main() {
 	// mux.HandleFunc("/pricing", pages.Pricing)
 	// mux.HandleFunc("/pricing/pix", pages.PricingPix)
 
-	distFiles,err := fs.Sub(frontendAssets, "frontend-dist")
-	if err != nil {
-		log.Fatalf("error loading static files: %v",err)
-	}
 
-	mux.Handle("/", http.FileServer(http.FS(distFiles)))
+
+	mux.Handle("/", service.SpaHandler(frontendAssets, "frontend-dist"))
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
