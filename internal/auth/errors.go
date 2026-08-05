@@ -20,3 +20,11 @@ type ErrSessionExpiredOrLoginNewDisp struct {
 func (e ErrSessionExpiredOrLoginNewDisp) Error() string {
 	return "login in new dispositivy"
 }
+
+type ErrNoIsPremiun struct{
+
+}
+
+func(e ErrNoIsPremiun) Error() string {
+	return "user id not is premiun subscription"
+}

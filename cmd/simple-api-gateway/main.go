@@ -203,7 +203,7 @@ func main() {
 	walletPixHandler := svcPix.NewwalletServicePix(pixProcessor, w)
 	// exHandler := svcEx.NewExService()
 
-	authUC := authUC.NewAuthUC(clientUserService)
+	authUC := authUC.NewAuthUC(clientUserService,clientSubscriptionService)
 
 
 	mux := http.NewServeMux()
@@ -219,6 +219,7 @@ func main() {
 	mux.HandleFunc("GET /api/user/stats", userHandler.Stats(ctx))
 	mux.HandleFunc("GET /api/user/stats-sse", userHandler.StatsSSE(ctx))
 	mux.HandleFunc("GET /api/user/register/status", userHandler.GetStatusRegistration(ctx))
+	mux.HandleFunc("GET /api/user/is-premiun/{id}", authUC.ValidateTokenIsPremiun(userHandler.ActionForPremiun(ctx)))
 
 	//MICROSERVCE GRPC MAIL
 	mux.HandleFunc("GET /api/user/confirm/{confirm_code}", userHandler.UserConfirm(ctx))
@@ -245,7 +246,7 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
 
 	mux.HandleFunc("POST /api/payments/pix", authUC.ValidateToken(walletPixHandler.CreatePix(ctx)))
-	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(ctx, walletPixHandler.WebHookPix()))
+	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(walletPixHandler.WebHookPix()))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 

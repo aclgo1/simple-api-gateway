@@ -1,6 +1,9 @@
 package auth
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 type Auth interface {
 	ValidateToken(next http.HandlerFunc) http.HandlerFunc
@@ -9,6 +12,8 @@ type Auth interface {
 	ValidateUpdate(next http.HandlerFunc) http.HandlerFunc
 	ValidateCreateAdmin(next http.HandlerFunc) http.HandlerFunc
 	ValidateIsAdmin(next http.HandlerFunc) http.HandlerFunc
+	ValidateWebHookPix(next http.HandlerFunc) http.HandlerFunc
+	ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc
 }
 
 type (
@@ -17,6 +22,7 @@ type (
 	CtxParamsCreateAdmin string
 	CtxParamsToken       string
 	CtxParamsTwoTokens   string
+	CtxParamsIsPremiun string
 	KeyQueryToken        string
 )
 
@@ -32,6 +38,7 @@ var (
 	KeyAccessTokenHeader                          = "access-token"
 	KeyRefreshTokenHeader                         = "refresh-token"
 	KeyQueryTokenValue       KeyQueryToken        = "token"
+	KetCtxParamsIsPremiun CtxParamsIsPremiun = "is-premiun"
 )
 
 type ParamsUpdate struct {
@@ -85,3 +92,8 @@ func (p *ParamsTwoTokens) Validate() error {
 
 	return nil
 }
+
+type ParamsIsPremiun struct {
+	ExpiresAt time.Time
+}
+

@@ -13,11 +13,13 @@ import (
 
 type authUC struct {
 	userSvcClient protoUser.UserServiceClient
+	subscriptionSvcClient protoUser.SubscriptionServiceClient
 }
 
-func NewAuthUC(userSvcClient protoUser.UserServiceClient) *authUC {
+func NewAuthUC(userSvcClient protoUser.UserServiceClient,subscriptionSvcClient protoUser.SubscriptionServiceClient) auth.Auth {
 	return &authUC{
 		userSvcClient: userSvcClient,
+		subscriptionSvcClient: subscriptionSvcClient,
 	}
 }
 
@@ -436,17 +438,102 @@ func (a *authUC) ValidateIsAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (a *authUC) ValidateWebHookPix(ctxf context.Context, next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithCancel(r.Context())
-		defer cancel()
+func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		accessToken := getAccessToken(r)
+		if accessToken == "" {
+			resp := auth.Response{
+				Error:   http.StatusText(http.StatusUnauthorized),
+				Message: auth.ErrInvalidToken{}.Error(),
+			}
 
-		stop := context.AfterFunc(ctxf, func() { cancel() })
-		defer stop()
+			auth.Json(w, resp, http.StatusUnauthorized)
+
+			return
+		}
+
+		paramsToken, err := a.validateToken(r.Context(), accessToken)
+		if err != nil {
+			if strings.Contains(err.Error(), auth.ErrSessionExpiredOrLoginNewDisp{}.Error()) {
+				resp := auth.Response{
+					Error:   http.StatusText(http.StatusForbidden),
+					Message: auth.ErrSessionExpiredOrLoginNewDisp{}.Error(),
+				}
+
+				auth.Json(w, resp, http.StatusForbidden)
+
+				return
+			}
+			resp := auth.Response{
+				Error:   http.StatusText(http.StatusUnauthorized),
+				Message: err.Error(),
+			}
+
+			auth.Json(w, resp, http.StatusUnauthorized)
+
+			return
+		}
+
+		isAdminOrSuper := paramsToken.Role == string(auth.ADMIN) || paramsToken.Role== string(auth.SUPERADMIN)
+
+		idUser := r.URL.Query().Get("id")
+
+		var p protoUser.CheckIsPremiumRequest
+
+		func(){
+			if isAdminOrSuper && idUser != "" {
+				p = protoUser.CheckIsPremiumRequest{
+					UserId: idUser,
+				}
+
+				return
+			}
+
+			p = protoUser.CheckIsPremiumRequest{
+				UserId:paramsToken.UserID,
+			}
+		}()
+		
+		isPremiun,err := a.subscriptionSvcClient.CheckIsPremium(r.Context(), &p)
+		if err != nil {
+			resp := auth.Response{
+				Error:   http.StatusText(http.StatusUnauthorized),
+				Message: err.Error(),
+			}
+
+			auth.Json(w, resp, http.StatusUnauthorized)
+
+			return
+		}
+
+		if isPremiun.Active{
+
+			paramIsPremiun := auth.ParamsIsPremiun{
+				ExpiresAt: isPremiun.ExpiresAt.AsTime(),
+			}
+
+			v := context.WithValue(r.Context(), auth.KetCtxParamsIsPremiun, &paramIsPremiun)
+
+			next.ServeHTTP(w,r.WithContext(v))
+
+			return 
+		}
+
+		resp := auth.Response{
+			Error:   http.StatusText(http.StatusUnauthorized),
+			Message: auth.ErrNoIsPremiun{}.Error(),
+		}
+
+		auth.Json(w, resp, http.StatusUnauthorized)
+	}
+}
+
+func (a *authUC) ValidateWebHookPix(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 		token := getPixWebHookToken(r)
 
-		v := context.WithValue(ctx, "teste", token)
+		v := context.WithValue(r.Context(), "teste", token)
 
 		r = r.WithContext(v)
 

@@ -465,6 +465,12 @@ func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
 	}
 }
 
+func (s *userService)ActionForPremiun(ctx context.Context) http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		
+	}
+}
+
 func (s *userService) Stats(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
