@@ -232,7 +232,7 @@ func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.OrderCreateInpu
 
 	metadata, err := json.Marshal(in.ProductsIDS)
 	if err != nil {
-		return nil, fmt.Errorf("json.Marshal: w",err)
+		return nil, fmt.Errorf("json.Marshal: %v",err)
 	}
 
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
@@ -351,13 +351,42 @@ func (u *orderUC) FindByProduct(ctx context.Context, in *orders.OrderByProductIn
 func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 	params *orders.ParamsCreateOrderSubscriptionInput)(*orders.ParamsCreateOrderSubscriptionOutput,error){
 
+	var amount int64
+	switch params.Plan{
+	case string(models.Plan_Week):
+		amount = 1499
+	case string(models.Plan_Month):
+		amount = 2999
+	case string(models.Plan_Year):
+		amount = 24900
+	case string(models.Plan_Undefined):
+		amount = int64(params.Days) * 120
+	default:
+		return nil, orders.ErrPlanInvalid
+	}
+
+	pg := models.ParamPaymentProcessInput{
+		Method: params.MethodPayment,
+		AccountId: params.UserId,
+		ReferenceId: "",
+		Amount: amount,
+		CardToken: params.CardToken,
+		CardExpiration: params.CardExpiration,
+	}
+
+	payment, err := u.gateway.GeneratePayment(ctx, &pg)
+	if err != nil {
+		return nil,err
+	}
+
+	status := protoOrders.OrderStatus_PENDING
+	if payment.Method == models.PaymentMethodCard || payment.Method == models.PaymentMethodInternalBalance{
+		status = protoOrders.OrderStatus_PAID
+	}
+	
+
 	var paramsNewOrder protoOrders.ParamCreateOrderRequest
 
-	switch params.MethodPayment {
-	case string(orders.MethodPayInternalBalance):
-	case string(orders.MethodPayPix):
-	case string(orders.MethodPayCard):
-	}
 
 	newOrder, err := u.clientOrdersGRPC.Create(ctx, &paramsNewOrder)
 	if err != nil {
@@ -368,7 +397,7 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 
 	}
 
-	fmt.Println(newOrder)
+	fmt.Println(status,newOrder)
 
 	return &out,nil
 }
@@ -376,9 +405,9 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanceInput) (*orders.ParamsAddBalanceOutput, error) {
 
 	switch params.Amount {
-	case 2500, 5000, 7500:
+	case 2500, 5000, 10000:
 	default:
-		return nil, errors.New("amount invalid")
+		return nil, orders.ErrAmountInvalid
 	}
 
 	mp := models.ParamPaymentProcessInput{
@@ -446,8 +475,10 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 		Status:               newOrder.Order.Status.String(),
 		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
 		PixQRCode:            newOrder.Order.PixQRCode,
+		PixExpiration: newOrder.Order.PixExpiration.AsTime(),
 		BoletoURL:            newOrder.Order.BoletoURL,
 		BoletoBarcode:        newOrder.Order.BoletoBarcode,
+		BoletoExpiration: newOrder.Order.BoletoExpiration.AsTime(),
 	}
 
 	return &out, nil

@@ -9,20 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type (
-	Pix string
-	Card string
-	InternalBalance string
-	Plan string
-)
+
 
 var (
-	MethodPayPix Pix = "pix"
-	MethodPayCard Card = "credit-card"
-	MethodPayInternalBalance InternalBalance = "internal-balance"
-	Plan_Month Plan = "1_month"
-	Plan_Week Plan = "7_days"
-	Plan_Year Plan = "1_year"
+	ErrAmountInvalid =  errors.New("amount invalid")
+	ErrPlanInvalid = errors.New("plan invalid")
 )
 
 type Orders interface {
@@ -161,10 +152,11 @@ type CompensationTask struct {
 
 type ParamsCreateOrderSubscriptionInput struct{
 	MethodPayment string `json:"method_payment"`
-	SubscriptionId string `json:"subscription_id"` 
 	UserId string`json:"user_id"`
 	Plan string`json:"plan"`
 	Days int `json:"days"`
+	CardToken string `json:"card_token"`
+	CardExpiration string `json:"card_expiration"`
 }
 
 func(p *ParamsCreateOrderSubscriptionInput)Validate()error{
@@ -193,9 +185,9 @@ type ParamsCreateOrderSubscriptionOutput struct{
 type ParamsAddBalanceInput struct {
 	MethodPayment string `json:"method_payment"`
 	UserId string `json:"user_id"`
-	Amount int64
-	CardToken string
-	CardExpiration string
+	Amount int64 `json:"amount"`
+	CardToken string `json:"card_token"`
+	CardExpiration string `json:"card_expiration"`
 }
 
 func(p *ParamsAddBalanceInput)Validate()error{
@@ -207,6 +199,14 @@ type ParamsAddBalanceOutput struct {
 	Status string
 	GatewayTransactionID string
 	PixQRCode string
+	PixExpiration time.Time
 	BoletoURL string
 	BoletoBarcode string
+	BoletoExpiration	time.Time
+}
+
+type ParamsSaveSubscriptionMetadata struct {
+    UserId        string `json:"user_id"`
+    Plan          string `json:"plan"`
+    Days          int    `json:"days"`
 }

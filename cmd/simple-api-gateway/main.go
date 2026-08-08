@@ -37,6 +37,7 @@ import (
 	cardUC "github.com/aclgo/simple-api-gateway/internal/payment/card/usecase"
 	pixRepo "github.com/aclgo/simple-api-gateway/internal/payment/pix/repository"
 	pixUC "github.com/aclgo/simple-api-gateway/internal/payment/pix/usecase"
+	walletUC "github.com/aclgo/simple-api-gateway/internal/payment/wallet/usecase"
 	productUC "github.com/aclgo/simple-api-gateway/internal/product/usecase"
 	userUC "github.com/aclgo/simple-api-gateway/internal/user/usecase"
 
@@ -184,9 +185,11 @@ func main() {
 
 	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository)
 	cardProcessor := cardUC.NewpaymentProcessorCard()
+	walletProcessor := walletUC.NewPaymentProcessorWallet(balanceUserService)
 
 	gateways.RegisterProvider(models.PaymentMethodPix, pixProcessor)
 	gateways.RegisterProvider(models.PaymentMethodCard, cardProcessor)
+	gateways.RegisterProvider(models.PaymentMethodInternalBalance, walletProcessor)
 
 	sagaWorkerCompensate := ordersUC.NewSagaWorker(3, time.Minute)
 	sagaWorkerCompensate.Start(ctx)
