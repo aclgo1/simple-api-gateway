@@ -18,11 +18,12 @@ import (
 	svcAdmin "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/admin"
 	svcCaptcha "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/captcha"
 	svcOrders "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/orders"
+	svcPix "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/payment/pix"
 	svcProduct "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/product"
 	svcUser "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/user"
-	svcPix "github.com/aclgo/simple-api-gateway/internal/delivery/http/service/wallet/pix"
+	"github.com/aclgo/simple-api-gateway/internal/domain/models"
+	paymentUC "github.com/aclgo/simple-api-gateway/internal/payment/usecase"
 	"github.com/aclgo/simple-api-gateway/internal/user"
-	"github.com/aclgo/simple-api-gateway/internal/wallet"
 	migration "github.com/aclgo/simple-api-gateway/migrations"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -33,12 +34,11 @@ import (
 	adminUC "github.com/aclgo/simple-api-gateway/internal/admin/usecase"
 	authUC "github.com/aclgo/simple-api-gateway/internal/auth/usecase"
 	ordersUC "github.com/aclgo/simple-api-gateway/internal/orders/usecase"
+	cardUC "github.com/aclgo/simple-api-gateway/internal/payment/card/usecase"
+	pixRepo "github.com/aclgo/simple-api-gateway/internal/payment/pix/repository"
+	pixUC "github.com/aclgo/simple-api-gateway/internal/payment/pix/usecase"
 	productUC "github.com/aclgo/simple-api-gateway/internal/product/usecase"
 	userUC "github.com/aclgo/simple-api-gateway/internal/user/usecase"
-	cardUC "github.com/aclgo/simple-api-gateway/internal/wallet/card/usecase"
-	pixRepo "github.com/aclgo/simple-api-gateway/internal/wallet/pix/repository"
-	pixUC "github.com/aclgo/simple-api-gateway/internal/wallet/pix/usecase"
-	walletUC "github.com/aclgo/simple-api-gateway/internal/wallet/usecase"
 
 	grpcauth "github.com/aclgo/simple-api-gateway/pkg/grpc-auth"
 	redis "github.com/aclgo/simple-api-gateway/pkg/rredis"
@@ -178,29 +178,33 @@ func main() {
 	cptUC := captchaUC.NewCaptchaUC(cptRepo)
 	cptSvc := svcCaptcha.NewCaptchaService(cptUC)
 
+	pixRepository := pixRepo.NewPixRepository(redisClient)
+
+	gateways := paymentUC.NewPaymentUC(balanceUserService, logger)
+
+	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository)
+	cardProcessor := cardUC.NewpaymentProcessorCard()
+
+	gateways.RegisterProvider(models.PaymentMethodPix, pixProcessor)
+	gateways.RegisterProvider(models.PaymentMethodCard, cardProcessor)
+
 	sagaWorkerCompensate := ordersUC.NewSagaWorker(3, time.Minute)
 	sagaWorkerCompensate.Start(ctx)
 
 	user := userUC.NewuserUC(clientUserService,clientSubscriptionService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
-	orders := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate)
+	orders,err := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate,gateways)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	pixRepository := pixRepo.NewPixRepository(redisClient)
-
-	w := walletUC.NewwalletUC(balanceUserService, pixRepository, logger)
-
-	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization)
-	cardProcessor := cardUC.NewpaymentProcessorCard()
-
-	w.RegisterProvider(wallet.PaymentMethodPix, pixProcessor)
-	w.RegisterProvider(wallet.PaymentMethodCard, cardProcessor)
 
 	userHandler := svcUser.NewuserService(user, logger, cfg.BaseApiUrl)
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
-	walletPixHandler := svcPix.NewwalletServicePix(pixProcessor, w)
+	paymentPixHandler := svcPix.NewpaymentServicePix(gateways)
 	// exHandler := svcEx.NewExService()
 
 	authUC := authUC.NewAuthUC(clientUserService,clientSubscriptionService)
@@ -245,8 +249,7 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/account", authUC.ValidateToken(ordersHandler.FindByAccount(ctx)))
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
 
-	mux.HandleFunc("POST /api/payments/pix", authUC.ValidateToken(walletPixHandler.CreatePix(ctx)))
-	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(walletPixHandler.WebHookPix()))
+	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(paymentPixHandler.WebHookPix()))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 

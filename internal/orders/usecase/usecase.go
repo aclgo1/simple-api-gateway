@@ -2,15 +2,19 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	"github.com/aclgo/simple-api-gateway/internal/orders"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
 	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
 	protoOrders "github.com/aclgo/simple-api-gateway/proto-service/orders"
 	protoProduct "github.com/aclgo/simple-api-gateway/proto-service/product"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type orderUC struct {
@@ -19,7 +23,8 @@ type orderUC struct {
 	clientProductsGRPC protoProduct.ProductServiceClient
 	mu                 *sync.Mutex
 	logger             logger.Logger
-	WorkerSaga orders.SagaWorker
+	workerSaga orders.SagaWorker
+	gateway orders.PaymentGateway
 }
 
 func NeworderUC(
@@ -29,15 +34,21 @@ func NeworderUC(
 	mu *sync.Mutex,
 	logger logger.Logger,
 	workerSaga orders.SagaWorker,
-) *orderUC {
+	gateway orders.PaymentGateway,
+) (*orderUC,error) {
+
+	if gateway == nil {
+		return nil, errors.New("not configured orders gateways payment")
+	}
 	return &orderUC{
 		clientOrdersGRPC:   clientOrdersGRPC,
 		clientBalanceGPRC:  clientBalanceGRPC,
 		clientProductsGRPC: clientProductsGRPC,
 		mu:                 mu,
 		logger:             logger,
-		WorkerSaga:workerSaga,
-	}
+		workerSaga:workerSaga,
+		gateway: gateway,
+	},nil
 }
 
 
@@ -48,7 +59,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 
 	for i := range in.ProductsIDS {
 		paramProductProto := protoProduct.ProductFindRequest{
-			Id: in.ProductsIDS[i],
+			Id: in.ProductsIDS[i].Id,
 		}
 
 		product, err := u.clientProductsGRPC.Find(ctx, &paramProductProto)
@@ -86,7 +97,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 
 	for i := range in.ProductsIDS {
 		paramProductProto := protoProduct.ProductUpdateRequest{
-			Id:         in.ProductsIDS[i],
+			Id:         in.ProductsIDS[i].Id,
 			HasOrdered: true,
 		}
 
@@ -96,9 +107,17 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 		}
 	}
 
+	metadata, err := json.Marshal(in.ProductsIDS)
+	if err != nil {
+		return nil, fmt.Errorf("json.Marshal: w",err)
+	}
+
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
 		AccountID:   in.AccountId,
-		ProductsIDS: in.ProductsIDS,
+		Type: protoOrders.OrderType_PRODUCT_PURCHASE,
+		PaymentMethod: protoOrders.PaymentMethod_INTERNAL_BALANCE,
+		Status: protoOrders.OrderStatus_PAID,
+		Metadata: metadata,
 	}
 
 	orderCreate, err := u.clientOrdersGRPC.Create(ctx, &paramProtoCreateOrder)
@@ -106,6 +125,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 		paramProtoCredit := protoBalance.ParamCreditWalletRequest{
 			WalletID: wallet.WalletID,
 			Amount:   amountProducts,
+			ReferenceID: uuid.NewString(),
 		}
 
 		_, err := u.clientBalanceGPRC.Credit(ctx, &paramProtoCredit)
@@ -116,20 +136,130 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 		return nil, fmt.Errorf("u.clientOrdersGRPC.Create: %w", err)
 	}
 
+	
+
 	out := orders.OrderCreateOutput{
 		OrderId:     orderCreate.Order.OrderID,
 		AccountId:   orderCreate.Order.AccountID,
-		ProductsIDS: orderCreate.Order.ProductsIDS,
 		CreatedAt:   orderCreate.Order.CreatedAT.AsTime(),
+	}
+
+	if err := json.Unmarshal(orderCreate.Order.Metadata, &out.ProductsIDS);err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %w",err)
 	}
 
 	return &out, nil
 }
 
-//create order v2 using saga orc
+//create order v2 using saga orchestration
 func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
-	saga := NewOrderCreateSaga(u.clientProductsGRPC,u.clientOrdersGRPC,u.clientBalanceGPRC,u.WorkerSaga)
-	return saga.Execute(ctx,in)
+	var amountProducts int64
+	for _, pID := range in.ProductsIDS {
+		product, err := u.clientProductsGRPC.Find(ctx, &protoProduct.ProductFindRequest{Id: pID.Id})
+		if err != nil {
+			return nil, fmt.Errorf("failed to find product %s: %w", pID, err)
+		}
+		amountProducts += product.Product.Price
+	}
+
+	wallet, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &protoBalance.ParamGetWalletByAccountRequest{AccountID: in.AccountId})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallet: %w", err)
+	}
+
+	if wallet.Balance < amountProducts {
+		return nil, fmt.Errorf("insufficient funds: amount is %d, balance is %d", amountProducts, wallet.Balance)
+	}
+
+	var compensations []func(context.Context)error
+
+	rollback := func(originalErr error)error{
+		u.workerSaga.AppendTask(&orders.CompensationTask{
+			OriginalErr: originalErr,
+			Compensations: compensations,
+		})
+		return originalErr
+	}
+
+	referenceId := uuid.NewString()
+
+	_, err = u.clientBalanceGPRC.Debit(ctx, &protoBalance.ParamDebitWalletRequest{
+		WalletID: wallet.WalletID,
+		Amount:   amountProducts,
+		ReferenceID: referenceId,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to debit wallet: %w", err)
+	}
+
+	referenceIdCreditCompensate := uuid.NewString()
+
+	compensations = append(compensations, func(ctx context.Context) error {
+		_, err := u.clientBalanceGPRC.Credit(ctx, &protoBalance.ParamCreditWalletRequest{
+			WalletID: wallet.WalletID,
+			Amount:   amountProducts,
+			ReferenceID: referenceIdCreditCompensate,
+		})
+		return err
+	})
+
+	successfullyUpdatedProducts:= make([]string, 0,len(in.ProductsIDS))
+
+	compensations = append(compensations, func(ctx context.Context) error {
+		for _, pId := range successfullyUpdatedProducts{
+			_, err := u.clientProductsGRPC.Update(ctx, &protoProduct.ProductUpdateRequest{
+				Id:         pId,
+				HasOrdered: false, 
+			})
+			if err != nil {
+				return err 
+			} 
+		}
+
+		return nil
+	})
+
+	for _, pID := range in.ProductsIDS {
+		_, err := u.clientProductsGRPC.Update(ctx, &protoProduct.ProductUpdateRequest{
+			Id:         pID.Id,
+			HasOrdered: true,
+		})
+		if err != nil {
+			return nil, rollback(fmt.Errorf("failed to update product %s: %w", pID.Id, err))
+		}
+		successfullyUpdatedProducts = append(successfullyUpdatedProducts, pID.Id)
+	}
+
+	metadata, err := json.Marshal(in.ProductsIDS)
+	if err != nil {
+		return nil, fmt.Errorf("json.Marshal: w",err)
+	}
+
+	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
+		AccountID:   in.AccountId,
+		Type: protoOrders.OrderType_PRODUCT_PURCHASE,
+		PaymentMethod: protoOrders.PaymentMethod_INTERNAL_BALANCE,
+		Status: protoOrders.OrderStatus_PAID,
+		Metadata: metadata,
+	}
+
+	orderCreate, err := u.clientOrdersGRPC.Create(ctx, &paramProtoCreateOrder)
+	if err != nil {
+		return nil, rollback(fmt.Errorf("failed to create order: %w", err))
+	}
+
+	out := &orders.OrderCreateOutput{
+		OrderId:     orderCreate.Order.OrderID,
+		AccountId:   orderCreate.Order.AccountID,
+		CreatedAt:   orderCreate.Order.CreatedAT.AsTime(),
+	}
+
+	if err := json.Unmarshal(orderCreate.Order.Metadata, &out.ProductsIDS);err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %w",err)
+	}
+
+
+	return out,nil
 }
 
 func (u *orderUC) FindById(ctx context.Context, in *orders.OrderFindByIdInput) (*orders.OrderFindByIdOutput, error) {
@@ -146,9 +276,13 @@ func (u *orderUC) FindById(ctx context.Context, in *orders.OrderFindByIdInput) (
 	out := orders.OrderFindByIdOutput{
 		OrderId:     find.Order.OrderID,
 		AccountId:   find.Order.AccountID,
-		ProductsIDS: find.Order.ProductsIDS,
 		CreatedAt:   find.Order.CreatedAT.AsTime(),
 	}
+
+	if err := json.Unmarshal(find.Order.Metadata, &out.ProductsIDS);err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %w",err)
+	}
+
 
 	return &out, nil
 }
@@ -169,8 +303,11 @@ func (u *orderUC) FindByAccount(ctx context.Context, in *orders.OrderByAccountIn
 		ord := orders.OrderByAccountOutput{
 			OrderId:     ords.Orders[i].OrderID,
 			AccountId:   ords.Orders[i].AccountID,
-			ProductsIDS: ords.Orders[i].ProductsIDS,
 			CreatedAt:   ords.Orders[i].CreatedAT.AsTime(),
+		}
+
+		if err := json.Unmarshal(ords.Orders[i].Metadata, &ord.ProductsIDS);err != nil {
+			return nil, fmt.Errorf("json.Unmarshal: %w",err)
 		}
 
 		results = append(results, &ord)
@@ -180,29 +317,138 @@ func (u *orderUC) FindByAccount(ctx context.Context, in *orders.OrderByAccountIn
 	return results, nil
 }
 
-func (u *orderUC) FindByProduct(ctx context.Context, in *orders.OrderByProductInput) (*orders.OrderByProductOutput, error) {
+func (u *orderUC) FindByProduct(ctx context.Context, in *orders.OrderByProductInput) ([]*orders.OrderByProductOutput, error) {
 
 	protoParamFind := protoOrders.ParamFindOrderByProductRequest{
 		ProductID: in.ProductId,
 	}
 
-	find, err := u.clientOrdersGRPC.FindOrderByProduct(ctx, &protoParamFind)
+	finds, err := u.clientOrdersGRPC.FindOrderByProduct(ctx, &protoParamFind)
 	if err != nil {
 		return nil, fmt.Errorf("u.clientOrdersGRPC.FindOrderByProduct: %w", err)
 	}
 
-	out := orders.OrderByProductOutput{
-		OrderId:     find.Order.OrderID,
-		AccountId:   find.Order.AccountID,
-		ProductsIDS: find.Order.ProductsIDS,
-		CreatedAt:   find.Order.CreatedAT.AsTime(),
+	outs := make([]*orders.OrderByProductOutput, 0, len(finds.Orders))
+
+	for i := range finds.Orders{
+		out := orders.OrderByProductOutput {
+			OrderId:     finds.Orders[i].OrderID,
+			AccountId:   finds.Orders[i].AccountID,
+			CreatedAt:   finds.Orders[i].CreatedAT.AsTime(),
+		}
+
+		if err := json.Unmarshal(finds.Orders[i].Metadata, &out.ProductsIDS); err != nil {
+			return nil, fmt.Errorf("json.Unmarshal: %w",err)
+		}
+
+		outs = append(outs, &out)
 	}
 
-	return &out, nil
+	return outs, nil
 }
 
 
 func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 	params *orders.ParamsCreateOrderSubscriptionInput)(*orders.ParamsCreateOrderSubscriptionOutput,error){
-	return nil,nil
+
+	var paramsNewOrder protoOrders.ParamCreateOrderRequest
+
+	switch params.MethodPayment {
+	case string(orders.MethodPayInternalBalance):
+	case string(orders.MethodPayPix):
+	case string(orders.MethodPayCard):
+	}
+
+	newOrder, err := u.clientOrdersGRPC.Create(ctx, &paramsNewOrder)
+	if err != nil {
+		return nil,err
+	}
+
+	out := orders.ParamsCreateOrderSubscriptionOutput{
+
+	}
+
+	fmt.Println(newOrder)
+
+	return &out,nil
+}
+
+func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanceInput) (*orders.ParamsAddBalanceOutput, error) {
+
+	switch params.Amount {
+	case 2500, 5000, 7500:
+	default:
+		return nil, errors.New("amount invalid")
+	}
+
+	mp := models.ParamPaymentProcessInput{
+		Method:         params.MethodPayment,
+		AccountId:      params.UserId,
+		Amount:         params.Amount,
+		CardToken:      params.CardToken,    
+		CardExpiration: params.CardExpiration,
+	}
+
+	payment, err := u.gateway.GeneratePayment(ctx, &mp)
+	if err != nil {
+		return nil, fmt.Errorf("u.gateway.GeneratePayment: %w", err)
+	}
+
+	status := protoOrders.OrderStatus_PENDING
+	if payment.Method == models.PaymentMethodCard {
+		status = protoOrders.OrderStatus_PAID
+	}
+
+	method := protoOrders.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+	switch payment.Method {
+	case models.PaymentMethodPix:
+		method = protoOrders.PaymentMethod_PIX
+	case models.PaymentMethodCard:
+		method = protoOrders.PaymentMethod_CREDIT_CARD
+	case models.PaymentMethodBoleto:
+		method = protoOrders.PaymentMethod_BOLETO
+	}
+
+	var pixExp *timestamppb.Timestamp
+	if !payment.PixExpiration.IsZero() {
+	    pixExp = timestamppb.New(payment.PixExpiration)
+	}
+
+	var boletoExp *timestamppb.Timestamp	
+	if !payment.BoletoExpiration.IsZero()	 {
+		boletoExp = timestamppb.New(payment.BoletoExpiration)
+	}	
+
+	paramsNewOrder := protoOrders.ParamCreateOrderRequest{
+		AccountID:            params.UserId,
+		Type:                 protoOrders.OrderType_BALANCE_DEPOSIT,
+		Status:               status,
+		Amount:               params.Amount,
+		PaymentMethod:        method,
+		Metadata:             []byte(`{}`),
+		GatewayTransactionID: payment.GatewayTransactionID,
+		PixQRCode:            payment.PixQRCode,
+		PixExpiration:        pixExp,
+		CardToken:            payment.CardToken,
+		CardExpiration:       payment.CardExpiration,
+		BoletoURL:            payment.BoletoURL,
+		BoletoBarcode:        payment.BoletoBarcode,
+		BoletoExpiration:     boletoExp,
+	}
+
+	newOrder, err := u.clientOrdersGRPC.Create(ctx, &paramsNewOrder)
+	if err != nil {
+		return nil, fmt.Errorf("u.clientOrdersGRPC.Create: %w", err)
+	}
+
+	out := orders.ParamsAddBalanceOutput{
+		OrderID:              newOrder.Order.OrderID,
+		Status:               newOrder.Order.Status.String(),
+		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
+		PixQRCode:            newOrder.Order.PixQRCode,
+		BoletoURL:            newOrder.Order.BoletoURL,
+		BoletoBarcode:        newOrder.Order.BoletoBarcode,
+	}
+
+	return &out, nil
 }

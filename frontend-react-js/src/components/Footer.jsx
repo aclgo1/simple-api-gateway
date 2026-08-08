@@ -10,6 +10,7 @@ export default function Footer() {
     src.addEventListener("conns", (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("coon sse active received data: ", data);
         setOnlineOusers(data.conns);
       } catch (parseError) {
         console.log("error parse json conns sse", parseError);

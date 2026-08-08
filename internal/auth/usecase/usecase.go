@@ -520,11 +520,11 @@ func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
 		}
 
 		resp := auth.Response{
-			Error:   http.StatusText(http.StatusUnauthorized),
+			Error:   http.StatusText(http.StatusForbidden),
 			Message: auth.ErrNoIsPremiun{}.Error(),
 		}
 
-		auth.Json(w, resp, http.StatusUnauthorized)
+		auth.Json(w, resp, http.StatusForbidden)
 	}
 }
 

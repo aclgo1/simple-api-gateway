@@ -17,6 +17,11 @@ func SpaHandler(embedFS embed.FS, root string) http.HandlerFunc{
 	fileServer := http.FileServer(http.FS(subFs))
 
 	return func (w http.ResponseWriter, r *http.Request)  {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			http.NotFound(w, r)
+			return
+		}
+		
 		path := strings.TrimPrefix(r.URL.Path, "/")
 		if path == ""{
 			path = "index.html"

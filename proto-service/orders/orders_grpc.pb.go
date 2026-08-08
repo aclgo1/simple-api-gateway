@@ -4,7 +4,7 @@
 // - protoc             v3.21.12
 // source: orders.proto
 
-package orders
+package proto
 
 import (
 	context "context"
@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServiceOrder_Create_FullMethodName             = "/ServiceOrder/Create"
-	ServiceOrder_Find_FullMethodName               = "/ServiceOrder/Find"
-	ServiceOrder_FindOrderByAccount_FullMethodName = "/ServiceOrder/FindOrderByAccount"
-	ServiceOrder_FindOrderByProduct_FullMethodName = "/ServiceOrder/FindOrderByProduct"
+	ServiceOrder_Create_FullMethodName             = "/proto.ServiceOrder/Create"
+	ServiceOrder_Find_FullMethodName               = "/proto.ServiceOrder/Find"
+	ServiceOrder_FindOrderByAccount_FullMethodName = "/proto.ServiceOrder/FindOrderByAccount"
+	ServiceOrder_FindOrderByProduct_FullMethodName = "/proto.ServiceOrder/FindOrderByProduct"
 )
 
 // ServiceOrderClient is the client API for ServiceOrder service.
@@ -210,7 +210,7 @@ func _ServiceOrder_FindOrderByProduct_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ServiceOrder_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ServiceOrder",
+	ServiceName: "proto.ServiceOrder",
 	HandlerType: (*ServiceOrderServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

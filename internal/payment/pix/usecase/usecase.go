@@ -2,30 +2,42 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/aclgo/simple-api-gateway/internal/wallet"
-	"github.com/aclgo/simple-api-gateway/internal/wallet/pix"
+	"github.com/aclgo/simple-api-gateway/internal/domain/models"
+	"github.com/aclgo/simple-api-gateway/internal/payment/pix"
+	"github.com/redis/go-redis/v9"
 )
 
 type paymentProcessorPix struct {
 	PixAuthorization string
+	repo pix.Repository
 }
 
-func NewpaymentProcessorPix(authorization string) pix.PaymentProcessor {
+func NewpaymentProcessorPix(authorization string, repo pix.Repository) models.PaymentProcessor {
 	return &paymentProcessorPix{
 		PixAuthorization: authorization,
+		repo: repo,
 	}
 }
 
-type DataProccessResponse struct{}
 
-func (p *paymentProcessorPix) Proccess(ctx context.Context, in *wallet.ParamPaymentProcessorInput) (any, error) {
+func (p *paymentProcessorPix) Proccess(ctx context.Context, in *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error) {
+
+	err := p.repo.Get(ctx, in.AccountId)
+
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	if err == nil {
+		return nil, pix.ErrExceddedLimitGenPix
+	}
+	
 	client := &http.Client{
 		Timeout: time.Second * 30,
 	}
@@ -50,12 +62,9 @@ func (p *paymentProcessorPix) Proccess(ctx context.Context, in *wallet.ParamPaym
 		return nil, err
 	}
 
-	var data DataProccessResponse
-	if err := json.Unmarshal(respBody, &data); err != nil {
-		return nil, err
-	}
+	fmt.Println(string(respBody))
 
-	fmt.Printf("%+v\n", data)
+	p.repo.Set(ctx, in.AccountId)
 
-	return &pix.ParamsPixOutput{Teste: "meu pix"}, nil
+	return &models.ParamPaymentProcessOutput{}, nil
 }

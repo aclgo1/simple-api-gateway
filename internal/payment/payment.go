@@ -1,24 +1,21 @@
-package wallet
+package payment
 
 import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 )
 
-type WalletInterface interface {
-	RegisterProvider(string, PaymentProcessor)
-	Credit(context.Context, *ParamCreditInput) (*ParamCreditOutput, error)
-	GeneratePayment(context.Context, *ParamGeneratePaymentInput) (*ParamGeneratePaymentOutput, error)
+type PaymentInterface interface {
+	RegisterProvider(string, models.PaymentProcessor)
+	Credit(ctx context.Context, in *ParamCreditInput) (*ParamCreditOutput, error)
+	GeneratePayment(context.Context, *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error)
 }
 
-type PaymentProcessor interface {
-	Proccess(context.Context, *ParamPaymentProcessorInput) (any, error)
-}
 
 var (
-	PaymentMethodPix             = "pix"
-	PaymentMethodCard            = "card"
 	ErrPaymentMethodNotSupported = errors.New("payment method not supported")
 	ErrExceddedLimitGenPix       = errors.New("excedded limit generate pix")
 )
@@ -55,23 +52,3 @@ type ParamCreditOutput struct {
 	UpdatedAT time.Time `json:"updated_at"`
 }
 
-type ParamPaymentProcessorInput struct {
-	Method    string  `json:"method"`
-	AccountId string  `json:"account_id"`
-	Amount    float64 `json:"amount"`
-}
-
-type ParamGeneratePaymentInput struct {
-	Method    string  `json:"method"`
-	AccountId string  `json:"account_id"`
-	Amount    float64 `json:"amount"`
-}
-
-func (p *ParamGeneratePaymentInput) Validate() error {
-	return nil
-}
-
-type ParamGeneratePaymentOutput struct {
-	Type string `json:"type"`
-	Data any    `json:"data"`
-}

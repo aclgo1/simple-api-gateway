@@ -15,7 +15,7 @@ import (
 
 var (
 
-	//go:embed *.up.sql
+	//go:embed *sql
 	engineMigrationFS embed.FS
 	appMigrationFS    fs.FS
 	DB                *sqlx.DB

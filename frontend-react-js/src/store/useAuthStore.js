@@ -6,7 +6,8 @@ export const useAuthStore = create(
     (set) => ({
       accessToken: null,
       refreshToken: null,
-      setTokens: (accessToken, refreshToken) => ({ accessToken, refreshToken }),
+      setTokens: (accessToken, refreshToken) =>
+        set({ accessToken, refreshToken }),
       logout: () => set({ accessToken: null, refreshToken: null }),
     }),
     { name: "auth-storage" },

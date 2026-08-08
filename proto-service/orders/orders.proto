@@ -1,19 +1,82 @@
 syntax = "proto3";
 
-option go_package = "github.com/aclgo/simple-api-gateway/proto-service/orders";
+package proto;
+
+option go_package = "github.com/aclgo/proto";
 
 import "google/protobuf/timestamp.proto";
 
+enum OrderType {
+    ORDER_TYPE_UNSPECIFIED = 0;
+    PREMIUM_SUBSCRIPTION   = 1;
+    BALANCE_DEPOSIT        = 2;
+    PRODUCT_PURCHASE       = 3;
+}
+
+enum PaymentMethod {
+    PAYMENT_METHOD_UNSPECIFIED = 0;
+    PIX                        = 1;
+    CREDIT_CARD                = 2;
+    INTERNAL_BALANCE           = 3;
+    BOLETO                     = 4;
+}
+
+enum OrderStatus {
+    ORDER_STATUS_UNSPECIFIED = 0;
+    PENDING                  = 1;
+    PAID                     = 2;
+    FAILED                   = 3;
+    CANCELLED                = 4;
+    REFUNDED                 = 5;
+}
+
 message Orders {
-    string orderID = 1;
-    string accountID = 2;
-    repeated string productsIDS = 3;
-    google.protobuf.Timestamp createdAT = 4;
+    string orderID               = 1;
+    string accountID             = 2;
+    OrderType type               = 3;
+    int64 amount                 = 4; 
+    PaymentMethod paymentMethod  = 5;
+    OrderStatus status           = 6;
+    bytes metadata               = 7;
+
+ 
+    string gatewayTransactionID = 8;
+
+    string pixQRCode            = 9;
+    google.protobuf.Timestamp pixExpiration = 10;
+
+
+    string cardToken            = 11;
+    string cardExpiration       = 12;
+
+    string boletoURL            = 13;
+    string boletoBarcode        = 14;
+    google.protobuf.Timestamp boletoExpiration = 15;
+
+    google.protobuf.Timestamp createdAT  = 16;
+    google.protobuf.Timestamp updatedAT  = 17;
 }
 
 message ParamCreateOrderRequest {
-    string accountID = 1;
-    repeated string productsIDS = 2;
+    string accountID             = 1;
+    OrderType type               = 2;
+    int64 amount                 = 3;
+    PaymentMethod paymentMethod  = 4;
+    OrderStatus status           = 5;
+    bytes metadata               = 6; 
+
+    string gatewayTransactionID = 7;
+
+    string pixQRCode            = 8;
+    google.protobuf.Timestamp pixExpiration = 9;
+
+
+    string cardToken            = 10;
+    string cardExpiration       = 11;
+
+    string boletoURL            = 12;
+    string boletoBarcode        = 13;
+    google.protobuf.Timestamp boletoExpiration = 14;
 }
 
 message ParamCreateOrderResponse {
@@ -28,20 +91,21 @@ message ParamFindOrderResponse {
     Orders order = 1;
 }
 
-message ParamFindOrderByAccountRequest{
+
+message ParamFindOrderByAccountRequest {
     string accountID = 1;
 }
 
-message ParamFindOrderByAccountResponse{
+message ParamFindOrderByAccountResponse {
     repeated Orders orders = 1;
 }
 
-message ParamFindOrderByProductRequest{
+message ParamFindOrderByProductRequest {
     string productID = 1;
 }
 
-message ParamFindOrderByProductResponse{
-    Orders order = 1;
+message ParamFindOrderByProductResponse {
+    repeated Orders orders = 1;
 }
 
 service ServiceOrder {

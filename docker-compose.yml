@@ -1,7 +1,6 @@
-version: '3.9'
+version: "3.9"
 
 services:
-
   simple-api-gateway:
     build: .
     restart: always
@@ -87,7 +86,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  
+
   grpc-product:
     build: ../grpc-product
     container_name: grpc-product
@@ -116,7 +115,7 @@ services:
       resources:
         limits:
           memory: 80M
-    expose: 
+    expose:
       - "50055"
     depends_on:
       - grpc-user
@@ -136,7 +135,7 @@ services:
       resources:
         limits:
           memory: 80M
-    expose: 
+    expose:
       - "50056"
     depends_on:
       - grpc-user
@@ -148,25 +147,25 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  concurrency-example:
-    build: ../concurrency-example
-    container_name: concurrency-example
-    restart: always
-    shm_size: '2gb'
-    # deploy:
-    #   resources:
-    #     limits:
-    #       memory: 150M
-    expose:
-      - "3000"
-    depends_on:
-      - simple-api-gateway
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-  
+  # concurrency-example:
+  #   build: ../concurrency-example
+  #   container_name: concurrency-example
+  #   restart: always
+  #   shm_size: '2gb'
+  #   # deploy:
+  #   #   resources:
+  #   #     limits:
+  #   #       memory: 150M
+  #   expose:
+  #     - "3000"
+  #   depends_on:
+  #     - simple-api-gateway
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
   mongodb:
     image: mongo:4.4
     container_name: mongodb

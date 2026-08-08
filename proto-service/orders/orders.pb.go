@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: orders.proto
 
-package orders
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -22,14 +22,192 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type OrderType int32
+
+const (
+	OrderType_ORDER_TYPE_UNSPECIFIED OrderType = 0
+	OrderType_PREMIUM_SUBSCRIPTION   OrderType = 1
+	OrderType_BALANCE_DEPOSIT        OrderType = 2
+	OrderType_PRODUCT_PURCHASE       OrderType = 3
+)
+
+// Enum value maps for OrderType.
+var (
+	OrderType_name = map[int32]string{
+		0: "ORDER_TYPE_UNSPECIFIED",
+		1: "PREMIUM_SUBSCRIPTION",
+		2: "BALANCE_DEPOSIT",
+		3: "PRODUCT_PURCHASE",
+	}
+	OrderType_value = map[string]int32{
+		"ORDER_TYPE_UNSPECIFIED": 0,
+		"PREMIUM_SUBSCRIPTION":   1,
+		"BALANCE_DEPOSIT":        2,
+		"PRODUCT_PURCHASE":       3,
+	}
+)
+
+func (x OrderType) Enum() *OrderType {
+	p := new(OrderType)
+	*p = x
+	return p
+}
+
+func (x OrderType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrderType) Descriptor() protoreflect.EnumDescriptor {
+	return file_orders_proto_enumTypes[0].Descriptor()
+}
+
+func (OrderType) Type() protoreflect.EnumType {
+	return &file_orders_proto_enumTypes[0]
+}
+
+func (x OrderType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrderType.Descriptor instead.
+func (OrderType) EnumDescriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{0}
+}
+
+type PaymentMethod int32
+
+const (
+	PaymentMethod_PAYMENT_METHOD_UNSPECIFIED PaymentMethod = 0
+	PaymentMethod_PIX                        PaymentMethod = 1
+	PaymentMethod_CREDIT_CARD                PaymentMethod = 2
+	PaymentMethod_INTERNAL_BALANCE           PaymentMethod = 3
+	PaymentMethod_BOLETO                     PaymentMethod = 4
+)
+
+// Enum value maps for PaymentMethod.
+var (
+	PaymentMethod_name = map[int32]string{
+		0: "PAYMENT_METHOD_UNSPECIFIED",
+		1: "PIX",
+		2: "CREDIT_CARD",
+		3: "INTERNAL_BALANCE",
+		4: "BOLETO",
+	}
+	PaymentMethod_value = map[string]int32{
+		"PAYMENT_METHOD_UNSPECIFIED": 0,
+		"PIX":                        1,
+		"CREDIT_CARD":                2,
+		"INTERNAL_BALANCE":           3,
+		"BOLETO":                     4,
+	}
+)
+
+func (x PaymentMethod) Enum() *PaymentMethod {
+	p := new(PaymentMethod)
+	*p = x
+	return p
+}
+
+func (x PaymentMethod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PaymentMethod) Descriptor() protoreflect.EnumDescriptor {
+	return file_orders_proto_enumTypes[1].Descriptor()
+}
+
+func (PaymentMethod) Type() protoreflect.EnumType {
+	return &file_orders_proto_enumTypes[1]
+}
+
+func (x PaymentMethod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PaymentMethod.Descriptor instead.
+func (PaymentMethod) EnumDescriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{1}
+}
+
+type OrderStatus int32
+
+const (
+	OrderStatus_ORDER_STATUS_UNSPECIFIED OrderStatus = 0
+	OrderStatus_PENDING                  OrderStatus = 1
+	OrderStatus_PAID                     OrderStatus = 2
+	OrderStatus_FAILED                   OrderStatus = 3
+	OrderStatus_CANCELLED                OrderStatus = 4
+	OrderStatus_REFUNDED                 OrderStatus = 5
+)
+
+// Enum value maps for OrderStatus.
+var (
+	OrderStatus_name = map[int32]string{
+		0: "ORDER_STATUS_UNSPECIFIED",
+		1: "PENDING",
+		2: "PAID",
+		3: "FAILED",
+		4: "CANCELLED",
+		5: "REFUNDED",
+	}
+	OrderStatus_value = map[string]int32{
+		"ORDER_STATUS_UNSPECIFIED": 0,
+		"PENDING":                  1,
+		"PAID":                     2,
+		"FAILED":                   3,
+		"CANCELLED":                4,
+		"REFUNDED":                 5,
+	}
+)
+
+func (x OrderStatus) Enum() *OrderStatus {
+	p := new(OrderStatus)
+	*p = x
+	return p
+}
+
+func (x OrderStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrderStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_orders_proto_enumTypes[2].Descriptor()
+}
+
+func (OrderStatus) Type() protoreflect.EnumType {
+	return &file_orders_proto_enumTypes[2]
+}
+
+func (x OrderStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrderStatus.Descriptor instead.
+func (OrderStatus) EnumDescriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{2}
+}
+
 type Orders struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderID       string                 `protobuf:"bytes,1,opt,name=orderID,proto3" json:"orderID,omitempty"`
-	AccountID     string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	ProductsIDS   []string               `protobuf:"bytes,3,rep,name=productsIDS,proto3" json:"productsIDS,omitempty"`
-	CreatedAT     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	OrderID              string                 `protobuf:"bytes,1,opt,name=orderID,proto3" json:"orderID,omitempty"`
+	AccountID            string                 `protobuf:"bytes,2,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	Type                 OrderType              `protobuf:"varint,3,opt,name=type,proto3,enum=proto.OrderType" json:"type,omitempty"`
+	Amount               int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	PaymentMethod        PaymentMethod          `protobuf:"varint,5,opt,name=paymentMethod,proto3,enum=proto.PaymentMethod" json:"paymentMethod,omitempty"`
+	Status               OrderStatus            `protobuf:"varint,6,opt,name=status,proto3,enum=proto.OrderStatus" json:"status,omitempty"`
+	Metadata             []byte                 `protobuf:"bytes,7,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	GatewayTransactionID string                 `protobuf:"bytes,8,opt,name=gatewayTransactionID,proto3" json:"gatewayTransactionID,omitempty"`
+	PixQRCode            string                 `protobuf:"bytes,9,opt,name=pixQRCode,proto3" json:"pixQRCode,omitempty"`
+	PixExpiration        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=pixExpiration,proto3" json:"pixExpiration,omitempty"`
+	CardToken            string                 `protobuf:"bytes,11,opt,name=cardToken,proto3" json:"cardToken,omitempty"`
+	CardExpiration       string                 `protobuf:"bytes,12,opt,name=cardExpiration,proto3" json:"cardExpiration,omitempty"`
+	BoletoURL            string                 `protobuf:"bytes,13,opt,name=boletoURL,proto3" json:"boletoURL,omitempty"`
+	BoletoBarcode        string                 `protobuf:"bytes,14,opt,name=boletoBarcode,proto3" json:"boletoBarcode,omitempty"`
+	BoletoExpiration     *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=boletoExpiration,proto3" json:"boletoExpiration,omitempty"`
+	CreatedAT            *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=createdAT,proto3" json:"createdAT,omitempty"`
+	UpdatedAT            *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updatedAT,proto3" json:"updatedAT,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *Orders) Reset() {
@@ -76,9 +254,93 @@ func (x *Orders) GetAccountID() string {
 	return ""
 }
 
-func (x *Orders) GetProductsIDS() []string {
+func (x *Orders) GetType() OrderType {
 	if x != nil {
-		return x.ProductsIDS
+		return x.Type
+	}
+	return OrderType_ORDER_TYPE_UNSPECIFIED
+}
+
+func (x *Orders) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *Orders) GetPaymentMethod() PaymentMethod {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+}
+
+func (x *Orders) GetStatus() OrderStatus {
+	if x != nil {
+		return x.Status
+	}
+	return OrderStatus_ORDER_STATUS_UNSPECIFIED
+}
+
+func (x *Orders) GetMetadata() []byte {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *Orders) GetGatewayTransactionID() string {
+	if x != nil {
+		return x.GatewayTransactionID
+	}
+	return ""
+}
+
+func (x *Orders) GetPixQRCode() string {
+	if x != nil {
+		return x.PixQRCode
+	}
+	return ""
+}
+
+func (x *Orders) GetPixExpiration() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PixExpiration
+	}
+	return nil
+}
+
+func (x *Orders) GetCardToken() string {
+	if x != nil {
+		return x.CardToken
+	}
+	return ""
+}
+
+func (x *Orders) GetCardExpiration() string {
+	if x != nil {
+		return x.CardExpiration
+	}
+	return ""
+}
+
+func (x *Orders) GetBoletoURL() string {
+	if x != nil {
+		return x.BoletoURL
+	}
+	return ""
+}
+
+func (x *Orders) GetBoletoBarcode() string {
+	if x != nil {
+		return x.BoletoBarcode
+	}
+	return ""
+}
+
+func (x *Orders) GetBoletoExpiration() *timestamppb.Timestamp {
+	if x != nil {
+		return x.BoletoExpiration
 	}
 	return nil
 }
@@ -90,12 +352,31 @@ func (x *Orders) GetCreatedAT() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Orders) GetUpdatedAT() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAT
+	}
+	return nil
+}
+
 type ParamCreateOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccountID     string                 `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
-	ProductsIDS   []string               `protobuf:"bytes,2,rep,name=productsIDS,proto3" json:"productsIDS,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	AccountID            string                 `protobuf:"bytes,1,opt,name=accountID,proto3" json:"accountID,omitempty"`
+	Type                 OrderType              `protobuf:"varint,2,opt,name=type,proto3,enum=proto.OrderType" json:"type,omitempty"`
+	Amount               int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	PaymentMethod        PaymentMethod          `protobuf:"varint,4,opt,name=paymentMethod,proto3,enum=proto.PaymentMethod" json:"paymentMethod,omitempty"`
+	Status               OrderStatus            `protobuf:"varint,5,opt,name=status,proto3,enum=proto.OrderStatus" json:"status,omitempty"`
+	Metadata             []byte                 `protobuf:"bytes,6,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	GatewayTransactionID string                 `protobuf:"bytes,7,opt,name=gatewayTransactionID,proto3" json:"gatewayTransactionID,omitempty"`
+	PixQRCode            string                 `protobuf:"bytes,8,opt,name=pixQRCode,proto3" json:"pixQRCode,omitempty"`
+	PixExpiration        *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=pixExpiration,proto3" json:"pixExpiration,omitempty"`
+	CardToken            string                 `protobuf:"bytes,10,opt,name=cardToken,proto3" json:"cardToken,omitempty"`
+	CardExpiration       string                 `protobuf:"bytes,11,opt,name=cardExpiration,proto3" json:"cardExpiration,omitempty"`
+	BoletoURL            string                 `protobuf:"bytes,12,opt,name=boletoURL,proto3" json:"boletoURL,omitempty"`
+	BoletoBarcode        string                 `protobuf:"bytes,13,opt,name=boletoBarcode,proto3" json:"boletoBarcode,omitempty"`
+	BoletoExpiration     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=boletoExpiration,proto3" json:"boletoExpiration,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *ParamCreateOrderRequest) Reset() {
@@ -135,9 +416,93 @@ func (x *ParamCreateOrderRequest) GetAccountID() string {
 	return ""
 }
 
-func (x *ParamCreateOrderRequest) GetProductsIDS() []string {
+func (x *ParamCreateOrderRequest) GetType() OrderType {
 	if x != nil {
-		return x.ProductsIDS
+		return x.Type
+	}
+	return OrderType_ORDER_TYPE_UNSPECIFIED
+}
+
+func (x *ParamCreateOrderRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *ParamCreateOrderRequest) GetPaymentMethod() PaymentMethod {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+}
+
+func (x *ParamCreateOrderRequest) GetStatus() OrderStatus {
+	if x != nil {
+		return x.Status
+	}
+	return OrderStatus_ORDER_STATUS_UNSPECIFIED
+}
+
+func (x *ParamCreateOrderRequest) GetMetadata() []byte {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *ParamCreateOrderRequest) GetGatewayTransactionID() string {
+	if x != nil {
+		return x.GatewayTransactionID
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetPixQRCode() string {
+	if x != nil {
+		return x.PixQRCode
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetPixExpiration() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PixExpiration
+	}
+	return nil
+}
+
+func (x *ParamCreateOrderRequest) GetCardToken() string {
+	if x != nil {
+		return x.CardToken
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetCardExpiration() string {
+	if x != nil {
+		return x.CardExpiration
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetBoletoURL() string {
+	if x != nil {
+		return x.BoletoURL
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetBoletoBarcode() string {
+	if x != nil {
+		return x.BoletoBarcode
+	}
+	return ""
+}
+
+func (x *ParamCreateOrderRequest) GetBoletoExpiration() *timestamppb.Timestamp {
+	if x != nil {
+		return x.BoletoExpiration
 	}
 	return nil
 }
@@ -408,7 +773,7 @@ func (x *ParamFindOrderByProductRequest) GetProductID() string {
 
 type ParamFindOrderByProductResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Order         *Orders                `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+	Orders        []*Orders              `protobuf:"bytes,1,rep,name=orders,proto3" json:"orders,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -443,9 +808,9 @@ func (*ParamFindOrderByProductResponse) Descriptor() ([]byte, []int) {
 	return file_orders_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ParamFindOrderByProductResponse) GetOrder() *Orders {
+func (x *ParamFindOrderByProductResponse) GetOrders() []*Orders {
 	if x != nil {
-		return x.Order
+		return x.Orders
 	}
 	return nil
 }
@@ -454,34 +819,81 @@ var File_orders_proto protoreflect.FileDescriptor
 
 const file_orders_proto_rawDesc = "" +
 	"\n" +
-	"\forders.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9c\x01\n" +
+	"\forders.proto\x12\x05proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdc\x05\n" +
 	"\x06Orders\x12\x18\n" +
 	"\aorderID\x18\x01 \x01(\tR\aorderID\x12\x1c\n" +
-	"\taccountID\x18\x02 \x01(\tR\taccountID\x12 \n" +
-	"\vproductsIDS\x18\x03 \x03(\tR\vproductsIDS\x128\n" +
-	"\tcreatedAT\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\"Y\n" +
+	"\taccountID\x18\x02 \x01(\tR\taccountID\x12$\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x10.proto.OrderTypeR\x04type\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12:\n" +
+	"\rpaymentMethod\x18\x05 \x01(\x0e2\x14.proto.PaymentMethodR\rpaymentMethod\x12*\n" +
+	"\x06status\x18\x06 \x01(\x0e2\x12.proto.OrderStatusR\x06status\x12\x1a\n" +
+	"\bmetadata\x18\a \x01(\fR\bmetadata\x122\n" +
+	"\x14gatewayTransactionID\x18\b \x01(\tR\x14gatewayTransactionID\x12\x1c\n" +
+	"\tpixQRCode\x18\t \x01(\tR\tpixQRCode\x12@\n" +
+	"\rpixExpiration\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\rpixExpiration\x12\x1c\n" +
+	"\tcardToken\x18\v \x01(\tR\tcardToken\x12&\n" +
+	"\x0ecardExpiration\x18\f \x01(\tR\x0ecardExpiration\x12\x1c\n" +
+	"\tboletoURL\x18\r \x01(\tR\tboletoURL\x12$\n" +
+	"\rboletoBarcode\x18\x0e \x01(\tR\rboletoBarcode\x12F\n" +
+	"\x10boletoExpiration\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\x10boletoExpiration\x128\n" +
+	"\tcreatedAT\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAT\x128\n" +
+	"\tupdatedAT\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAT\"\xdf\x04\n" +
 	"\x17ParamCreateOrderRequest\x12\x1c\n" +
-	"\taccountID\x18\x01 \x01(\tR\taccountID\x12 \n" +
-	"\vproductsIDS\x18\x02 \x03(\tR\vproductsIDS\"9\n" +
-	"\x18ParamCreateOrderResponse\x12\x1d\n" +
-	"\x05order\x18\x01 \x01(\v2\a.OrdersR\x05order\"1\n" +
+	"\taccountID\x18\x01 \x01(\tR\taccountID\x12$\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x10.proto.OrderTypeR\x04type\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12:\n" +
+	"\rpaymentMethod\x18\x04 \x01(\x0e2\x14.proto.PaymentMethodR\rpaymentMethod\x12*\n" +
+	"\x06status\x18\x05 \x01(\x0e2\x12.proto.OrderStatusR\x06status\x12\x1a\n" +
+	"\bmetadata\x18\x06 \x01(\fR\bmetadata\x122\n" +
+	"\x14gatewayTransactionID\x18\a \x01(\tR\x14gatewayTransactionID\x12\x1c\n" +
+	"\tpixQRCode\x18\b \x01(\tR\tpixQRCode\x12@\n" +
+	"\rpixExpiration\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\rpixExpiration\x12\x1c\n" +
+	"\tcardToken\x18\n" +
+	" \x01(\tR\tcardToken\x12&\n" +
+	"\x0ecardExpiration\x18\v \x01(\tR\x0ecardExpiration\x12\x1c\n" +
+	"\tboletoURL\x18\f \x01(\tR\tboletoURL\x12$\n" +
+	"\rboletoBarcode\x18\r \x01(\tR\rboletoBarcode\x12F\n" +
+	"\x10boletoExpiration\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\x10boletoExpiration\"?\n" +
+	"\x18ParamCreateOrderResponse\x12#\n" +
+	"\x05order\x18\x01 \x01(\v2\r.proto.OrdersR\x05order\"1\n" +
 	"\x15ParamFindOrderRequest\x12\x18\n" +
-	"\aorderID\x18\x01 \x01(\tR\aorderID\"7\n" +
-	"\x16ParamFindOrderResponse\x12\x1d\n" +
-	"\x05order\x18\x01 \x01(\v2\a.OrdersR\x05order\">\n" +
+	"\aorderID\x18\x01 \x01(\tR\aorderID\"=\n" +
+	"\x16ParamFindOrderResponse\x12#\n" +
+	"\x05order\x18\x01 \x01(\v2\r.proto.OrdersR\x05order\">\n" +
 	"\x1eParamFindOrderByAccountRequest\x12\x1c\n" +
-	"\taccountID\x18\x01 \x01(\tR\taccountID\"B\n" +
-	"\x1fParamFindOrderByAccountResponse\x12\x1f\n" +
-	"\x06orders\x18\x01 \x03(\v2\a.OrdersR\x06orders\">\n" +
+	"\taccountID\x18\x01 \x01(\tR\taccountID\"H\n" +
+	"\x1fParamFindOrderByAccountResponse\x12%\n" +
+	"\x06orders\x18\x01 \x03(\v2\r.proto.OrdersR\x06orders\">\n" +
 	"\x1eParamFindOrderByProductRequest\x12\x1c\n" +
-	"\tproductID\x18\x01 \x01(\tR\tproductID\"@\n" +
-	"\x1fParamFindOrderByProductResponse\x12\x1d\n" +
-	"\x05order\x18\x01 \x01(\v2\a.OrdersR\x05order2\xb8\x02\n" +
-	"\fServiceOrder\x12=\n" +
-	"\x06Create\x12\x18.ParamCreateOrderRequest\x1a\x19.ParamCreateOrderResponse\x127\n" +
-	"\x04Find\x12\x16.ParamFindOrderRequest\x1a\x17.ParamFindOrderResponse\x12W\n" +
-	"\x12FindOrderByAccount\x12\x1f.ParamFindOrderByAccountRequest\x1a .ParamFindOrderByAccountResponse\x12W\n" +
-	"\x12FindOrderByProduct\x12\x1f.ParamFindOrderByProductRequest\x1a .ParamFindOrderByProductResponseB:Z8github.com/aclgo/simple-api-gateway/proto-service/ordersb\x06proto3"
+	"\tproductID\x18\x01 \x01(\tR\tproductID\"H\n" +
+	"\x1fParamFindOrderByProductResponse\x12%\n" +
+	"\x06orders\x18\x01 \x03(\v2\r.proto.OrdersR\x06orders*l\n" +
+	"\tOrderType\x12\x1a\n" +
+	"\x16ORDER_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14PREMIUM_SUBSCRIPTION\x10\x01\x12\x13\n" +
+	"\x0fBALANCE_DEPOSIT\x10\x02\x12\x14\n" +
+	"\x10PRODUCT_PURCHASE\x10\x03*k\n" +
+	"\rPaymentMethod\x12\x1e\n" +
+	"\x1aPAYMENT_METHOD_UNSPECIFIED\x10\x00\x12\a\n" +
+	"\x03PIX\x10\x01\x12\x0f\n" +
+	"\vCREDIT_CARD\x10\x02\x12\x14\n" +
+	"\x10INTERNAL_BALANCE\x10\x03\x12\n" +
+	"\n" +
+	"\x06BOLETO\x10\x04*k\n" +
+	"\vOrderStatus\x12\x1c\n" +
+	"\x18ORDER_STATUS_UNSPECIFIED\x10\x00\x12\v\n" +
+	"\aPENDING\x10\x01\x12\b\n" +
+	"\x04PAID\x10\x02\x12\n" +
+	"\n" +
+	"\x06FAILED\x10\x03\x12\r\n" +
+	"\tCANCELLED\x10\x04\x12\f\n" +
+	"\bREFUNDED\x10\x052\xe8\x02\n" +
+	"\fServiceOrder\x12I\n" +
+	"\x06Create\x12\x1e.proto.ParamCreateOrderRequest\x1a\x1f.proto.ParamCreateOrderResponse\x12C\n" +
+	"\x04Find\x12\x1c.proto.ParamFindOrderRequest\x1a\x1d.proto.ParamFindOrderResponse\x12c\n" +
+	"\x12FindOrderByAccount\x12%.proto.ParamFindOrderByAccountRequest\x1a&.proto.ParamFindOrderByAccountResponse\x12c\n" +
+	"\x12FindOrderByProduct\x12%.proto.ParamFindOrderByProductRequest\x1a&.proto.ParamFindOrderByProductResponseB\x18Z\x16github.com/aclgo/protob\x06proto3"
 
 var (
 	file_orders_proto_rawDescOnce sync.Once
@@ -495,38 +907,53 @@ func file_orders_proto_rawDescGZIP() []byte {
 	return file_orders_proto_rawDescData
 }
 
+var file_orders_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_orders_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_orders_proto_goTypes = []any{
-	(*Orders)(nil),                          // 0: Orders
-	(*ParamCreateOrderRequest)(nil),         // 1: ParamCreateOrderRequest
-	(*ParamCreateOrderResponse)(nil),        // 2: ParamCreateOrderResponse
-	(*ParamFindOrderRequest)(nil),           // 3: ParamFindOrderRequest
-	(*ParamFindOrderResponse)(nil),          // 4: ParamFindOrderResponse
-	(*ParamFindOrderByAccountRequest)(nil),  // 5: ParamFindOrderByAccountRequest
-	(*ParamFindOrderByAccountResponse)(nil), // 6: ParamFindOrderByAccountResponse
-	(*ParamFindOrderByProductRequest)(nil),  // 7: ParamFindOrderByProductRequest
-	(*ParamFindOrderByProductResponse)(nil), // 8: ParamFindOrderByProductResponse
-	(*timestamppb.Timestamp)(nil),           // 9: google.protobuf.Timestamp
+	(OrderType)(0),                          // 0: proto.OrderType
+	(PaymentMethod)(0),                      // 1: proto.PaymentMethod
+	(OrderStatus)(0),                        // 2: proto.OrderStatus
+	(*Orders)(nil),                          // 3: proto.Orders
+	(*ParamCreateOrderRequest)(nil),         // 4: proto.ParamCreateOrderRequest
+	(*ParamCreateOrderResponse)(nil),        // 5: proto.ParamCreateOrderResponse
+	(*ParamFindOrderRequest)(nil),           // 6: proto.ParamFindOrderRequest
+	(*ParamFindOrderResponse)(nil),          // 7: proto.ParamFindOrderResponse
+	(*ParamFindOrderByAccountRequest)(nil),  // 8: proto.ParamFindOrderByAccountRequest
+	(*ParamFindOrderByAccountResponse)(nil), // 9: proto.ParamFindOrderByAccountResponse
+	(*ParamFindOrderByProductRequest)(nil),  // 10: proto.ParamFindOrderByProductRequest
+	(*ParamFindOrderByProductResponse)(nil), // 11: proto.ParamFindOrderByProductResponse
+	(*timestamppb.Timestamp)(nil),           // 12: google.protobuf.Timestamp
 }
 var file_orders_proto_depIdxs = []int32{
-	9, // 0: Orders.createdAT:type_name -> google.protobuf.Timestamp
-	0, // 1: ParamCreateOrderResponse.order:type_name -> Orders
-	0, // 2: ParamFindOrderResponse.order:type_name -> Orders
-	0, // 3: ParamFindOrderByAccountResponse.orders:type_name -> Orders
-	0, // 4: ParamFindOrderByProductResponse.order:type_name -> Orders
-	1, // 5: ServiceOrder.Create:input_type -> ParamCreateOrderRequest
-	3, // 6: ServiceOrder.Find:input_type -> ParamFindOrderRequest
-	5, // 7: ServiceOrder.FindOrderByAccount:input_type -> ParamFindOrderByAccountRequest
-	7, // 8: ServiceOrder.FindOrderByProduct:input_type -> ParamFindOrderByProductRequest
-	2, // 9: ServiceOrder.Create:output_type -> ParamCreateOrderResponse
-	4, // 10: ServiceOrder.Find:output_type -> ParamFindOrderResponse
-	6, // 11: ServiceOrder.FindOrderByAccount:output_type -> ParamFindOrderByAccountResponse
-	8, // 12: ServiceOrder.FindOrderByProduct:output_type -> ParamFindOrderByProductResponse
-	9, // [9:13] is the sub-list for method output_type
-	5, // [5:9] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0,  // 0: proto.Orders.type:type_name -> proto.OrderType
+	1,  // 1: proto.Orders.paymentMethod:type_name -> proto.PaymentMethod
+	2,  // 2: proto.Orders.status:type_name -> proto.OrderStatus
+	12, // 3: proto.Orders.pixExpiration:type_name -> google.protobuf.Timestamp
+	12, // 4: proto.Orders.boletoExpiration:type_name -> google.protobuf.Timestamp
+	12, // 5: proto.Orders.createdAT:type_name -> google.protobuf.Timestamp
+	12, // 6: proto.Orders.updatedAT:type_name -> google.protobuf.Timestamp
+	0,  // 7: proto.ParamCreateOrderRequest.type:type_name -> proto.OrderType
+	1,  // 8: proto.ParamCreateOrderRequest.paymentMethod:type_name -> proto.PaymentMethod
+	2,  // 9: proto.ParamCreateOrderRequest.status:type_name -> proto.OrderStatus
+	12, // 10: proto.ParamCreateOrderRequest.pixExpiration:type_name -> google.protobuf.Timestamp
+	12, // 11: proto.ParamCreateOrderRequest.boletoExpiration:type_name -> google.protobuf.Timestamp
+	3,  // 12: proto.ParamCreateOrderResponse.order:type_name -> proto.Orders
+	3,  // 13: proto.ParamFindOrderResponse.order:type_name -> proto.Orders
+	3,  // 14: proto.ParamFindOrderByAccountResponse.orders:type_name -> proto.Orders
+	3,  // 15: proto.ParamFindOrderByProductResponse.orders:type_name -> proto.Orders
+	4,  // 16: proto.ServiceOrder.Create:input_type -> proto.ParamCreateOrderRequest
+	6,  // 17: proto.ServiceOrder.Find:input_type -> proto.ParamFindOrderRequest
+	8,  // 18: proto.ServiceOrder.FindOrderByAccount:input_type -> proto.ParamFindOrderByAccountRequest
+	10, // 19: proto.ServiceOrder.FindOrderByProduct:input_type -> proto.ParamFindOrderByProductRequest
+	5,  // 20: proto.ServiceOrder.Create:output_type -> proto.ParamCreateOrderResponse
+	7,  // 21: proto.ServiceOrder.Find:output_type -> proto.ParamFindOrderResponse
+	9,  // 22: proto.ServiceOrder.FindOrderByAccount:output_type -> proto.ParamFindOrderByAccountResponse
+	11, // 23: proto.ServiceOrder.FindOrderByProduct:output_type -> proto.ParamFindOrderByProductResponse
+	20, // [20:24] is the sub-list for method output_type
+	16, // [16:20] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_orders_proto_init() }
@@ -539,13 +966,14 @@ func file_orders_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_orders_proto_rawDesc), len(file_orders_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      3,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_orders_proto_goTypes,
 		DependencyIndexes: file_orders_proto_depIdxs,
+		EnumInfos:         file_orders_proto_enumTypes,
 		MessageInfos:      file_orders_proto_msgTypes,
 	}.Build()
 	File_orders_proto = out.File

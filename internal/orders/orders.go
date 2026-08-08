@@ -5,7 +5,24 @@ import (
 	"errors"
 	"time"
 
+	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	"github.com/google/uuid"
+)
+
+type (
+	Pix string
+	Card string
+	InternalBalance string
+	Plan string
+)
+
+var (
+	MethodPayPix Pix = "pix"
+	MethodPayCard Card = "credit-card"
+	MethodPayInternalBalance InternalBalance = "internal-balance"
+	Plan_Month Plan = "1_month"
+	Plan_Week Plan = "7_days"
+	Plan_Year Plan = "1_year"
 )
 
 type Orders interface {
@@ -15,12 +32,29 @@ type Orders interface {
 		params *ParamsCreateOrderSubscriptionInput)(*ParamsCreateOrderSubscriptionOutput,error)
 	FindById(context.Context, *OrderFindByIdInput) (*OrderFindByIdOutput, error)
 	FindByAccount(context.Context, *OrderByAccountInput) ([]*OrderByAccountOutput, error)
-	FindByProduct(context.Context, *OrderByProductInput) (*OrderByProductOutput, error)
+	FindByProduct(context.Context, *OrderByProductInput) ([]*OrderByProductOutput, error)
+	AddBalance(ctx context.Context, params *ParamsAddBalanceInput)(*ParamsAddBalanceOutput,error)
+}
+
+type PaymentGateway interface {
+	GeneratePayment(ctx context.Context, params *models.ParamPaymentProcessInput)(*models.ParamPaymentProcessOutput,error)
+}
+
+type ParamPaymentProcessInput struct {
+
+}
+
+type ParamPaymentProccessOutput struct{
+
+}
+
+type ProductItem struct {
+	Id string`json:"product_id"`
 }
 
 type OrderCreateInput struct {
 	AccountId   string   `json:"account_id"`
-	ProductsIDS []string `json:"products_ids"`
+	ProductsIDS []ProductItem `json:"products"`
 }
 
 func (o *OrderCreateInput) Validate() error {
@@ -33,7 +67,7 @@ func (o *OrderCreateInput) Validate() error {
 	}
 
 	for i := range o.ProductsIDS {
-		if _, err := uuid.Parse(o.ProductsIDS[i]); err != nil {
+		if _, err := uuid.Parse(o.ProductsIDS[i].Id); err != nil {
 			return errors.New("invalid uuid product")
 		}
 	}
@@ -44,7 +78,7 @@ func (o *OrderCreateInput) Validate() error {
 type OrderCreateOutput struct {
 	OrderId     string    `json:"order_id"`
 	AccountId   string    `json:"account_id"`
-	ProductsIDS []string  `json:"products_ids"`
+	ProductsIDS []ProductItem  `json:"products"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -67,7 +101,7 @@ func (o *OrderFindByIdInput) Validate() error {
 type OrderFindByIdOutput struct {
 	OrderId     string    `json:"order_id"`
 	AccountId   string    `json:"account_id"`
-	ProductsIDS []string  `json:"products_ids"`
+	ProductsIDS []ProductItem  `json:"products"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -89,7 +123,7 @@ func (o *OrderByAccountInput) Validate() error {
 type OrderByAccountOutput struct {
 	OrderId     string    `json:"order_id"`
 	AccountId   string    `json:"account_id"`
-	ProductsIDS []string  `json:"products_ids"`
+	ProductsIDS []ProductItem  `json:"products"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -111,7 +145,7 @@ func (o *OrderByProductInput) Validate() error {
 type OrderByProductOutput struct {
 	OrderId     string    `json:"order_id"`
 	AccountId   string    `json:"account_id"`
-	ProductsIDS []string  `json:"products_ids"`
+	ProductsIDS []string  `json:"products"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -126,10 +160,15 @@ type CompensationTask struct {
 
 
 type ParamsCreateOrderSubscriptionInput struct{
+	MethodPayment string `json:"method_payment"`
 	SubscriptionId string `json:"subscription_id"` 
 	UserId string`json:"user_id"`
 	Plan string`json:"plan"`
 	Days int `json:"days"`
+}
+
+func(p *ParamsCreateOrderSubscriptionInput)Validate()error{
+	return nil
 }
 
 
@@ -148,5 +187,26 @@ type ParamsCreateOrderSubscriptionOutput struct{
 	OrderId string `json:"order_id"`
 	AccountId string `json:"account_id"`
 	CreatedAt string `json:"created_at"`
-	SubscriptionOutput *SubscriptionOutput `"json:"subscription"`
+	SubscriptionOutput *SubscriptionOutput `json:"subscription"`
+}
+
+type ParamsAddBalanceInput struct {
+	MethodPayment string `json:"method_payment"`
+	UserId string `json:"user_id"`
+	Amount int64
+	CardToken string
+	CardExpiration string
+}
+
+func(p *ParamsAddBalanceInput)Validate()error{
+	return nil
+}
+
+type ParamsAddBalanceOutput struct {
+	OrderID string
+	Status string
+	GatewayTransactionID string
+	PixQRCode string
+	BoletoURL string
+	BoletoBarcode string
 }

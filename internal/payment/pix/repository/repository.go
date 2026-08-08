@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/aclgo/simple-api-gateway/internal/wallet/pix"
+	"github.com/aclgo/simple-api-gateway/internal/payment/pix"
 	"github.com/redis/go-redis/v9"
 )
 

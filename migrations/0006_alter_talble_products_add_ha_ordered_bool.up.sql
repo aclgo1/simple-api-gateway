@@ -1,2 +1,0 @@
--- ALTER TABLE products 
--- ADD COLUMN has_ordered BOOLEAN NOT NULL DEFAULT FALSE;
