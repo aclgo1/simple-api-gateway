@@ -511,6 +511,12 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 		CardExpiration: params.CardExpiration,
 	}
 
+	switch params.MethodPayment{
+	case models.PaymentMethodPix, models.PaymentMethodCard, models.PaymentMethodBoleto:
+	default:
+		return nil, errors.New("method pay invalid")
+	}
+
 	payment, err := u.gateway.GeneratePayment(ctx, &mp)
 	if err != nil {
 		return nil, fmt.Errorf("u.gateway.GeneratePayment: %w", err)
@@ -521,6 +527,27 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 	switch payment.Status {
 	case models.PaymentPaid:
 		status = protoOrders.OrderStatus_PAID
+
+		pf := protoBalance.ParamGetWalletByAccountRequest{
+			AccountID: params.UserId,
+		}
+
+		wlt, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &pf)
+		if err != nil {
+			return nil, fmt.Errorf("u.clientBalanceGPRC.GetWalletByAccount: %w",err)
+		}
+
+		pb := protoBalance.ParamCreditWalletRequest{
+			Amount: params.Amount,
+			WalletID: wlt.WalletID,
+			ReferenceID: payment.GatewayTransactionID,
+		}
+
+		_, err = u.clientBalanceGPRC.Credit(ctx, &pb)
+		if err != nil {
+			return nil, fmt.Errorf("u.clientBalanceGPRC.Credit: %w",err)
+		}
+
 	case models.PaymentFailed:
 		status = protoOrders.OrderStatus_FAILED
 	case models.PaymentPending:
