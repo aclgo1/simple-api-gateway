@@ -31,6 +31,10 @@ type PaymentGateway interface {
 	GeneratePayment(ctx context.Context, params *models.ParamPaymentProcessInput)(*models.ParamPaymentProcessOutput,error)
 }
 
+type SubscriptionInterface interface {
+	ActivateSubscription(context.Context, *models.ParamsActivateSubscriptionInput)(*models.ParamsActivateSubscriptionOutput,error)
+}
+
 type ParamPaymentProcessInput struct {
 
 }
@@ -176,10 +180,15 @@ type SubscriptionOutput struct{
 }
 
 type ParamsCreateOrderSubscriptionOutput struct{
-	OrderId string `json:"order_id"`
-	AccountId string `json:"account_id"`
-	CreatedAt string `json:"created_at"`
-	SubscriptionOutput *SubscriptionOutput `json:"subscription"`
+	OrderID string `json:"order_id"`
+	Status string `json:"status"`
+	SubscriptionData *models.ParamsActivateSubscriptionOutput `subscription_data`
+	GatewayTransactionID string `json:"gateway_transaction_id"`
+	PixQRCode string `json:"pix_qr_code"`
+	PixExpiration time.Time `json:"pix_expiration"`
+	BoletoURL string `json:"boleto_url"`
+	BoletoBarcode string `json:"boleto_bar_code"`
+	BoletoExpiration	time.Time `json:"boleto_expiration"`
 }
 
 type ParamsAddBalanceInput struct {

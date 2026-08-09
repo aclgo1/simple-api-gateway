@@ -39,6 +39,7 @@ import (
 	pixUC "github.com/aclgo/simple-api-gateway/internal/payment/pix/usecase"
 	walletUC "github.com/aclgo/simple-api-gateway/internal/payment/wallet/usecase"
 	productUC "github.com/aclgo/simple-api-gateway/internal/product/usecase"
+	subUC "github.com/aclgo/simple-api-gateway/internal/subscription/usecase"
 	userUC "github.com/aclgo/simple-api-gateway/internal/user/usecase"
 
 	grpcauth "github.com/aclgo/simple-api-gateway/pkg/grpc-auth"
@@ -194,14 +195,14 @@ func main() {
 	sagaWorkerCompensate := ordersUC.NewSagaWorker(3, time.Minute)
 	sagaWorkerCompensate.Start(ctx)
 
+	sub := subUC.NewSubscriprionUseCase(clientSubscriptionService)
 	user := userUC.NewuserUC(clientUserService,clientSubscriptionService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
-	orders,err := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate,gateways)
+	orders,err := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate,gateways, sub)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 
 	userHandler := svcUser.NewuserService(user, logger, cfg.BaseApiUrl)
 	adminHandler := svcAdmin.NewadminService(admin, logger)

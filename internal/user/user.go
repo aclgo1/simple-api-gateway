@@ -24,6 +24,7 @@ type UserUC interface {
 	RegistrationStatus(context.Context) bool
 	UpdateRegistrationStatus(context.Context, *ParamUpdateRegistration)
 	CancelSubscription(ctx context.Context, params *ParamsCancelSubscriptionInput)(*ParamsCancelSubscriptionOutput,error)
+
 }
 
 type User struct {
@@ -301,5 +302,17 @@ type ParamsCancelSubscriptionOutput struct{
 	UserId string `json:"user_id"`
 	Status string `json:"status"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ParamsActivateSubscriptionInput struct {
+	AccountID string
+	Plan      string
+	Days      int
+}
+
+type ParamsActivateSubscriptionOutput struct {
+	SubscriptionID string
+	ExpiresAt      time.Time
+	Status         string
 }
 

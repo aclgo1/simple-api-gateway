@@ -41,15 +41,18 @@ func(p *paymentProcessorWallet)Proccess(ctx context.Context, params *models.Para
 		ReferenceID: ref,
 	}
 
-	_,err = p.walletGRPC.Debit(ctx, &paramDebit)
-	if err != nil {
-		return nil, fmt.Errorf("p.walletGRPC.Debit: %w",err)
-	}
-	
 	out := models.ParamPaymentProcessOutput{
 		Method: params.Method,
 		GatewayTransactionID: wlt.WalletID,
 	}
+
+	_,err = p.walletGRPC.Debit(ctx, &paramDebit)
+	if err != nil {
+		out.Status = models.PaymentFailed
+		return &out,nil
+	}
+
+	out.Status = models.PaymentPaid
 
 	return &out,nil
 }

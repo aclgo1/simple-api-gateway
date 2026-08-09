@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	"github.com/aclgo/simple-api-gateway/internal/orders"
@@ -25,6 +26,7 @@ type orderUC struct {
 	logger             logger.Logger
 	workerSaga orders.SagaWorker
 	gateway orders.PaymentGateway
+	subscription orders.SubscriptionInterface
 }
 
 func NeworderUC(
@@ -35,6 +37,7 @@ func NeworderUC(
 	logger logger.Logger,
 	workerSaga orders.SagaWorker,
 	gateway orders.PaymentGateway,
+	subscription orders.SubscriptionInterface,
 ) (*orderUC,error) {
 
 	if gateway == nil {
@@ -48,6 +51,7 @@ func NeworderUC(
 		logger:             logger,
 		workerSaga:workerSaga,
 		gateway: gateway,
+		subscription: subscription,
 	},nil
 }
 
@@ -109,7 +113,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 
 	metadata, err := json.Marshal(in.ProductsIDS)
 	if err != nil {
-		return nil, fmt.Errorf("json.Marshal: w",err)
+		return nil, fmt.Errorf("json.Marshal: %w",err)
 	}
 
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
@@ -354,13 +358,13 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 	var amount int64
 	switch params.Plan{
 	case string(models.Plan_Week):
-		amount = 1499
+		amount = 1999
 	case string(models.Plan_Month):
-		amount = 2999
+		amount = 3499
 	case string(models.Plan_Year):
-		amount = 24900
+		amount = 28900
 	case string(models.Plan_Undefined):
-		amount = int64(params.Days) * 120
+		amount = int64(params.Days) * 199
 	default:
 		return nil, orders.ErrPlanInvalid
 	}
@@ -379,13 +383,89 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 		return nil,err
 	}
 
+	var out orders.ParamsCreateOrderSubscriptionOutput
+
 	status := protoOrders.OrderStatus_PENDING
-	if payment.Method == models.PaymentMethodCard || payment.Method == models.PaymentMethodInternalBalance{
+
+	switch payment.Status {
+	case models.PaymentPaid:
 		status = protoOrders.OrderStatus_PAID
+
+		ps := models.ParamsActivateSubscriptionInput{
+			AccountID: params.UserId,
+			Plan: params.Plan,
+			Days: params.Days,
+		}
+
+
+		act, err := u.subscription.ActivateSubscription(ctx, &ps)
+		if err != nil {
+			return nil, fmt.Errorf("u.subscription.Activate: %w",err)
+		}
+
+		out.SubscriptionData = act
+
+	case models.PaymentFailed:
+		status = protoOrders.OrderStatus_FAILED
+	case models.PaymentPending:
+		status = protoOrders.OrderStatus_PENDING
+	case models.PaymentCancelled:
+		status = protoOrders.OrderStatus_CANCELLED
+	case models.PaymentRefunded:
+		status = protoOrders.OrderStatus_REFUNDED
+	case models.PaymentUnspecified:
+		status = protoOrders.OrderStatus_ORDER_STATUS_UNSPECIFIED
+	}
+
+	method := protoOrders.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+	switch payment.Method {
+	case models.PaymentMethodPix:
+		method = protoOrders.PaymentMethod_PIX
+	case models.PaymentMethodCard:
+		method = protoOrders.PaymentMethod_CREDIT_CARD
+	case models.PaymentMethodBoleto:
+		method = protoOrders.PaymentMethod_BOLETO
+	case models.PaymentMethodInternalBalance:
+		method = protoOrders.PaymentMethod_INTERNAL_BALANCE
+	}
+
+	var pixExp *timestamppb.Timestamp
+	if !payment.PixExpiration.IsZero() {
+	    pixExp = timestamppb.New(payment.PixExpiration)
+	}
+
+	var boletoExp *timestamppb.Timestamp	
+	if !payment.BoletoExpiration.IsZero()	 {
+		boletoExp = timestamppb.New(payment.BoletoExpiration)
+	}
+
+	metadataObj := orders.ParamsSaveSubscriptionMetadata{
+		UserId: params.UserId,
+    	Plan :params.Plan,
+   	 	Days:params.Days,
+	}
+
+	metadataJson, err := json.Marshal(metadataObj)
+	if err != nil {
+		return nil, fmt.Errorf("json.Marshal: %v\n",err)
 	}
 	
-
-	var paramsNewOrder protoOrders.ParamCreateOrderRequest
+	paramsNewOrder := protoOrders.ParamCreateOrderRequest{
+		AccountID:            params.UserId,
+		Type:                 protoOrders.OrderType_PREMIUM_SUBSCRIPTION,
+		Status:               status,
+		Amount:               amount,
+		PaymentMethod:        method,
+		Metadata:             metadataJson,
+		GatewayTransactionID: payment.GatewayTransactionID,
+		PixQRCode:            payment.PixQRCode,
+		PixExpiration:        pixExp,
+		CardToken:            payment.CardToken,
+		CardExpiration:       payment.CardExpiration,
+		BoletoURL:            payment.BoletoURL,
+		BoletoBarcode:        payment.BoletoBarcode,
+		BoletoExpiration:     boletoExp,
+	}
 
 
 	newOrder, err := u.clientOrdersGRPC.Create(ctx, &paramsNewOrder)
@@ -393,11 +473,24 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 		return nil,err
 	}
 
-	out := orders.ParamsCreateOrderSubscriptionOutput{
-
+	var outPixExp, outBoletoExp time.Time
+	if newOrder.Order.PixExpiration != nil {
+		outPixExp = newOrder.Order.PixExpiration.AsTime()
+	}
+	if newOrder.Order.BoletoExpiration != nil {
+		outBoletoExp = newOrder.Order.BoletoExpiration.AsTime()
 	}
 
-	fmt.Println(status,newOrder)
+	out = orders.ParamsCreateOrderSubscriptionOutput{
+		OrderID:              newOrder.Order.OrderID,
+		Status:               newOrder.Order.Status.String(),
+		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
+		PixQRCode:            newOrder.Order.PixQRCode,
+		PixExpiration: outPixExp,
+		BoletoURL:            newOrder.Order.BoletoURL,
+		BoletoBarcode:        newOrder.Order.BoletoBarcode,
+		BoletoExpiration:outBoletoExp,
+	}
 
 	return &out,nil
 }
@@ -424,9 +517,22 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 	}
 
 	status := protoOrders.OrderStatus_PENDING
-	if payment.Method == models.PaymentMethodCard {
+
+	switch payment.Status {
+	case models.PaymentPaid:
 		status = protoOrders.OrderStatus_PAID
+	case models.PaymentFailed:
+		status = protoOrders.OrderStatus_FAILED
+	case models.PaymentPending:
+		status = protoOrders.OrderStatus_PENDING
+	case models.PaymentCancelled:
+		status = protoOrders.OrderStatus_CANCELLED
+	case models.PaymentRefunded:
+		status = protoOrders.OrderStatus_REFUNDED
+	case models.PaymentUnspecified:
+		status = protoOrders.OrderStatus_ORDER_STATUS_UNSPECIFIED
 	}
+
 
 	method := protoOrders.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
 	switch payment.Method {
@@ -470,15 +576,24 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 		return nil, fmt.Errorf("u.clientOrdersGRPC.Create: %w", err)
 	}
 
+	var outPixExp, outBoletoExp time.Time
+	if newOrder.Order.PixExpiration != nil {
+		outPixExp = newOrder.Order.PixExpiration.AsTime()
+	}
+	if newOrder.Order.BoletoExpiration != nil {
+		outBoletoExp = newOrder.Order.BoletoExpiration.AsTime()
+	}
+
+
 	out := orders.ParamsAddBalanceOutput{
 		OrderID:              newOrder.Order.OrderID,
 		Status:               newOrder.Order.Status.String(),
 		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
 		PixQRCode:            newOrder.Order.PixQRCode,
-		PixExpiration: newOrder.Order.PixExpiration.AsTime(),
+		PixExpiration: outPixExp,
 		BoletoURL:            newOrder.Order.BoletoURL,
 		BoletoBarcode:        newOrder.Order.BoletoBarcode,
-		BoletoExpiration: newOrder.Order.BoletoExpiration.AsTime(),
+		BoletoExpiration: outBoletoExp,
 	}
 
 	return &out, nil

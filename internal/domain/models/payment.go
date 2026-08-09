@@ -6,6 +6,7 @@ import (
 )
 
 type Plan string
+type StatusPayment string
 
 var (
 	PaymentMethodPix             = "pix"
@@ -16,6 +17,13 @@ var (
 	Plan_Month Plan = "1_month"
 	Plan_Year Plan = "1_year"
 	Plan_Undefined Plan = "undefined"
+	PaymentPaid StatusPayment = "PAID"
+	PaymentFailed StatusPayment = "FAILED"
+	PaymentRefunded StatusPayment = "REFUNDED"
+	PaymentCancelled StatusPayment = "CANCELLED"
+	PaymentPending StatusPayment =  "PENDING"
+	PaymentUnspecified StatusPayment = "UNSPECIFIED"
+
 )
 
 type ParamPaymentProcessInput struct {
@@ -29,6 +37,7 @@ type ParamPaymentProcessInput struct {
 
 type ParamPaymentProcessOutput struct {
 	Method               string     `json:"method"`
+	Status StatusPayment `json:"status"`
 	GatewayTransactionID string     `json:"gateway_transaction_id"`
 
 	CardToken string `json:"card_token"`

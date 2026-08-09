@@ -66,5 +66,5 @@ func (p *paymentProcessorPix) Proccess(ctx context.Context, in *models.ParamPaym
 
 	p.repo.Set(ctx, in.AccountId)
 
-	return &models.ParamPaymentProcessOutput{}, nil
+	return &models.ParamPaymentProcessOutput{Status: models.PaymentPending}, nil
 }
