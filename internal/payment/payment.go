@@ -10,7 +10,6 @@ import (
 
 type PaymentInterface interface {
 	RegisterProvider(string, models.PaymentProcessor)
-	Credit(ctx context.Context, in *ParamCreditInput) (*ParamCreditOutput, error)
 	GeneratePayment(context.Context, *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error)
 }
 

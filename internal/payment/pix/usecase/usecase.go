@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,19 +10,31 @@ import (
 	"time"
 
 	"github.com/aclgo/simple-api-gateway/internal/domain/models"
+	"github.com/aclgo/simple-api-gateway/internal/orders"
 	"github.com/aclgo/simple-api-gateway/internal/payment/pix"
+	protoBalance "github.com/aclgo/simple-api-gateway/proto-service/balance"
+	protoOrders "github.com/aclgo/simple-api-gateway/proto-service/orders"
+	protoUser "github.com/aclgo/simple-api-gateway/proto-service/user"
 	"github.com/redis/go-redis/v9"
 )
 
 type paymentProcessorPix struct {
 	PixAuthorization string
 	repo pix.Repository
+	clientOrdersGRPC protoOrders.ServiceOrderClient
+	clientBalanceGrpc protoBalance.WalletServiceClient
+	clientUserGrpc protoUser.SubscriptionServiceClient
 }
 
-func NewpaymentProcessorPix(authorization string, repo pix.Repository) models.PaymentProcessor {
+func NewpaymentProcessorPix(authorization string, repo pix.Repository, clientOrdersGRPC protoOrders.ServiceOrderClient,
+	clientBalanceGrpc protoBalance.WalletServiceClient,
+		clientUserGrpc protoUser.SubscriptionServiceClient) models.PaymentProcessor {
 	return &paymentProcessorPix{
 		PixAuthorization: authorization,
 		repo: repo,
+		clientOrdersGRPC: clientOrdersGRPC,
+		clientBalanceGrpc: clientBalanceGrpc,
+		clientUserGrpc: clientUserGrpc,
 	}
 }
 
@@ -68,3 +81,91 @@ func (p *paymentProcessorPix) Proccess(ctx context.Context, in *models.ParamPaym
 
 	return &models.ParamPaymentProcessOutput{Status: models.PaymentPending}, nil
 }
+
+func(p *paymentProcessorPix) Webhook(ctx context.Context, in *models.ParamPixWebHookInput)(error){
+
+	po := protoOrders.ParamFindOrderByGatewayTransactionIdRequest{
+		GatewayTransactionId: in.GatewayTransactionId,
+	}
+
+	resp, err := p.clientOrdersGRPC.FindOrderByGatewayTransactionId(ctx, &po)
+	if err != nil {
+		return fmt.Errorf("p.clientOrdersGRPC.FindOrderByGatewayTransactionId: %w",err)
+	}	
+
+	order := resp.Order
+
+	if order.Status == protoOrders.OrderStatus_PAID{
+		return nil
+	}
+
+	switch order.Type{
+	case protoOrders.OrderType_BALANCE_DEPOSIT:
+		if err := p.processDepositBalance(ctx, order); err != nil {
+			return fmt.Errorf("processing balance deposity: %w",err)
+		}
+	case protoOrders.OrderType_PREMIUM_SUBSCRIPTION:
+		if err := p.processSubscription(ctx, order); err != nil {
+			return fmt.Errorf("processing premiun subscription: %w",err)
+		}
+	}
+
+	pupd := protoOrders.ParamUpdateOrderStatusRequest{
+		OrderId: order.OrderID,
+		Status: protoOrders.OrderStatus_PAID,
+	}
+
+	_, err = p.clientOrdersGRPC.UpdateOrderStatus(ctx, &pupd)
+	if err != nil {
+		return fmt.Errorf("failed to update order to status paid: %w",err)
+	}
+
+	return nil
+}
+
+func(p *paymentProcessorPix)processSubscription(ctx context.Context, order *protoOrders.Orders)error{
+	var meta orders.ParamsSaveSubscriptionMetadata
+
+	if err := json.Unmarshal(order.Metadata, &meta); err != nil {
+		return fmt.Errorf("json.Unmarshal: %w",err)
+	}
+
+	psub := protoUser.CreateOrExtendSubscriptionRequest{
+		UserId: meta.UserId,
+		Plan: meta.Plan,
+		Days: int64(meta.Days),
+	}
+
+	_, err := p.clientUserGrpc.CreateOrExtend(ctx, &psub)
+	if err != nil {
+		return fmt.Errorf("p.clientUserGrpc.CreateOrExtend: %w", err)
+	}
+
+	return nil
+}
+
+func(p *paymentProcessorPix)processDepositBalance(ctx context.Context, order *protoOrders.Orders)error{
+
+	pf := protoBalance.ParamGetWalletByAccountRequest{
+		AccountID: order.AccountID,
+	}
+
+	find, err := p.clientBalanceGrpc.GetWalletByAccount(ctx, &pf)
+	if err != nil {
+		return fmt.Errorf("p.clientBalanceGrpc.GetWalletByAccount: %w",err)
+	}
+
+	pb := protoBalance.ParamCreditWalletRequest{
+		WalletID: find.WalletID,
+		Amount: order.Amount,
+		ReferenceID: order.GatewayTransactionID,
+	}
+
+	_, err = p.clientBalanceGrpc.Credit(ctx, &pb)
+	if err != nil {
+		return fmt.Errorf("p.clientBalanceGrpc.Credit: %w",err)
+	}
+	return nil
+}
+
+

@@ -815,6 +815,190 @@ func (x *ParamFindOrderByProductResponse) GetOrders() []*Orders {
 	return nil
 }
 
+type ParamFindOrderByGatewayTransactionIdRequest struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	GatewayTransactionId string                 `protobuf:"bytes,1,opt,name=gateway_transaction_id,json=gatewayTransactionId,proto3" json:"gateway_transaction_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdRequest) Reset() {
+	*x = ParamFindOrderByGatewayTransactionIdRequest{}
+	mi := &file_orders_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParamFindOrderByGatewayTransactionIdRequest) ProtoMessage() {}
+
+func (x *ParamFindOrderByGatewayTransactionIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_orders_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParamFindOrderByGatewayTransactionIdRequest.ProtoReflect.Descriptor instead.
+func (*ParamFindOrderByGatewayTransactionIdRequest) Descriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdRequest) GetGatewayTransactionId() string {
+	if x != nil {
+		return x.GatewayTransactionId
+	}
+	return ""
+}
+
+type ParamFindOrderByGatewayTransactionIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Order         *Orders                `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdResponse) Reset() {
+	*x = ParamFindOrderByGatewayTransactionIdResponse{}
+	mi := &file_orders_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParamFindOrderByGatewayTransactionIdResponse) ProtoMessage() {}
+
+func (x *ParamFindOrderByGatewayTransactionIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_orders_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParamFindOrderByGatewayTransactionIdResponse.ProtoReflect.Descriptor instead.
+func (*ParamFindOrderByGatewayTransactionIdResponse) Descriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ParamFindOrderByGatewayTransactionIdResponse) GetOrder() *Orders {
+	if x != nil {
+		return x.Order
+	}
+	return nil
+}
+
+type ParamUpdateOrderStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Status        OrderStatus            `protobuf:"varint,2,opt,name=status,proto3,enum=proto.OrderStatus" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParamUpdateOrderStatusRequest) Reset() {
+	*x = ParamUpdateOrderStatusRequest{}
+	mi := &file_orders_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParamUpdateOrderStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParamUpdateOrderStatusRequest) ProtoMessage() {}
+
+func (x *ParamUpdateOrderStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_orders_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParamUpdateOrderStatusRequest.ProtoReflect.Descriptor instead.
+func (*ParamUpdateOrderStatusRequest) Descriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ParamUpdateOrderStatusRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *ParamUpdateOrderStatusRequest) GetStatus() OrderStatus {
+	if x != nil {
+		return x.Status
+	}
+	return OrderStatus_ORDER_STATUS_UNSPECIFIED
+}
+
+type ParamUpdateOrderStatusResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Order         *Orders                `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParamUpdateOrderStatusResponse) Reset() {
+	*x = ParamUpdateOrderStatusResponse{}
+	mi := &file_orders_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParamUpdateOrderStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParamUpdateOrderStatusResponse) ProtoMessage() {}
+
+func (x *ParamUpdateOrderStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_orders_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParamUpdateOrderStatusResponse.ProtoReflect.Descriptor instead.
+func (*ParamUpdateOrderStatusResponse) Descriptor() ([]byte, []int) {
+	return file_orders_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ParamUpdateOrderStatusResponse) GetOrder() *Orders {
+	if x != nil {
+		return x.Order
+	}
+	return nil
+}
+
 var File_orders_proto protoreflect.FileDescriptor
 
 const file_orders_proto_rawDesc = "" +
@@ -868,7 +1052,16 @@ const file_orders_proto_rawDesc = "" +
 	"\x1eParamFindOrderByProductRequest\x12\x1c\n" +
 	"\tproductID\x18\x01 \x01(\tR\tproductID\"H\n" +
 	"\x1fParamFindOrderByProductResponse\x12%\n" +
-	"\x06orders\x18\x01 \x03(\v2\r.proto.OrdersR\x06orders*l\n" +
+	"\x06orders\x18\x01 \x03(\v2\r.proto.OrdersR\x06orders\"c\n" +
+	"+ParamFindOrderByGatewayTransactionIdRequest\x124\n" +
+	"\x16gateway_transaction_id\x18\x01 \x01(\tR\x14gatewayTransactionId\"S\n" +
+	",ParamFindOrderByGatewayTransactionIdResponse\x12#\n" +
+	"\x05order\x18\x01 \x01(\v2\r.proto.OrdersR\x05order\"f\n" +
+	"\x1dParamUpdateOrderStatusRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12*\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x12.proto.OrderStatusR\x06status\"E\n" +
+	"\x1eParamUpdateOrderStatusResponse\x12#\n" +
+	"\x05order\x18\x01 \x01(\v2\r.proto.OrdersR\x05order*l\n" +
 	"\tOrderType\x12\x1a\n" +
 	"\x16ORDER_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14PREMIUM_SUBSCRIPTION\x10\x01\x12\x13\n" +
@@ -888,12 +1081,14 @@ const file_orders_proto_rawDesc = "" +
 	"\n" +
 	"\x06FAILED\x10\x03\x12\r\n" +
 	"\tCANCELLED\x10\x04\x12\f\n" +
-	"\bREFUNDED\x10\x052\xe8\x02\n" +
+	"\bREFUNDED\x10\x052\xd7\x04\n" +
 	"\fServiceOrder\x12I\n" +
 	"\x06Create\x12\x1e.proto.ParamCreateOrderRequest\x1a\x1f.proto.ParamCreateOrderResponse\x12C\n" +
 	"\x04Find\x12\x1c.proto.ParamFindOrderRequest\x1a\x1d.proto.ParamFindOrderResponse\x12c\n" +
 	"\x12FindOrderByAccount\x12%.proto.ParamFindOrderByAccountRequest\x1a&.proto.ParamFindOrderByAccountResponse\x12c\n" +
-	"\x12FindOrderByProduct\x12%.proto.ParamFindOrderByProductRequest\x1a&.proto.ParamFindOrderByProductResponseB\x18Z\x16github.com/aclgo/protob\x06proto3"
+	"\x12FindOrderByProduct\x12%.proto.ParamFindOrderByProductRequest\x1a&.proto.ParamFindOrderByProductResponse\x12\x8a\x01\n" +
+	"\x1fFindOrderByGatewayTransactionId\x122.proto.ParamFindOrderByGatewayTransactionIdRequest\x1a3.proto.ParamFindOrderByGatewayTransactionIdResponse\x12`\n" +
+	"\x11UpdateOrderStatus\x12$.proto.ParamUpdateOrderStatusRequest\x1a%.proto.ParamUpdateOrderStatusResponseB\x18Z\x16github.com/aclgo/protob\x06proto3"
 
 var (
 	file_orders_proto_rawDescOnce sync.Once
@@ -908,52 +1103,63 @@ func file_orders_proto_rawDescGZIP() []byte {
 }
 
 var file_orders_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_orders_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_orders_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_orders_proto_goTypes = []any{
-	(OrderType)(0),                          // 0: proto.OrderType
-	(PaymentMethod)(0),                      // 1: proto.PaymentMethod
-	(OrderStatus)(0),                        // 2: proto.OrderStatus
-	(*Orders)(nil),                          // 3: proto.Orders
-	(*ParamCreateOrderRequest)(nil),         // 4: proto.ParamCreateOrderRequest
-	(*ParamCreateOrderResponse)(nil),        // 5: proto.ParamCreateOrderResponse
-	(*ParamFindOrderRequest)(nil),           // 6: proto.ParamFindOrderRequest
-	(*ParamFindOrderResponse)(nil),          // 7: proto.ParamFindOrderResponse
-	(*ParamFindOrderByAccountRequest)(nil),  // 8: proto.ParamFindOrderByAccountRequest
-	(*ParamFindOrderByAccountResponse)(nil), // 9: proto.ParamFindOrderByAccountResponse
-	(*ParamFindOrderByProductRequest)(nil),  // 10: proto.ParamFindOrderByProductRequest
-	(*ParamFindOrderByProductResponse)(nil), // 11: proto.ParamFindOrderByProductResponse
-	(*timestamppb.Timestamp)(nil),           // 12: google.protobuf.Timestamp
+	(OrderType)(0),                                       // 0: proto.OrderType
+	(PaymentMethod)(0),                                   // 1: proto.PaymentMethod
+	(OrderStatus)(0),                                     // 2: proto.OrderStatus
+	(*Orders)(nil),                                       // 3: proto.Orders
+	(*ParamCreateOrderRequest)(nil),                      // 4: proto.ParamCreateOrderRequest
+	(*ParamCreateOrderResponse)(nil),                     // 5: proto.ParamCreateOrderResponse
+	(*ParamFindOrderRequest)(nil),                        // 6: proto.ParamFindOrderRequest
+	(*ParamFindOrderResponse)(nil),                       // 7: proto.ParamFindOrderResponse
+	(*ParamFindOrderByAccountRequest)(nil),               // 8: proto.ParamFindOrderByAccountRequest
+	(*ParamFindOrderByAccountResponse)(nil),              // 9: proto.ParamFindOrderByAccountResponse
+	(*ParamFindOrderByProductRequest)(nil),               // 10: proto.ParamFindOrderByProductRequest
+	(*ParamFindOrderByProductResponse)(nil),              // 11: proto.ParamFindOrderByProductResponse
+	(*ParamFindOrderByGatewayTransactionIdRequest)(nil),  // 12: proto.ParamFindOrderByGatewayTransactionIdRequest
+	(*ParamFindOrderByGatewayTransactionIdResponse)(nil), // 13: proto.ParamFindOrderByGatewayTransactionIdResponse
+	(*ParamUpdateOrderStatusRequest)(nil),                // 14: proto.ParamUpdateOrderStatusRequest
+	(*ParamUpdateOrderStatusResponse)(nil),               // 15: proto.ParamUpdateOrderStatusResponse
+	(*timestamppb.Timestamp)(nil),                        // 16: google.protobuf.Timestamp
 }
 var file_orders_proto_depIdxs = []int32{
 	0,  // 0: proto.Orders.type:type_name -> proto.OrderType
 	1,  // 1: proto.Orders.paymentMethod:type_name -> proto.PaymentMethod
 	2,  // 2: proto.Orders.status:type_name -> proto.OrderStatus
-	12, // 3: proto.Orders.pixExpiration:type_name -> google.protobuf.Timestamp
-	12, // 4: proto.Orders.boletoExpiration:type_name -> google.protobuf.Timestamp
-	12, // 5: proto.Orders.createdAT:type_name -> google.protobuf.Timestamp
-	12, // 6: proto.Orders.updatedAT:type_name -> google.protobuf.Timestamp
+	16, // 3: proto.Orders.pixExpiration:type_name -> google.protobuf.Timestamp
+	16, // 4: proto.Orders.boletoExpiration:type_name -> google.protobuf.Timestamp
+	16, // 5: proto.Orders.createdAT:type_name -> google.protobuf.Timestamp
+	16, // 6: proto.Orders.updatedAT:type_name -> google.protobuf.Timestamp
 	0,  // 7: proto.ParamCreateOrderRequest.type:type_name -> proto.OrderType
 	1,  // 8: proto.ParamCreateOrderRequest.paymentMethod:type_name -> proto.PaymentMethod
 	2,  // 9: proto.ParamCreateOrderRequest.status:type_name -> proto.OrderStatus
-	12, // 10: proto.ParamCreateOrderRequest.pixExpiration:type_name -> google.protobuf.Timestamp
-	12, // 11: proto.ParamCreateOrderRequest.boletoExpiration:type_name -> google.protobuf.Timestamp
+	16, // 10: proto.ParamCreateOrderRequest.pixExpiration:type_name -> google.protobuf.Timestamp
+	16, // 11: proto.ParamCreateOrderRequest.boletoExpiration:type_name -> google.protobuf.Timestamp
 	3,  // 12: proto.ParamCreateOrderResponse.order:type_name -> proto.Orders
 	3,  // 13: proto.ParamFindOrderResponse.order:type_name -> proto.Orders
 	3,  // 14: proto.ParamFindOrderByAccountResponse.orders:type_name -> proto.Orders
 	3,  // 15: proto.ParamFindOrderByProductResponse.orders:type_name -> proto.Orders
-	4,  // 16: proto.ServiceOrder.Create:input_type -> proto.ParamCreateOrderRequest
-	6,  // 17: proto.ServiceOrder.Find:input_type -> proto.ParamFindOrderRequest
-	8,  // 18: proto.ServiceOrder.FindOrderByAccount:input_type -> proto.ParamFindOrderByAccountRequest
-	10, // 19: proto.ServiceOrder.FindOrderByProduct:input_type -> proto.ParamFindOrderByProductRequest
-	5,  // 20: proto.ServiceOrder.Create:output_type -> proto.ParamCreateOrderResponse
-	7,  // 21: proto.ServiceOrder.Find:output_type -> proto.ParamFindOrderResponse
-	9,  // 22: proto.ServiceOrder.FindOrderByAccount:output_type -> proto.ParamFindOrderByAccountResponse
-	11, // 23: proto.ServiceOrder.FindOrderByProduct:output_type -> proto.ParamFindOrderByProductResponse
-	20, // [20:24] is the sub-list for method output_type
-	16, // [16:20] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	3,  // 16: proto.ParamFindOrderByGatewayTransactionIdResponse.order:type_name -> proto.Orders
+	2,  // 17: proto.ParamUpdateOrderStatusRequest.status:type_name -> proto.OrderStatus
+	3,  // 18: proto.ParamUpdateOrderStatusResponse.order:type_name -> proto.Orders
+	4,  // 19: proto.ServiceOrder.Create:input_type -> proto.ParamCreateOrderRequest
+	6,  // 20: proto.ServiceOrder.Find:input_type -> proto.ParamFindOrderRequest
+	8,  // 21: proto.ServiceOrder.FindOrderByAccount:input_type -> proto.ParamFindOrderByAccountRequest
+	10, // 22: proto.ServiceOrder.FindOrderByProduct:input_type -> proto.ParamFindOrderByProductRequest
+	12, // 23: proto.ServiceOrder.FindOrderByGatewayTransactionId:input_type -> proto.ParamFindOrderByGatewayTransactionIdRequest
+	14, // 24: proto.ServiceOrder.UpdateOrderStatus:input_type -> proto.ParamUpdateOrderStatusRequest
+	5,  // 25: proto.ServiceOrder.Create:output_type -> proto.ParamCreateOrderResponse
+	7,  // 26: proto.ServiceOrder.Find:output_type -> proto.ParamFindOrderResponse
+	9,  // 27: proto.ServiceOrder.FindOrderByAccount:output_type -> proto.ParamFindOrderByAccountResponse
+	11, // 28: proto.ServiceOrder.FindOrderByProduct:output_type -> proto.ParamFindOrderByProductResponse
+	13, // 29: proto.ServiceOrder.FindOrderByGatewayTransactionId:output_type -> proto.ParamFindOrderByGatewayTransactionIdResponse
+	15, // 30: proto.ServiceOrder.UpdateOrderStatus:output_type -> proto.ParamUpdateOrderStatusResponse
+	25, // [25:31] is the sub-list for method output_type
+	19, // [19:25] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_orders_proto_init() }
@@ -967,7 +1173,7 @@ func file_orders_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_orders_proto_rawDesc), len(file_orders_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   9,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

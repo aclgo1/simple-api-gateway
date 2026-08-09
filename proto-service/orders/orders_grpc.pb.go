@@ -19,10 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServiceOrder_Create_FullMethodName             = "/proto.ServiceOrder/Create"
-	ServiceOrder_Find_FullMethodName               = "/proto.ServiceOrder/Find"
-	ServiceOrder_FindOrderByAccount_FullMethodName = "/proto.ServiceOrder/FindOrderByAccount"
-	ServiceOrder_FindOrderByProduct_FullMethodName = "/proto.ServiceOrder/FindOrderByProduct"
+	ServiceOrder_Create_FullMethodName                          = "/proto.ServiceOrder/Create"
+	ServiceOrder_Find_FullMethodName                            = "/proto.ServiceOrder/Find"
+	ServiceOrder_FindOrderByAccount_FullMethodName              = "/proto.ServiceOrder/FindOrderByAccount"
+	ServiceOrder_FindOrderByProduct_FullMethodName              = "/proto.ServiceOrder/FindOrderByProduct"
+	ServiceOrder_FindOrderByGatewayTransactionId_FullMethodName = "/proto.ServiceOrder/FindOrderByGatewayTransactionId"
+	ServiceOrder_UpdateOrderStatus_FullMethodName               = "/proto.ServiceOrder/UpdateOrderStatus"
 )
 
 // ServiceOrderClient is the client API for ServiceOrder service.
@@ -33,6 +35,8 @@ type ServiceOrderClient interface {
 	Find(ctx context.Context, in *ParamFindOrderRequest, opts ...grpc.CallOption) (*ParamFindOrderResponse, error)
 	FindOrderByAccount(ctx context.Context, in *ParamFindOrderByAccountRequest, opts ...grpc.CallOption) (*ParamFindOrderByAccountResponse, error)
 	FindOrderByProduct(ctx context.Context, in *ParamFindOrderByProductRequest, opts ...grpc.CallOption) (*ParamFindOrderByProductResponse, error)
+	FindOrderByGatewayTransactionId(ctx context.Context, in *ParamFindOrderByGatewayTransactionIdRequest, opts ...grpc.CallOption) (*ParamFindOrderByGatewayTransactionIdResponse, error)
+	UpdateOrderStatus(ctx context.Context, in *ParamUpdateOrderStatusRequest, opts ...grpc.CallOption) (*ParamUpdateOrderStatusResponse, error)
 }
 
 type serviceOrderClient struct {
@@ -83,6 +87,26 @@ func (c *serviceOrderClient) FindOrderByProduct(ctx context.Context, in *ParamFi
 	return out, nil
 }
 
+func (c *serviceOrderClient) FindOrderByGatewayTransactionId(ctx context.Context, in *ParamFindOrderByGatewayTransactionIdRequest, opts ...grpc.CallOption) (*ParamFindOrderByGatewayTransactionIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ParamFindOrderByGatewayTransactionIdResponse)
+	err := c.cc.Invoke(ctx, ServiceOrder_FindOrderByGatewayTransactionId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceOrderClient) UpdateOrderStatus(ctx context.Context, in *ParamUpdateOrderStatusRequest, opts ...grpc.CallOption) (*ParamUpdateOrderStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ParamUpdateOrderStatusResponse)
+	err := c.cc.Invoke(ctx, ServiceOrder_UpdateOrderStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceOrderServer is the server API for ServiceOrder service.
 // All implementations must embed UnimplementedServiceOrderServer
 // for forward compatibility.
@@ -91,6 +115,8 @@ type ServiceOrderServer interface {
 	Find(context.Context, *ParamFindOrderRequest) (*ParamFindOrderResponse, error)
 	FindOrderByAccount(context.Context, *ParamFindOrderByAccountRequest) (*ParamFindOrderByAccountResponse, error)
 	FindOrderByProduct(context.Context, *ParamFindOrderByProductRequest) (*ParamFindOrderByProductResponse, error)
+	FindOrderByGatewayTransactionId(context.Context, *ParamFindOrderByGatewayTransactionIdRequest) (*ParamFindOrderByGatewayTransactionIdResponse, error)
+	UpdateOrderStatus(context.Context, *ParamUpdateOrderStatusRequest) (*ParamUpdateOrderStatusResponse, error)
 	mustEmbedUnimplementedServiceOrderServer()
 }
 
@@ -112,6 +138,12 @@ func (UnimplementedServiceOrderServer) FindOrderByAccount(context.Context, *Para
 }
 func (UnimplementedServiceOrderServer) FindOrderByProduct(context.Context, *ParamFindOrderByProductRequest) (*ParamFindOrderByProductResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindOrderByProduct not implemented")
+}
+func (UnimplementedServiceOrderServer) FindOrderByGatewayTransactionId(context.Context, *ParamFindOrderByGatewayTransactionIdRequest) (*ParamFindOrderByGatewayTransactionIdResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindOrderByGatewayTransactionId not implemented")
+}
+func (UnimplementedServiceOrderServer) UpdateOrderStatus(context.Context, *ParamUpdateOrderStatusRequest) (*ParamUpdateOrderStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateOrderStatus not implemented")
 }
 func (UnimplementedServiceOrderServer) mustEmbedUnimplementedServiceOrderServer() {}
 func (UnimplementedServiceOrderServer) testEmbeddedByValue()                      {}
@@ -206,6 +238,42 @@ func _ServiceOrder_FindOrderByProduct_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceOrder_FindOrderByGatewayTransactionId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParamFindOrderByGatewayTransactionIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceOrderServer).FindOrderByGatewayTransactionId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceOrder_FindOrderByGatewayTransactionId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceOrderServer).FindOrderByGatewayTransactionId(ctx, req.(*ParamFindOrderByGatewayTransactionIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServiceOrder_UpdateOrderStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParamUpdateOrderStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceOrderServer).UpdateOrderStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceOrder_UpdateOrderStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceOrderServer).UpdateOrderStatus(ctx, req.(*ParamUpdateOrderStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServiceOrder_ServiceDesc is the grpc.ServiceDesc for ServiceOrder service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +296,14 @@ var ServiceOrder_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindOrderByProduct",
 			Handler:    _ServiceOrder_FindOrderByProduct_Handler,
+		},
+		{
+			MethodName: "FindOrderByGatewayTransactionId",
+			Handler:    _ServiceOrder_FindOrderByGatewayTransactionId_Handler,
+		},
+		{
+			MethodName: "UpdateOrderStatus",
+			Handler:    _ServiceOrder_UpdateOrderStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

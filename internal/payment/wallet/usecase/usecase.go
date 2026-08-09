@@ -56,3 +56,5 @@ func(p *paymentProcessorWallet)Proccess(ctx context.Context, params *models.Para
 
 	return &out,nil
 }
+
+func (p *paymentProcessorWallet)Webhook(ctx context.Context, in *models.ParamPixWebHookInput)(error)

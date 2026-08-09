@@ -182,7 +182,7 @@ type SubscriptionOutput struct{
 type ParamsCreateOrderSubscriptionOutput struct{
 	OrderID string `json:"order_id"`
 	Status string `json:"status"`
-	SubscriptionData *models.ParamsActivateSubscriptionOutput `subscription_data`
+	SubscriptionData *models.ParamsActivateSubscriptionOutput `json:"subscription_data"`
 	GatewayTransactionID string `json:"gateway_transaction_id"`
 	PixQRCode string `json:"pix_qr_code"`
 	PixExpiration time.Time `json:"pix_expiration"`
@@ -204,14 +204,14 @@ func(p *ParamsAddBalanceInput)Validate()error{
 }
 
 type ParamsAddBalanceOutput struct {
-	OrderID string
-	Status string
-	GatewayTransactionID string
-	PixQRCode string
-	PixExpiration time.Time
-	BoletoURL string
-	BoletoBarcode string
-	BoletoExpiration	time.Time
+	OrderID string `json:"order_id"`
+	Status string `json:"status"`
+	GatewayTransactionID string `json:"gateway_transaction_id"`
+	PixQRCode string `json:"pix_qr_code"`
+	PixExpiration time.Time `json:"pix_expiration"`
+	BoletoURL string `json:"boleto_url"`
+	BoletoBarcode string `json:"boleto_bar_code"`
+	BoletoExpiration	time.Time `json:"boleto_expiration"`
 }
 
 type ParamsSaveSubscriptionMetadata struct {

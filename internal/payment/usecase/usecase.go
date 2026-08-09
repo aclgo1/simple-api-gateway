@@ -2,14 +2,12 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	"github.com/aclgo/simple-api-gateway/internal/payment"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
 	proto "github.com/aclgo/simple-api-gateway/proto-service/balance"
-	"github.com/google/uuid"
 )
 
 type paymentUC struct {
@@ -33,39 +31,39 @@ func (w *paymentUC) RegisterProvider(method string, proccessor models.PaymentPro
 	w.mu.Unlock()
 }
 
-func (u *paymentUC) Credit(ctx context.Context, in *payment.ParamCreditInput) (*payment.ParamCreditOutput, error) {
+// func (u *paymentUC) Credit(ctx context.Context, in *payment.ParamCreditInput) (*payment.ParamCreditOutput, error) {
 
 
-	ig := proto.ParamGetWalletByAccountRequest{
-		AccountID: in.AccountId,
-	}
+// 	ig := proto.ParamGetWalletByAccountRequest{
+// 		AccountID: in.AccountId,
+// 	}
 
-	wlt, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &ig)
-	if err != nil {
-		return nil, fmt.Errorf("u.clientBalanceGPRC.GetWalletByAccount: %w", err)
-	}
+// 	wlt, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &ig)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("u.clientBalanceGPRC.GetWalletByAccount: %w", err)
+// 	}
 
-	ic := proto.ParamCreditWalletRequest{
-		WalletID: wlt.WalletID,
-		Amount:   in.Amount,
-		ReferenceID: uuid.NewString(),
-	}
+// 	ic := proto.ParamCreditWalletRequest{
+// 		WalletID: wlt.WalletID,
+// 		Amount:   in.Amount,
+// 		ReferenceID: uuid.NewString(),
+// 	}
 
-	resp, err := u.clientBalanceGPRC.Credit(ctx, &ic)
-	if err != nil {
-		return nil, fmt.Errorf("u.clientBalanceGRPC.Credit: %w", err)
-	}
+// 	resp, err := u.clientBalanceGPRC.Credit(ctx, &ic)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("u.clientBalanceGRPC.Credit: %w", err)
+// 	}
 
-	out := payment.ParamCreditOutput{
-		WalletID:  resp.WalletID,
-		AccountID: resp.AccountID,
-		Balance:   resp.Balance,
-		CreatedAT: resp.CreatedAT.AsTime(),
-		UpdatedAT: resp.UpdatedAT.AsTime(),
-	}
+// 	out := payment.ParamCreditOutput{
+// 		WalletID:  resp.WalletID,
+// 		AccountID: resp.AccountID,
+// 		Balance:   resp.Balance,
+// 		CreatedAT: resp.CreatedAT.AsTime(),
+// 		UpdatedAT: resp.UpdatedAT.AsTime(),
+// 	}
 
-	return &out, nil
-}
+// 	return &out, nil
+// }
 
 func (u *paymentUC) GeneratePayment(ctx context.Context, in *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error) {
 	u.mu.RLock()

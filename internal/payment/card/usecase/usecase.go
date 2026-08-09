@@ -16,3 +16,5 @@ func NewpaymentProcessorCard() models.PaymentProcessor {
 func (p *paymentProcessorCard) Proccess(ctx context.Context, in *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error) {
 	return nil, nil
 }
+
+func (p *paymentProcessorCard)Webhook(ctx context.Context, in *models.ParamPixWebHookInput)(error)

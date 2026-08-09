@@ -108,9 +108,28 @@ message ParamFindOrderByProductResponse {
     repeated Orders orders = 1;
 }
 
+message ParamFindOrderByGatewayTransactionIdRequest {
+    string gateway_transaction_id = 1;
+}
+
+message ParamFindOrderByGatewayTransactionIdResponse {
+    Orders order = 1;
+}
+
+message ParamUpdateOrderStatusRequest{
+    string order_id = 1;
+    OrderStatus status = 2;
+}
+
+message ParamUpdateOrderStatusResponse {
+    Orders order = 1;
+}
+
 service ServiceOrder {
     rpc Create(ParamCreateOrderRequest) returns (ParamCreateOrderResponse);
     rpc Find(ParamFindOrderRequest) returns (ParamFindOrderResponse);
     rpc FindOrderByAccount(ParamFindOrderByAccountRequest) returns (ParamFindOrderByAccountResponse);
     rpc FindOrderByProduct(ParamFindOrderByProductRequest) returns (ParamFindOrderByProductResponse);
+    rpc FindOrderByGatewayTransactionId(ParamFindOrderByGatewayTransactionIdRequest) returns (ParamFindOrderByGatewayTransactionIdResponse);
+    rpc UpdateOrderStatus(ParamUpdateOrderStatusRequest) returns (ParamUpdateOrderStatusResponse);
 }

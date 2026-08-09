@@ -184,7 +184,7 @@ func main() {
 
 	gateways := paymentUC.NewPaymentUC(balanceUserService, logger)
 
-	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository)
+	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository, ordersUserService,balanceUserService,clientSubscriptionService)
 	cardProcessor := cardUC.NewpaymentProcessorCard()
 	walletProcessor := walletUC.NewPaymentProcessorWallet(balanceUserService)
 
@@ -208,7 +208,7 @@ func main() {
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
-	paymentPixHandler := svcPix.NewpaymentServicePix(gateways)
+	paymentPixHandler := svcPix.NewpaymentServicePix(pixProcessor)
 	// exHandler := svcEx.NewExService()
 
 	authUC := authUC.NewAuthUC(clientUserService,clientSubscriptionService)
@@ -253,7 +253,7 @@ func main() {
 	mux.HandleFunc("GET /api/orders/find/account", authUC.ValidateToken(ordersHandler.FindByAccount(ctx)))
 	mux.HandleFunc("GET /api/orders/find/product/{product_id}", authUC.ValidateIsAdmin(ordersHandler.FindByProduct(ctx)))
 
-	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(paymentPixHandler.WebHookPix()))
+	mux.HandleFunc("POST /api/webhook/pix", authUC.ValidateWebHookPix(paymentPixHandler.WebHookPix(ctx)))
 
 	mux.HandleFunc("GET /api/captcha", cptSvc.GenCaptcha(ctx))
 
