@@ -24,8 +24,6 @@ import (
 	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	paymentUC "github.com/aclgo/simple-api-gateway/internal/payment/usecase"
 	"github.com/aclgo/simple-api-gateway/internal/user"
-	migration "github.com/aclgo/simple-api-gateway/migrations"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
@@ -95,16 +93,6 @@ func main() {
 	ctx := context.Background()
 	
 	cfg := config.Load(".")
-
-	db, err := sqlx.Open(cfg.DbDriver, cfg.DbUrl)
-	if err != nil {
-		log.Fatalf("sqlx.Open: %v", err)
-	}
-
-	migration.NewMigration(db, nil)
-	if err := migration.Run(); err != nil {
-		log.Fatalf("migration.Run: %v", err)
-	}
 
 	logger, err := logger.NewapiLogger(cfg)
 	if err != nil {

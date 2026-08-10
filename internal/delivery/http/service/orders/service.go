@@ -25,32 +25,73 @@ func NewOrdersService(ordersUC orders.Orders, logger logger.Logger) *ordersServi
 
 func (s *ordersService) Create(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var param orders.OrderCreateInput
 
-		if err := json.NewDecoder(r.Body).Decode(&param); err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+		var params orders.ParamsCreateOrderAction
 
-			service.JSON(w, response, http.StatusInternalServerError)
-			return
-		}
-
-		if err := param.Validate(); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 
 			service.JSON(w, response, http.StatusBadRequest)
 			return
 		}
 
-		ord, err := s.ordersUC.CreateWithSaga(ctx, &param)
-		if err != nil {
-			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+		switch params.Action{
+		case string(orders.AddBalance):
+			var input orders.ParamsAddBalanceInput
+			if err := json.Unmarshal(params.Payload, &input); err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				service.JSON(w, response, http.StatusBadRequest)
+				return
+			}
 
-			service.JSON(w, response, http.StatusInternalServerError)
-			return
+			added, err := s.ordersUC.AddBalance(ctx, &input)
+			if err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+				service.JSON(w, response, http.StatusInternalServerError)
+				return
+			}
+
+			service.JSON(w,added,http.StatusOK)
+
+		case string(orders.BuyProduct):
+			var input orders.ParamBuyProductInput
+			if err := json.Unmarshal(params.Payload, &input); err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				service.JSON(w, response, http.StatusBadRequest)
+				return
+			}
+
+			buyed, err := s.ordersUC.CreateWithSaga(ctx, &input)
+			if err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+				service.JSON(w, response, http.StatusInternalServerError)
+				return
+			}
+
+			service.JSON(w,buyed,http.StatusOK)
+
+
+		case string(orders.NewSubscription):
+			var input orders.ParamsCreateOrderSubscriptionInput
+			if err := json.Unmarshal(params.Payload, &input); err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				service.JSON(w, response, http.StatusBadRequest)
+				return
+			}
+
+			subscription, err := s.ordersUC.CreateSubscriptionOrExtend(ctx, &input)
+			if err != nil {
+				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
+				service.JSON(w, response, http.StatusInternalServerError)
+				return	
+			}
+
+			service.JSON(w, subscription, http.StatusOK)
+
+		default:
+			response := service.NewRestError(http.StatusText(http.StatusBadRequest),"action not suported")
+			service.JSON(w, response, http.StatusBadRequest)
 		}
-
-		service.JSON(w, ord, http.StatusCreated)
-
 	}
 }
 func (s *ordersService) FindById(ctx context.Context) http.HandlerFunc {

@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -9,16 +10,20 @@ import (
 	"github.com/google/uuid"
 )
 
+type OrderCreateAction string
 
 
 var (
 	ErrAmountInvalid =  errors.New("amount invalid")
 	ErrPlanInvalid = errors.New("plan invalid")
+	BuyProduct OrderCreateAction = "buy-product"
+	NewSubscription OrderCreateAction = "subscription"
+	AddBalance OrderCreateAction = "add-balance"
 )
 
 type Orders interface {
-	Create(context.Context, *OrderCreateInput) (*OrderCreateOutput, error)
-	CreateWithSaga(ctx context.Context, in *OrderCreateInput)(*OrderCreateOutput,error)
+	Create(context.Context, *ParamBuyProductInput) (*OrderCreateOutput, error)
+	CreateWithSaga(ctx context.Context, in *ParamBuyProductInput)(*OrderCreateOutput,error)
 	CreateSubscriptionOrExtend(ctx context.Context,
 		params *ParamsCreateOrderSubscriptionInput)(*ParamsCreateOrderSubscriptionOutput,error)
 	FindById(context.Context, *OrderFindByIdInput) (*OrderFindByIdOutput, error)
@@ -43,16 +48,21 @@ type ParamPaymentProccessOutput struct{
 
 }
 
+type ParamsCreateOrderAction struct {
+	Action string `json:"action"`
+	Payload json.RawMessage `json:"payload"`
+}
+
 type ProductItem struct {
 	Id string`json:"product_id"`
 }
 
-type OrderCreateInput struct {
+type ParamBuyProductInput struct {
 	AccountId   string   `json:"account_id"`
 	ProductsIDS []ProductItem `json:"products"`
 }
 
-func (o *OrderCreateInput) Validate() error {
+func (o *ParamBuyProductInput) Validate() error {
 	if o.AccountId == "" {
 		return errors.New("accountId empty")
 	}

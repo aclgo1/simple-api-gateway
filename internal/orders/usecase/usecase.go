@@ -57,7 +57,7 @@ func NeworderUC(
 
 
 //version create order v1 simple
-func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
+func (u *orderUC) Create(ctx context.Context, in *orders.ParamBuyProductInput) (*orders.OrderCreateOutput, error) {
 
 	var amountProducts int64
 
@@ -156,7 +156,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.OrderCreateInput) (*ord
 }
 
 //create order v2 using saga orchestration
-func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.OrderCreateInput) (*orders.OrderCreateOutput, error) {
+func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.ParamBuyProductInput) (*orders.OrderCreateOutput, error) {
 	var amountProducts int64
 	for _, pID := range in.ProductsIDS {
 		product, err := u.clientProductsGRPC.Find(ctx, &protoProduct.ProductFindRequest{Id: pID.Id})
