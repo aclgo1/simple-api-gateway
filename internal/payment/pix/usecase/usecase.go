@@ -28,7 +28,7 @@ type paymentProcessorPix struct {
 
 func NewpaymentProcessorPix(authorization string, repo pix.Repository, clientOrdersGRPC protoOrders.ServiceOrderClient,
 	clientBalanceGrpc protoBalance.WalletServiceClient,
-		clientUserGrpc protoUser.SubscriptionServiceClient) models.PaymentProcessor {
+		clientUserGrpc protoUser.SubscriptionServiceClient) *paymentProcessorPix {
 	return &paymentProcessorPix{
 		PixAuthorization: authorization,
 		repo: repo,

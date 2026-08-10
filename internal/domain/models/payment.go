@@ -53,6 +53,9 @@ type ParamPaymentProcessOutput struct {
 
 type PaymentProcessor interface {
 	Proccess(ctx context.Context, in *ParamPaymentProcessInput) (*ParamPaymentProcessOutput, error)
+}
+
+type PixPaymentWebHook interface {
 	Webhook(ctx context.Context, in *ParamPixWebHookInput)(error)
 }
 

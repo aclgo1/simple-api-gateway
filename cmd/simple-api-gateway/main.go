@@ -180,7 +180,7 @@ func main() {
 	cptUC := captchaUC.NewCaptchaUC(cptRepo)
 	cptSvc := svcCaptcha.NewCaptchaService(cptUC)
 
-	pixRepository := pixRepo.NewPixRepository(redisClient)
+	pixRepository := pixRepo.NewPixRepository(time.Duration(10)*time.Minute, redisClient)
 
 	gateways := paymentUC.NewPaymentUC(balanceUserService, logger)
 
