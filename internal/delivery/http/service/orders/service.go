@@ -35,61 +35,60 @@ func (s *ordersService) Create(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		switch params.Action{
+		switch params.Action {
 		case string(orders.AddBalance):
 			var input orders.ParamsAddBalanceInput
 			if err := json.Unmarshal(params.Payload, &input); err != nil {
-				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 				service.JSON(w, response, http.StatusBadRequest)
 				return
 			}
 
-			added, err := s.ordersUC.AddBalance(ctx, &input)
+			added, err := s.ordersUC.AddBalance(r.Context(), &input)
 			if err != nil {
 				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 				service.JSON(w, response, http.StatusInternalServerError)
 				return
 			}
 
-			service.JSON(w,added,http.StatusOK)
+			service.JSON(w, added, http.StatusOK)
 
 		case string(orders.BuyProduct):
 			var input orders.ParamBuyProductInput
 			if err := json.Unmarshal(params.Payload, &input); err != nil {
-				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 				service.JSON(w, response, http.StatusBadRequest)
 				return
 			}
 
-			buyed, err := s.ordersUC.CreateWithSaga(ctx, &input)
+			buyed, err := s.ordersUC.CreateWithSaga(r.Context(), &input)
 			if err != nil {
 				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 				service.JSON(w, response, http.StatusInternalServerError)
 				return
 			}
 
-			service.JSON(w,buyed,http.StatusOK)
-
+			service.JSON(w, buyed, http.StatusOK)
 
 		case string(orders.NewSubscription):
 			var input orders.ParamsCreateOrderSubscriptionInput
 			if err := json.Unmarshal(params.Payload, &input); err != nil {
-				response := service.NewRestError(http.StatusText(http.StatusBadRequest),err.Error())
+				response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
 				service.JSON(w, response, http.StatusBadRequest)
 				return
 			}
 
-			subscription, err := s.ordersUC.CreateSubscriptionOrExtend(ctx, &input)
+			subscription, err := s.ordersUC.CreateSubscriptionOrExtend(r.Context(), &input)
 			if err != nil {
 				response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 				service.JSON(w, response, http.StatusInternalServerError)
-				return	
+				return
 			}
 
 			service.JSON(w, subscription, http.StatusOK)
 
 		default:
-			response := service.NewRestError(http.StatusText(http.StatusBadRequest),"action not suported")
+			response := service.NewRestError(http.StatusText(http.StatusBadRequest), "action not suported")
 			service.JSON(w, response, http.StatusBadRequest)
 		}
 	}

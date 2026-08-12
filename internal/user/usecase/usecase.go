@@ -18,7 +18,7 @@ import (
 
 type userUc struct {
 	clientUserGRPC    protoUser.UserServiceClient
-	subscriptionGRPC protoUser.SubscriptionServiceClient
+	subscriptionGRPC  protoUser.SubscriptionServiceClient
 	clientMailGRPC    mail.MailServiceClient
 	clientBalanceGRPC protoBalance.WalletServiceClient
 	captchaRepo       captcha.Repository
@@ -41,7 +41,7 @@ func NewuserUC(clientUser protoUser.UserServiceClient,
 
 	uc := userUc{
 		clientUserGRPC:    clientUser,
-		subscriptionGRPC: subscriptionGRPC,
+		subscriptionGRPC:  subscriptionGRPC,
 		clientMailGRPC:    clientMail,
 		clientBalanceGRPC: clientBalance,
 		captchaRepo:       captchaRepo,
@@ -280,8 +280,8 @@ func (u *userUc) Update(ctx context.Context, params *user.ParamsUserUpdate) (*us
 	refenceId := uuid.NewString()
 	if params.Balance > 0 {
 		paramProtoUpdateBalance := protoBalance.ParamCreditWalletRequest{
-			WalletID: wallet.WalletID,
-			Amount:   params.Balance,
+			WalletID:    wallet.WalletID,
+			Amount:      params.Balance,
 			ReferenceID: refenceId,
 		}
 
@@ -372,7 +372,7 @@ func (u *userUc) SendConfirm(ctx context.Context, params *user.ParamsConfirm) er
 	return user.ErrEmailSentCheckInbox{}
 }
 
-func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK) (*user.ParamsUserLoginResponse,error) {
+func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK) (*user.ParamsUserLoginResponse, error) {
 
 	userEmail, err := u.redisClient.Get(ctx, params.ConfirmCode).Result()
 	if err != nil && err != redis.Nil {
@@ -400,22 +400,21 @@ func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK
 	}
 
 	pLogin := protoUser.UserLoginRequest{
-		Email: foundUser.User.Email,
+		Email:    foundUser.User.Email,
 		Password: foundUser.User.Password,
 	}
 
-	tokens,err := u.clientUserGRPC.Login(ctx, &pLogin)
+	tokens, err := u.clientUserGRPC.Login(ctx, &pLogin)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	resp := user.ParamsUserLoginResponse{
-		AccessToken: tokens.Tokens.AccessToken,
+		AccessToken:  tokens.Tokens.AccessToken,
 		RefreshToken: tokens.Tokens.RefreshToken,
 	}
 
-
-	return &resp,nil
+	return &resp, nil
 }
 
 func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) error {
@@ -469,14 +468,14 @@ func (u *userUc) ResetPass(ctx context.Context, params *user.ParamsResetPass) er
 
 }
 
-func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user.ParamsUserLoginResponse,error) {
+func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user.ParamsUserLoginResponse, error) {
 	if !u.captchaRepo.Verify(params.CaptchaId, params.CaptchaAwnser, true) {
 		return nil, user.ErrFailedVerifyCaptcha{}
 	}
 
 	idUser, err := u.redisClient.Get(ctx, params.NewPassCode).Result()
 	if err != nil && err != redis.Nil {
-		return nil,err
+		return nil, err
 	}
 
 	if err == redis.Nil {
@@ -502,44 +501,22 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user
 		return nil, errDel
 	}
 
-
 	pLogin := protoUser.UserLoginRequest{
-		Email: find.User.Email,
+		Email:    find.User.Email,
 		Password: find.User.Password,
 	}
 
-	tokens,err := u.clientUserGRPC.Login(ctx, &pLogin)
+	tokens, err := u.clientUserGRPC.Login(ctx, &pLogin)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	resp := user.ParamsUserLoginResponse{
-		AccessToken: tokens.Tokens.AccessToken,
+		AccessToken:  tokens.Tokens.AccessToken,
 		RefreshToken: tokens.Tokens.RefreshToken,
 	}
 
-
-	return &resp,nil
-}
-
-func(u *userUc) CancelSubscription(ctx context.Context, params *user.ParamsCancelSubscriptionInput)(*user.ParamsCancelSubscriptionOutput,error){
-	po := protoUser.CancelSubscriptionRequest{
-		UserId: params.UserId,
-	}
-
-	canceled, err := u.subscriptionGRPC.CancelSubscription(ctx, &po)
-	if err != nil {
-		return nil,err
-	}
-
-	out := user.ParamsCancelSubscriptionOutput{
-		SubscriptionId:canceled.SubscriptionId,
-    	UserId:canceled.UserId,
-    	Status:canceled.Status,
-    	UpdatedAt:canceled.UpdatedAt.AsTime(),
-	}
-
-	return &out,nil
+	return &resp, nil
 }
 
 func (u *userUc) StartGlobalConnsUpdateCache(ctx context.Context) {

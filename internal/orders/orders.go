@@ -12,53 +12,50 @@ import (
 
 type OrderCreateAction string
 
-
 var (
-	ErrAmountInvalid =  errors.New("amount invalid")
-	ErrPlanInvalid = errors.New("plan invalid")
-	BuyProduct OrderCreateAction = "buy-product"
-	NewSubscription OrderCreateAction = "subscription"
-	AddBalance OrderCreateAction = "add-balance"
+	ErrAmountInvalid                   = errors.New("amount invalid")
+	ErrPlanInvalid                     = errors.New("plan invalid")
+	BuyProduct       OrderCreateAction = "buy-product"
+	NewSubscription  OrderCreateAction = "new-subscription"
+	AddBalance       OrderCreateAction = "add-balance"
 )
 
 type Orders interface {
 	Create(context.Context, *ParamBuyProductInput) (*OrderCreateOutput, error)
-	CreateWithSaga(ctx context.Context, in *ParamBuyProductInput)(*OrderCreateOutput,error)
+	CreateWithSaga(ctx context.Context, in *ParamBuyProductInput) (*OrderCreateOutput, error)
 	CreateSubscriptionOrExtend(ctx context.Context,
-		params *ParamsCreateOrderSubscriptionInput)(*ParamsCreateOrderSubscriptionOutput,error)
+		params *ParamsCreateOrderSubscriptionInput) (*ParamsCreateOrderSubscriptionOutput, error)
 	FindById(context.Context, *OrderFindByIdInput) (*OrderFindByIdOutput, error)
 	FindByAccount(context.Context, *OrderByAccountInput) ([]*OrderByAccountOutput, error)
 	FindByProduct(context.Context, *OrderByProductInput) ([]*OrderByProductOutput, error)
-	AddBalance(ctx context.Context, params *ParamsAddBalanceInput)(*ParamsAddBalanceOutput,error)
+	AddBalance(ctx context.Context, params *ParamsAddBalanceInput) (*ParamsAddBalanceOutput, error)
 }
 
 type PaymentGateway interface {
-	GeneratePayment(ctx context.Context, params *models.ParamPaymentProcessInput)(*models.ParamPaymentProcessOutput,error)
+	GeneratePayment(ctx context.Context, params *models.ParamPaymentProcessInput) (*models.ParamPaymentProcessOutput, error)
 }
 
 type SubscriptionInterface interface {
-	ActivateSubscription(context.Context, *models.ParamsActivateSubscriptionInput)(*models.ParamsActivateSubscriptionOutput,error)
+	ActivateSubscription(context.Context, *models.ParamsActivateSubscriptionInput) (*models.ParamsActivateSubscriptionOutput, error)
 }
 
 type ParamPaymentProcessInput struct {
-
 }
 
-type ParamPaymentProccessOutput struct{
-
+type ParamPaymentProccessOutput struct {
 }
 
 type ParamsCreateOrderAction struct {
-	Action string `json:"action"`
+	Action  string          `json:"action"`
 	Payload json.RawMessage `json:"payload"`
 }
 
 type ProductItem struct {
-	Id string`json:"product_id"`
+	Id string `json:"product_id"`
 }
 
 type ParamBuyProductInput struct {
-	AccountId   string   `json:"account_id"`
+	AccountId   string        `json:"account_id"`
 	ProductsIDS []ProductItem `json:"products"`
 }
 
@@ -81,10 +78,10 @@ func (o *ParamBuyProductInput) Validate() error {
 }
 
 type OrderCreateOutput struct {
-	OrderId     string    `json:"order_id"`
-	AccountId   string    `json:"account_id"`
-	ProductsIDS []ProductItem  `json:"products"`
-	CreatedAt   time.Time `json:"created_at"`
+	OrderId     string        `json:"order_id"`
+	AccountId   string        `json:"account_id"`
+	ProductsIDS []ProductItem `json:"products"`
+	CreatedAt   time.Time     `json:"created_at"`
 }
 
 type OrderFindByIdInput struct {
@@ -104,10 +101,10 @@ func (o *OrderFindByIdInput) Validate() error {
 }
 
 type OrderFindByIdOutput struct {
-	OrderId     string    `json:"order_id"`
-	AccountId   string    `json:"account_id"`
-	ProductsIDS []ProductItem  `json:"products"`
-	CreatedAt   time.Time `json:"created_at"`
+	OrderId     string        `json:"order_id"`
+	AccountId   string        `json:"account_id"`
+	ProductsIDS []ProductItem `json:"products"`
+	CreatedAt   time.Time     `json:"created_at"`
 }
 
 type OrderByAccountInput struct {
@@ -126,10 +123,10 @@ func (o *OrderByAccountInput) Validate() error {
 }
 
 type OrderByAccountOutput struct {
-	OrderId     string    `json:"order_id"`
-	AccountId   string    `json:"account_id"`
-	ProductsIDS []ProductItem  `json:"products"`
-	CreatedAt   time.Time `json:"created_at"`
+	OrderId     string        `json:"order_id"`
+	AccountId   string        `json:"account_id"`
+	ProductsIDS []ProductItem `json:"products"`
+	CreatedAt   time.Time     `json:"created_at"`
 }
 
 type OrderByProductInput struct {
@@ -159,73 +156,71 @@ type SagaWorker interface {
 }
 
 type CompensationTask struct {
-	Compensations []func(context.Context)error
-	OriginalErr error
+	Compensations []func(context.Context) error
+	OriginalErr   error
 }
 
-
-type ParamsCreateOrderSubscriptionInput struct{
-	MethodPayment string `json:"method_payment"`
-	UserId string`json:"user_id"`
-	Plan string`json:"plan"`
-	Days int `json:"days"`
-	CardToken string `json:"card_token"`
+type ParamsCreateOrderSubscriptionInput struct {
+	MethodPayment  string `json:"method_payment"`
+	UserId         string `json:"user_id"`
+	Plan           string `json:"plan"`
+	Days           int64  `json:"days"`
+	CardToken      string `json:"card_token"`
 	CardExpiration string `json:"card_expiration"`
 }
 
-func(p *ParamsCreateOrderSubscriptionInput)Validate()error{
+func (p *ParamsCreateOrderSubscriptionInput) Validate() error {
 	return nil
 }
 
-
-type SubscriptionOutput struct{
-	Id string `json:"subscription_id"`
-	UserId string `json:"user_id"`
-	Plan string `json:"plan"`
-	Status string `json:"status"`
-	StartsAt string `json:"starts_at"`
+type SubscriptionOutput struct {
+	Id        string `json:"subscription_id"`
+	UserId    string `json:"user_id"`
+	Plan      string `json:"plan"`
+	Status    string `json:"status"`
+	StartsAt  string `json:"starts_at"`
 	ExpiresAt string `json:"expires_at"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
 
-type ParamsCreateOrderSubscriptionOutput struct{
-	OrderID string `json:"order_id"`
-	Status string `json:"status"`
-	SubscriptionData *models.ParamsActivateSubscriptionOutput `json:"subscription_data"`
-	GatewayTransactionID string `json:"gateway_transaction_id"`
-	PixQRCode string `json:"pix_qr_code"`
-	PixExpiration time.Time `json:"pix_expiration"`
-	BoletoURL string `json:"boleto_url"`
-	BoletoBarcode string `json:"boleto_bar_code"`
-	BoletoExpiration	time.Time `json:"boleto_expiration"`
+type ParamsCreateOrderSubscriptionOutput struct {
+	OrderID              string                                   `json:"order_id"`
+	Status               string                                   `json:"status"`
+	SubscriptionData     *models.ParamsActivateSubscriptionOutput `json:"subscription_data"`
+	GatewayTransactionID string                                   `json:"gateway_transaction_id"`
+	PixQRCode            string                                   `json:"pix_qr_code"`
+	PixExpiration        time.Time                                `json:"pix_expiration"`
+	BoletoURL            string                                   `json:"boleto_url"`
+	BoletoBarcode        string                                   `json:"boleto_bar_code"`
+	BoletoExpiration     time.Time                                `json:"boleto_expiration"`
 }
 
 type ParamsAddBalanceInput struct {
-	MethodPayment string `json:"method_payment"`
-	UserId string `json:"user_id"`
-	Amount int64 `json:"amount"`
-	CardToken string `json:"card_token"`
+	MethodPayment  string `json:"method_payment"`
+	UserId         string `json:"user_id"`
+	Amount         int64  `json:"amount"`
+	CardToken      string `json:"card_token"`
 	CardExpiration string `json:"card_expiration"`
 }
 
-func(p *ParamsAddBalanceInput)Validate()error{
+func (p *ParamsAddBalanceInput) Validate() error {
 	return nil
 }
 
 type ParamsAddBalanceOutput struct {
-	OrderID string `json:"order_id"`
-	Status string `json:"status"`
-	GatewayTransactionID string `json:"gateway_transaction_id"`
-	PixQRCode string `json:"pix_qr_code"`
-	PixExpiration time.Time `json:"pix_expiration"`
-	BoletoURL string `json:"boleto_url"`
-	BoletoBarcode string `json:"boleto_bar_code"`
-	BoletoExpiration	time.Time `json:"boleto_expiration"`
+	OrderID              string    `json:"order_id"`
+	Status               string    `json:"status"`
+	GatewayTransactionID string    `json:"gateway_transaction_id"`
+	PixQRCode            string    `json:"pix_qr_code"`
+	PixExpiration        time.Time `json:"pix_expiration"`
+	BoletoURL            string    `json:"boleto_url"`
+	BoletoBarcode        string    `json:"boleto_bar_code"`
+	BoletoExpiration     time.Time `json:"boleto_expiration"`
 }
 
 type ParamsSaveSubscriptionMetadata struct {
-    UserId        string `json:"user_id"`
-    Plan          string `json:"plan"`
-    Days          int    `json:"days"`
+	UserId string `json:"user_id"`
+	Plan   string `json:"plan"`
+	Days   int64  `json:"days"`
 }

@@ -5,7 +5,7 @@ import "time"
 type ParamsActivateSubscriptionInput struct {
 	AccountID string
 	Plan      string
-	Days      int
+	Days      int64
 }
 
 type ParamsActivateSubscriptionOutput struct {

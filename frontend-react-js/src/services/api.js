@@ -53,9 +53,20 @@ api.interceptors.response.use(
     const status = error.response.status;
 
     if (status === 403) {
-      console.warn("user not premiun or login in new dispositivy ");
-      handleForceLogout();
-      return Promise.reject(error);
+      const responseData = error.response.data;
+      const message = responseData?.message || responseData?.error || "";
+
+      if (message.includes("login in new dispositivy")) {
+        console.warn("Sessão encerrada: login realizado em outro dispositivo.");
+        handleForceLogout();
+        return Promise.reject(error);
+      }
+
+      if (message.includes("user id not is premiun subscription")) {
+        console.warn("Acesso negado: recurso exclusivo para usuários premium.");
+        window.location.href = "/pricing";
+        return Promise.reject(error);
+      }
     }
 
     if (status === 401 && !originalRequest._retry) {

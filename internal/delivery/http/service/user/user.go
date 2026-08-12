@@ -12,19 +12,22 @@ import (
 
 	"github.com/aclgo/simple-api-gateway/internal/auth"
 	"github.com/aclgo/simple-api-gateway/internal/delivery/http/service"
+	"github.com/aclgo/simple-api-gateway/internal/subscription"
 	"github.com/aclgo/simple-api-gateway/internal/user"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
 )
 
 type userService struct {
 	userUC     user.UserUC
+	subUC      subscription.SubscriptionUseCase
 	logger     logger.Logger
 	BaseApiUrl string
 }
 
-func NewuserService(user user.UserUC, logger logger.Logger, baseApiUrl string) *userService {
+func NewuserService(user user.UserUC, subUC subscription.SubscriptionUseCase, logger logger.Logger, baseApiUrl string) *userService {
 	return &userService{
 		userUC:     user,
+		subUC:      subUC,
 		logger:     logger,
 		BaseApiUrl: baseApiUrl,
 	}
@@ -310,13 +313,13 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 		}
 
 		resp := map[string]any{
-			"message":  "user confirmed signup",
-			"tokens":tokens,
+			"message": "user confirmed signup",
+			"tokens":  tokens,
 		}
 
 		// http.Redirect(w, r, fmt.Sprintf("%s/login", s.BaseApiUrl), http.StatusSeeOther)
 
-		service.JSON(w,resp,http.StatusOK)
+		service.JSON(w, resp, http.StatusOK)
 	}
 }
 
@@ -400,7 +403,7 @@ func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 
 		resp := map[string]any{
 			"message": "user updated pass",
-			"tokens": tokens,
+			"tokens":  tokens,
 		}
 
 		service.JSON(w, resp, http.StatusOK)
@@ -430,10 +433,10 @@ func (s *userService) RefreshTokens(ctx context.Context) http.HandlerFunc {
 	}
 }
 
-func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		paramsCtx,ok := r.Context().Value(auth.KeyCtxParamsToken).(*auth.ParamsToken)
-		if !ok{
+func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		paramsCtx, ok := r.Context().Value(auth.KeyCtxParamsToken).(*auth.ParamsToken)
+		if !ok {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrNoParamsInCtx.Error())
 
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -441,7 +444,7 @@ func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
 			return
 		}
 
-		p := user.ParamsCancelSubscriptionInput{
+		p := subscription.ParamsCancelSubscriptionInput{
 			UserId: paramsCtx.UserID,
 		}
 
@@ -452,7 +455,7 @@ func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
 			return
 		}
 
-		canceled, err := s.userUC.CancelSubscription(ctx, &p)
+		canceled, err := s.subUC.CancelSubscription(ctx, &p)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 			service.JSON(w, response, http.StatusInternalServerError)
@@ -460,14 +463,14 @@ func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc{
 			return
 		}
 
-		service.JSON(w,canceled,http.StatusOK)
+		service.JSON(w, canceled, http.StatusOK)
 
 	}
 }
 
-func (s *userService)ActionForPremiun(ctx context.Context) http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		
+func (s *userService) ActionForPremiun(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
 	}
 }
 

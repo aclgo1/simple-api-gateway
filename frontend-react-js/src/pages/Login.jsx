@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 import api from "../services/api";
 import { useAuthStore } from "../store/useAuthStore";
@@ -27,6 +28,8 @@ export default function Login() {
   // Corrigido: setTokens (com 'o' minúsculo)
   const setTokens = useAuthStore((state) => state.setTokens);
 
+  const navigate = useNavigate();
+
   const {
     data: captcha,
     isLoading: loadingCaptcha,
@@ -42,7 +45,17 @@ export default function Login() {
 
   const handleAuthSuccess = (accessToken, refreshToken) => {
     setTokens(accessToken, refreshToken);
-    window.location.href = "/home";
+
+    const pendingPlan = sessionStorage.getItem("pendingCheckoutPlan");
+    const pendingMethod = sessionStorage.getItem("pendingCheckoutMethod");
+
+    if (pendingPlan && pendingMethod) {
+      sessionStorage.removeItem("pendingCheckoutPlan");
+      sessionStorage.removeItem("pendingCheckoutMethod");
+      navigate(`/checkout?plan=${pendingPlan}&method=${pendingMethod}`);
+    } else {
+      navigate("/home");
+    }
   };
 
   const loginMutation = useMutation({
@@ -79,15 +92,11 @@ export default function Login() {
         captcha_awnser: formData.captchaAnswer,
       });
 
-      return response.data;
+      return { responseDat: response.data, userEmail: formData.email };
     },
     onSuccess: (data) => {
-      // Corrigido: parênteses do alert
-      alert(data.message || "Conta criada com sucesso");
-      handleAuthSuccess(
-        data.created.tokens.access_token,
-        data.created.tokens.refresh_token,
-      );
+      // alert(data.message || "Conta criada com sucesso");
+      navigate(`/confirm?email=${encodeURIComponent(data.userEmail)}`);
     },
     onError: (error) => {
       const message = error.message || "Erro ao criar conta.";

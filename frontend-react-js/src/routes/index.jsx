@@ -4,7 +4,7 @@ import App from "../App";
 import Error from "../pages/Error";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
-import ConfirmSignup from "../pages/ConfirmSignup";
+import ConfirmSignup from "../pages/C";
 import NewPass from "../pages/NewPass";
 import ResetPass from "../pages/ResetPass";
 import Pricing from "../pages/Pricing";
@@ -67,9 +67,9 @@ export const router = createBrowserRouter([
       {
         path: "checkout",
         element: (
-          <RoutePrivate>
-            <Checkout />
-          </RoutePrivate>
+          // <RoutePrivate>
+          <Checkout />
+          // </RoutePrivate>
         ),
       },
       {

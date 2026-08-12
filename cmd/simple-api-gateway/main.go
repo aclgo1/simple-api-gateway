@@ -86,12 +86,10 @@ var (
 	frontendAssets embed.FS
 )
 
-
-
 func main() {
 
 	ctx := context.Background()
-	
+
 	cfg := config.Load(".")
 
 	logger, err := logger.NewapiLogger(cfg)
@@ -172,7 +170,7 @@ func main() {
 
 	gateways := paymentUC.NewPaymentUC(balanceUserService, logger)
 
-	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository, ordersUserService,balanceUserService,clientSubscriptionService)
+	pixProcessor := pixUC.NewpaymentProcessorPix(cfg.PixAuthorization, pixRepository, ordersUserService, balanceUserService, clientSubscriptionService)
 	cardProcessor := cardUC.NewpaymentProcessorCard()
 	walletProcessor := walletUC.NewPaymentProcessorWallet(balanceUserService)
 
@@ -184,23 +182,22 @@ func main() {
 	sagaWorkerCompensate.Start(ctx)
 
 	sub := subUC.NewSubscriprionUseCase(clientSubscriptionService)
-	user := userUC.NewuserUC(clientUserService,clientSubscriptionService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
+	user := userUC.NewuserUC(clientUserService, clientSubscriptionService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	admin := adminUC.NewadminUC(clientUserService, mailUserService, balanceUserService, cptRepo, redisClient, logger)
 	product := productUC.NewProductUC(logger, productUserService)
-	orders,err := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger,sagaWorkerCompensate,gateways, sub)
+	orders, err := ordersUC.NeworderUC(ordersUserService, productUserService, balanceUserService, &mu, logger, sagaWorkerCompensate, gateways, sub)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	userHandler := svcUser.NewuserService(user, logger, cfg.BaseApiUrl)
+	userHandler := svcUser.NewuserService(user, sub, logger, cfg.BaseApiUrl)
 	adminHandler := svcAdmin.NewadminService(admin, logger)
 	productHandler := svcProduct.NewProductService(product, logger)
 	ordersHandler := svcOrders.NewOrdersService(orders, logger)
 	paymentPixHandler := svcPix.NewpaymentServicePix(pixProcessor)
 	// exHandler := svcEx.NewExService()
 
-	authUC := authUC.NewAuthUC(clientUserService,clientSubscriptionService)
-
+	authUC := authUC.NewAuthUC(clientUserService, clientSubscriptionService)
 
 	mux := http.NewServeMux()
 
@@ -276,8 +273,6 @@ func main() {
 	// mux.HandleFunc("/admin", pages.Admin)
 	// mux.HandleFunc("/pricing", pages.Pricing)
 	// mux.HandleFunc("/pricing/pix", pages.PricingPix)
-
-
 
 	mux.Handle("/", service.SpaHandler(frontendAssets, "frontend-dist"))
 
