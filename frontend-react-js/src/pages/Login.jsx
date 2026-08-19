@@ -9,7 +9,7 @@ import api from "../services/api";
 import { useAuthStore } from "../store/useAuthStore";
 
 const loginSchema = z.object({
-  email: z.string().email(1, "E-mail ou usuário é obrigatório"),
+  email: z.string().email("E-mail ou usuário é obrigatório"),
   password: z.string().min(1, "A senha é obrigatória"),
   captchaAnswer: z.string().min(1, "Digite o código da imagem"),
 });
@@ -25,9 +25,7 @@ const signUpSchema = z.object({
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // Corrigido: setTokens (com 'o' minúsculo)
   const setTokens = useAuthStore((state) => state.setTokens);
-
   const navigate = useNavigate();
 
   const {
@@ -52,7 +50,9 @@ export default function Login() {
     if (pendingPlan && pendingMethod) {
       sessionStorage.removeItem("pendingCheckoutPlan");
       sessionStorage.removeItem("pendingCheckoutMethod");
-      navigate(`/checkout?plan=${pendingPlan}&method=${pendingMethod}`);
+      navigate(
+        `/checkout?action=new-subscription&plan=${pendingPlan}&method=${pendingMethod}`,
+      );
     } else {
       navigate("/home");
     }
@@ -64,13 +64,13 @@ export default function Login() {
         email: formData.email,
         password: formData.password,
         captcha_id: captcha?.id,
-        // Corrigido: captchaAnswer
         captcha_awnser: formData.captchaAnswer,
       });
 
       return response.data;
     },
     onSuccess: (data) => {
+      console.log(data);
       alert("Login realizado com sucesso!");
       handleAuthSuccess(data.tokens.access_token, data.tokens.refresh_token);
     },
@@ -95,8 +95,7 @@ export default function Login() {
       return { responseDat: response.data, userEmail: formData.email };
     },
     onSuccess: (data) => {
-      // alert(data.message || "Conta criada com sucesso");
-      navigate(`/confirm?email=${encodeURIComponent(data.userEmail)}`);
+      navigate(`/confirm-signup?email=${encodeURIComponent(data.userEmail)}`);
     },
     onError: (error) => {
       const message = error.message || "Erro ao criar conta.";
@@ -130,9 +129,9 @@ export default function Login() {
                 type="text"
                 placeholder="Email"
                 className="w-full h-10 px-3 bg-white/90 rounded-md text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-              ></input>
+              />
               {loginForm.formState.errors.email && (
-                <span className="text=xs text-red-400 mt-1 block">
+                <span className="text-xs text-red-400 mt-1 block">
                   {loginForm.formState.errors.email.message}
                 </span>
               )}
@@ -144,18 +143,17 @@ export default function Login() {
                 type="password"
                 placeholder="Password"
                 className="w-full h-10 px-3 bg-white/90 rounded-md text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                {loginForm.formState.errors.password && (
-                  <span className="text-xs text-red-400 mt-1 block">
-                    {loginForm.formState.errors.password.message}
-                  </span>
-                )}
-              </input>
+              />
+              {loginForm.formState.errors.password && (
+                <span className="text-xs text-red-400 mt-1 block">
+                  {loginForm.formState.errors.password.message}
+                </span>
+              )}
             </div>
 
             <div className="text-center my-1">
               {loadingCaptcha ? (
-                <div className="h-17.5 w-50 mx-auto bg-ray-300 animate-pulse rounded border border-gray-400"></div>
+                <div className="h-17.5 w-50 mx-auto bg-gray-300 animate-pulse rounded border border-gray-400" />
               ) : (
                 <img
                   src={captcha?.base64_image}
@@ -163,14 +161,14 @@ export default function Login() {
                   onClick={() => refetchCaptcha()}
                   className="h-17.5 w-50 mx-auto mb-2 border border-gray-300 bg-gray-100 cursor-pointer object-cover rounded"
                   title="Clique para trocar o Captcha"
-                ></img>
+                />
               )}
               <input
                 {...loginForm.register("captchaAnswer")}
                 type="text"
                 placeholder="Code"
                 className="w-30.5 h-10 mx-auto px-3 bg-white/90 rounded-md text-sm outline-none block text-center"
-              ></input>
+              />
               {loginForm.formState.errors.captchaAnswer && (
                 <span className="text-xs text-red-400 mt-1 block">
                   {loginForm.formState.errors.captchaAnswer.message}
@@ -181,14 +179,14 @@ export default function Login() {
             <button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full h-10 bg-[#362982] hover:bg-[#2a2068] text-white font-bold rounded-md transition-colors disabled::opacity-50"
+              className="w-full h-10 bg-[#362982] hover:bg-[#2a2068] text-white font-bold rounded-md transition-colors disabled:opacity-50"
             >
               {loginMutation.isPending ? "Wait..." : "Login"}
             </button>
 
             <a
               href="/resetpass"
-              className="text-center text-sm font-bolf text-white hover:underline mt-1 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+              className="text-center text-sm font-bold text-white hover:underline mt-1 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
             >
               Forgot Pass?
             </a>

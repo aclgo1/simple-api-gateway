@@ -5,7 +5,7 @@ export const useVerifyPremium = (enabled) => {
   return useQuery({
     queryKey: ["check-premium"],
     queryFn: async () => {
-      const resp = await api.get("/api/user/is-premiun");
+      const resp = await api.get(`/api/user/is-premium`);
       return resp.data;
     },
     enabled,

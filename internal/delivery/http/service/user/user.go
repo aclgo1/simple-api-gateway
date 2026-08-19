@@ -70,32 +70,6 @@ func (s *userService) Register(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		// err = s.userUC.SendConfirm(
-		// 	ctx,
-		// 	&user.ParamsConfirm{
-		// 		To:           created.User.Email,
-		// 		IntervalSend: time.Hour,
-		// 	},
-		// )
-
-		// if err != nil {
-
-		// 	//SE ERROR SEND EMAIL VERIFICACAO, DELETA O USER CRIADO PARA NAO DA CONFLITO COM O EMAIL
-		// 	errCancel := s.userUC.Delete(ctx, &user.ParamsUserDelete{
-		// 		UserID: created.User.UserID,
-		// 	})
-
-		// 	if errCancel != nil {
-		// 		response := service.NewRestError(http.StatusText(http.StatusInternalServerError), service.ErrSendEmailAndCancelNewRegister.Error())
-		// 		service.JSON(w, response, http.StatusInternalServerError)
-		// 		return
-		// 	}
-
-		// 	response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
-		// 	service.JSON(w, response, http.StatusInternalServerError)
-		// 	return
-		// }
-
 		resp := map[string]any{
 			"message": "user created",
 			"created": created,
@@ -288,12 +262,12 @@ func (s *userService) ValidToken(ctx context.Context) http.HandlerFunc {
 	}
 }
 
-func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
+func (s *userService) UserConfirmEmail(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		code := r.PathValue("confirm_code")
 
-		params := user.ParamsConfirmOK{ConfirmCode: code}
+		params := user.ParamsConfirmEmail{ConfirmCode: code}
 
 		if err := params.Validate(); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
@@ -303,7 +277,7 @@ func (s *userService) UserConfirm(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		tokens, err := s.userUC.SendConfirmOK(ctx, &params)
+		tokens, err := s.userUC.ConfirmEmail(ctx, &params)
 		if err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusInternalServerError), err.Error())
 
@@ -364,11 +338,7 @@ func (s *userService) UserResetPass(ctx context.Context) http.HandlerFunc {
 func (s *userService) UserNewPass(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		code := r.PathValue("code")
-
-		params := user.ParamsNewPass{
-			NewPassCode: code,
-		}
+		params := user.ParamsNewPass{}
 
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			response := service.NewRestError(http.StatusText(http.StatusBadRequest), err.Error())
@@ -470,7 +440,7 @@ func (s *userService) CancelSubscription(ctx context.Context) http.HandlerFunc {
 
 func (s *userService) ActionForPremiun(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		w.WriteHeader(http.StatusOK)
 	}
 }
 

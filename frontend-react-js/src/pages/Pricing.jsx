@@ -58,7 +58,9 @@ export default function Pricing() {
       sessionStorage.setItem("pendingCheckoutMethod", selectedMethod);
       navigate("/login");
     }
-    navigate(`/checkout?plan=${planId}&method=${selectedMethod}`);
+    navigate(
+      `/checkout?action=new-subscription&plan=${planId}&method=${selectedMethod}`,
+    );
   };
 
   return (

@@ -205,19 +205,19 @@ func main() {
 	mux.HandleFunc("POST /api/login", userHandler.Login(ctx))
 	mux.HandleFunc("GET /api/logout", authUC.ValidateTwoToken(userHandler.Logout(ctx)))
 	mux.HandleFunc("GET /api/refresh", authUC.ValidateTwoToken(userHandler.RefreshTokens(ctx)))
-	mux.HandleFunc("GET /api/valid_token", authUC.ValidateToken(userHandler.ValidToken(ctx)))
+	mux.HandleFunc("GET /api/auth/is-valid", authUC.ValidateToken(userHandler.ValidToken(ctx)))
 	mux.HandleFunc("POST /api/user/register", userHandler.Register(ctx))
 	mux.HandleFunc("GET /api/user/find", authUC.ValidateToken(userHandler.Find(ctx)))
 	mux.HandleFunc("PUT /api/user/update", authUC.ValidateUpdate(userHandler.Update(ctx)))
 	mux.HandleFunc("GET /api/user/stats", userHandler.Stats(ctx))
 	mux.HandleFunc("GET /api/user/stats-sse", userHandler.StatsSSE(ctx))
 	mux.HandleFunc("GET /api/user/register/status", userHandler.GetStatusRegistration(ctx))
-	mux.HandleFunc("GET /api/user/is-premiun/{id}", authUC.ValidateTokenIsPremiun(userHandler.ActionForPremiun(ctx)))
+	mux.HandleFunc("GET /api/user/is-premium", authUC.ValidateTokenIsPremiun(userHandler.ActionForPremiun(ctx)))
 
 	//MICROSERVCE GRPC MAIL
-	mux.HandleFunc("GET /api/user/confirm/{confirm_code}", userHandler.UserConfirm(ctx))
+	mux.HandleFunc("GET /api/user/confirm/{confirm_code}", userHandler.UserConfirmEmail(ctx))
 	mux.HandleFunc("GET /api/user/resetpass/{email}/{captcha_id}/{captcha_awnser}", userHandler.UserResetPass(ctx))
-	mux.HandleFunc("POST /api/user/newpass/{code}", userHandler.UserNewPass(ctx))
+	mux.HandleFunc("POST /api/user/newpass", userHandler.UserNewPass(ctx))
 
 	//MICROSERVICE GRPC ADMINs
 	mux.HandleFunc("/api/admin/register", authUC.ValidateCreateAdmin(adminHandler.Create(ctx)))

@@ -46,7 +46,7 @@ var (
 
 func SetConfigUserPackage(apiurl string, defaultFromSendMail string, defaultTimeSendEmails time.Duration, defaultServiceSendEmailName string) {
 	BASE_API_URL = apiurl
-	DefaulfBodySendConfirm = BASE_API_URL + "/api/user/confirm/%s"
+	DefaulfBodySendConfirm = BASE_API_URL + "/confirm-email?code=%s"
 	DefaultBodyResetPass = BASE_API_URL + "/newpass?code=%s"
 
 	DefaultFromSendMail = defaultFromSendMail

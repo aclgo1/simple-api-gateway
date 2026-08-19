@@ -1,16 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { LogIn, LogOut, CreditCard, User, Home, Shield } from "lucide-react";
-
+import { handleForceLogout } from "../services/api";
 export default function Navbar() {
-  const logout = useAuthStore((state) => state.logout);
+  // const logout = useAuthStore((state) => state.logout);
   const accessToken = useAuthStore((state) => state.accessToken);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e) => {
     e.preventDefault();
-    logout();
-    navigate("/login");
+    await handleForceLogout();
+    // navigate("/login");
   };
 
   return (

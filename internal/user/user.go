@@ -16,8 +16,8 @@ type UserUC interface {
 	FindByEmail(ctx context.Context, params *ParamsUserFindByEmail) (*User, error)
 	Update(ctx context.Context, params *ParamsUserUpdate) (*User, error)
 	Delete(ctx context.Context, params *ParamsUserDelete) error
-	SendConfirm(ctx context.Context, params *ParamsConfirm) error
-	SendConfirmOK(ctx context.Context, params *ParamsConfirmOK) (*ParamsUserLoginResponse, error)
+	// ConfirmSignup(ctx context.Context, params *ParamsConfirmSignup) error
+	ConfirmEmail(ctx context.Context, params *ParamsConfirmEmail) (*ParamsUserLoginResponse, error)
 	ResetPass(ctx context.Context, params *ParamsResetPass) error
 	NewPass(ctx context.Context, params *ParamsNewPass) (*ParamsUserLoginResponse, error)
 	GetGlobalConns(context.Context) (int, error)
@@ -39,8 +39,8 @@ type User struct {
 }
 
 type UserRegisterResponse struct {
-	User                    *User                    `json:"user"`
-	ParamsUserLoginResponse *ParamsUserLoginResponse `json:"tokens"`
+	User *User `json:"user"`
+	// ParamsUserLoginResponse *ParamsUserLoginResponse `json:"tokens,omiempty"`
 }
 
 type ParamsUserRegister struct {
@@ -175,16 +175,16 @@ func (p *ParamsUserUpdate) Validate() error {
 	return nil
 }
 
-type ParamsConfirm struct {
+type ParamsConfirmSignup struct {
 	To           string
 	IntervalSend time.Duration
 }
 
-type ParamsConfirmOK struct {
+type ParamsConfirmEmail struct {
 	ConfirmCode string `json:"confirm_code"`
 }
 
-func (p *ParamsConfirmOK) Validate() error {
+func (p *ParamsConfirmEmail) Validate() error {
 	if p.ConfirmCode == "" {
 		return ErrInvalidCode{}
 	}
@@ -247,8 +247,8 @@ func (p *ParamsNewPass) Validate() error {
 }
 
 type ParamsRefreshTokens struct {
-	AccessToken  string
-	RefreshToken string
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func (p *ParamsRefreshTokens) Validate() error {
@@ -264,8 +264,8 @@ func (p *ParamsRefreshTokens) Validate() error {
 }
 
 type RefreshTokens struct {
-	AccessToken  string
-	RefreshToken string
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type ParamsUserDelete struct {

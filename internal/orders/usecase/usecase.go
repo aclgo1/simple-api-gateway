@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"log"
+
 	"github.com/aclgo/simple-api-gateway/internal/domain/models"
 	"github.com/aclgo/simple-api-gateway/internal/orders"
 	"github.com/aclgo/simple-api-gateway/pkg/logger"
@@ -73,7 +75,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.ParamBuyProductInput) (
 	}
 
 	paramProtoFindAccount := protoBalance.ParamGetWalletByAccountRequest{
-		AccountID: in.AccountId,
+		AccountID: in.UserId,
 	}
 
 	wallet, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &paramProtoFindAccount)
@@ -116,7 +118,7 @@ func (u *orderUC) Create(ctx context.Context, in *orders.ParamBuyProductInput) (
 	}
 
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
-		AccountID:     in.AccountId,
+		AccountID:     in.UserId,
 		Type:          protoOrders.OrderType_PRODUCT_PURCHASE,
 		PaymentMethod: protoOrders.PaymentMethod_INTERNAL_BALANCE,
 		Status:        protoOrders.OrderStatus_PAID,
@@ -163,7 +165,7 @@ func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.ParamBuyProduct
 		amountProducts += product.Product.Price
 	}
 
-	wallet, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &protoBalance.ParamGetWalletByAccountRequest{AccountID: in.AccountId})
+	wallet, err := u.clientBalanceGPRC.GetWalletByAccount(ctx, &protoBalance.ParamGetWalletByAccountRequest{AccountID: in.UserId})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get wallet: %w", err)
 	}
@@ -237,7 +239,7 @@ func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.ParamBuyProduct
 	}
 
 	paramProtoCreateOrder := protoOrders.ParamCreateOrderRequest{
-		AccountID:     in.AccountId,
+		AccountID:     in.UserId,
 		Type:          protoOrders.OrderType_PRODUCT_PURCHASE,
 		PaymentMethod: protoOrders.PaymentMethod_INTERNAL_BALANCE,
 		Status:        protoOrders.OrderStatus_PAID,
@@ -250,9 +252,10 @@ func (u *orderUC) CreateWithSaga(ctx context.Context, in *orders.ParamBuyProduct
 	}
 
 	out := &orders.OrderCreateOutput{
-		OrderId:   orderCreate.Order.OrderID,
-		AccountId: orderCreate.Order.AccountID,
-		CreatedAt: orderCreate.Order.CreatedAT.AsTime(),
+		OrderId:       orderCreate.Order.OrderID,
+		AccountId:     orderCreate.Order.AccountID,
+		PaymentMethod: models.PaymentMethodInternalBalance,
+		CreatedAt:     orderCreate.Order.CreatedAT.AsTime(),
 	}
 
 	if err := json.Unmarshal(orderCreate.Order.Metadata, &out.ProductsIDS); err != nil {
@@ -374,7 +377,7 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 
 	payment, err := u.gateway.GeneratePayment(ctx, &pg)
 	if err != nil {
-		return nil, err
+		log.Printf("u.gateway.GeneratePayment: %v\n", err)
 	}
 
 	var out orders.ParamsCreateOrderSubscriptionOutput
@@ -476,6 +479,7 @@ func (u *orderUC) CreateSubscriptionOrExtend(ctx context.Context,
 	out = orders.ParamsCreateOrderSubscriptionOutput{
 		OrderID:              newOrder.Order.OrderID,
 		Status:               newOrder.Order.Status.String(),
+		PaymentMethod:        params.MethodPayment,
 		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
 		PixQRCode:            newOrder.Order.PixQRCode,
 		PixExpiration:        outPixExp,
@@ -511,7 +515,7 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 
 	payment, err := u.gateway.GeneratePayment(ctx, &mp)
 	if err != nil {
-		return nil, fmt.Errorf("u.gateway.GeneratePayment: %w", err)
+		log.Printf("u.gateway.GeneratePayment: %v\n", err)
 	}
 
 	status := protoOrders.OrderStatus_PENDING
@@ -604,6 +608,7 @@ func (u *orderUC) AddBalance(ctx context.Context, params *orders.ParamsAddBalanc
 
 	out := orders.ParamsAddBalanceOutput{
 		OrderID:              newOrder.Order.OrderID,
+		PaymentMethod:        params.MethodPayment,
 		Status:               newOrder.Order.Status.String(),
 		GatewayTransactionID: newOrder.Order.GatewayTransactionID,
 		PixQRCode:            newOrder.Order.PixQRCode,

@@ -58,7 +58,7 @@ func (u *adminUC) Create(ctx context.Context, params *admin.ParamsCreateAdmin) (
 		Password: params.Password,
 		Email:    params.Email,
 		Role:     admin.DefaultRoleAdmin,
-		Verified: admin.DefaultVerfiedYes,
+		Verified: admin.DefaultVerfiedNo,
 	}
 
 	created, err := u.clientUser.Register(ctx, &in)

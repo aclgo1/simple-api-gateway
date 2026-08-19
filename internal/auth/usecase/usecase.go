@@ -12,13 +12,13 @@ import (
 )
 
 type authUC struct {
-	userSvcClient protoUser.UserServiceClient
+	userSvcClient         protoUser.UserServiceClient
 	subscriptionSvcClient protoUser.SubscriptionServiceClient
 }
 
-func NewAuthUC(userSvcClient protoUser.UserServiceClient,subscriptionSvcClient protoUser.SubscriptionServiceClient) auth.Auth {
+func NewAuthUC(userSvcClient protoUser.UserServiceClient, subscriptionSvcClient protoUser.SubscriptionServiceClient) auth.Auth {
 	return &authUC{
-		userSvcClient: userSvcClient,
+		userSvcClient:         userSvcClient,
 		subscriptionSvcClient: subscriptionSvcClient,
 	}
 }
@@ -438,8 +438,8 @@ func (a *authUC) ValidateIsAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
+func (a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		accessToken := getAccessToken(r)
 		if accessToken == "" {
 			resp := auth.Response{
@@ -474,13 +474,13 @@ func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
 			return
 		}
 
-		isAdminOrSuper := paramsToken.Role == string(auth.ADMIN) || paramsToken.Role== string(auth.SUPERADMIN)
+		isAdminOrSuper := paramsToken.Role == string(auth.ADMIN) || paramsToken.Role == string(auth.SUPERADMIN)
 
 		idUser := r.URL.Query().Get("id")
 
 		var p protoUser.CheckIsPremiumRequest
 
-		func(){
+		func() {
 			if isAdminOrSuper && idUser != "" {
 				p = protoUser.CheckIsPremiumRequest{
 					UserId: idUser,
@@ -490,11 +490,11 @@ func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
 			}
 
 			p = protoUser.CheckIsPremiumRequest{
-				UserId:paramsToken.UserID,
+				UserId: paramsToken.UserID,
 			}
 		}()
-		
-		isPremiun,err := a.subscriptionSvcClient.CheckIsPremium(r.Context(), &p)
+
+		isPremiun, err := a.subscriptionSvcClient.CheckIsPremium(r.Context(), &p)
 		if err != nil {
 			resp := auth.Response{
 				Error:   http.StatusText(http.StatusUnauthorized),
@@ -506,7 +506,7 @@ func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
 			return
 		}
 
-		if isPremiun.Active{
+		if isPremiun.Active {
 
 			paramIsPremiun := auth.ParamsIsPremiun{
 				ExpiresAt: isPremiun.ExpiresAt.AsTime(),
@@ -514,9 +514,9 @@ func(a *authUC) ValidateTokenIsPremiun(next http.HandlerFunc)http.HandlerFunc{
 
 			v := context.WithValue(r.Context(), auth.KetCtxParamsIsPremiun, &paramIsPremiun)
 
-			next.ServeHTTP(w,r.WithContext(v))
+			next.ServeHTTP(w, r.WithContext(v))
 
-			return 
+			return
 		}
 
 		resp := auth.Response{

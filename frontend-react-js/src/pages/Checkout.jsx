@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -10,7 +10,10 @@ import {
   Check,
   Wallet,
   AlertCircle,
+  XCircle,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
+import api from "../services/api";
 
 const PLAN_DETAILS = {
   "7_days": { name: "Plano Semanal", price: "19,99", rawPrice: 19.99 },
@@ -18,41 +21,78 @@ const PLAN_DETAILS = {
   "1_year": { name: "Plano Anual", price: "289,00", rawPrice: 289.0 },
 };
 
+const VALID_ACTIONS = ["add-balance", "new-subscription", "buy-product"];
+const VALID_METHOD_PAYMENT = ["pix", "credit-card", "internal-balance"];
+
 export default function Checkout() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const userId = useAuthStore((state) => state.userId);
+  const [userBalanceCents, setUserBalanceCents] = useState(0);
 
-  // Simulação de saldo do usuário vindo do contexto/global state (Exemplo: R$ 50,00)
-  const userBalance = 50.0;
+  useEffect(() => {
+    sessionStorage.removeItem("pendingCheckoutPlan");
+    sessionStorage.removeItem("pendingCheckoutMethod");
 
-  // Leitura dos Parâmetros da URL
-  const plan = searchParams.get("plan"); // '7_days', '1_month', '1_year'
-  const actionParam = searchParams.get("action"); // 'add-balance', 'buy-product' ou 'new-subscription'
-  const initialMethod = searchParams.get("method") || "pix"; // 'pix', 'credit-card' ou 'internal-balance'
-  const amountParam = searchParams.get("amount"); // Usado para adição de saldo (ex: '50.00')
-  const productIdParam = searchParams.get("product_id"); // Usado caso a action seja 'buy-product'
+    const fetchUser = async () => {
+      try {
+        const resp = await api.get("/api/user/find");
+        const data = resp.data;
+        setUserBalanceCents(data?.user?.balance || 0);
+      } catch (error) {
+        console.error("fetch get user balance: ", error);
+      }
+    };
 
-  // Identificação do modo (Adicionar Saldo vs Comprar Assinatura/Produto)
-  const isBalanceMode =
-    actionParam === "add-balance" || plan === "balance" || !!amountParam;
+    fetchUser();
+  }, []);
+
+  const userBalance = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(userBalanceCents / 100);
+
+  const actionParam = searchParams.get("action");
+  const plan = searchParams.get("plan");
+  const initialMethod = searchParams.get("method");
+  const amountParam = searchParams.get("amount");
+  const productIdParam = searchParams.get("product_id");
+
+  const isValidAction = VALID_ACTIONS.includes(actionParam);
+  const isValidPaymentMethod = VALID_METHOD_PAYMENT.includes(initialMethod);
+  const isBalanceMode = actionParam === "add-balance";
+
   const currentPlan = PLAN_DETAILS[plan];
 
-  // Cálculo de Preços
-  const rawPrice = isBalanceMode
+  const rawPriceInReais = isBalanceMode
     ? parseFloat(amountParam || "0")
     : currentPlan?.rawPrice || 0;
+
+  const rawPriceInCents = Math.round(rawPriceInReais * 100);
+
+  const hasEnoughBalance = userBalanceCents >= rawPriceInCents;
+
   const displayTitle = isBalanceMode
     ? "Adição de Saldo"
     : currentPlan?.name || "Assinatura Premium";
-  const displayPrice = rawPrice.toLocaleString("pt-BR", {
+
+  const displayPrice = rawPriceInReais.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
-  // Estados Locais
-  const [paymentMethod, setPaymentMethod] = useState(
-    initialMethod === "card" ? "credit-card" : initialMethod,
-  );
+  const [paymentMethod, setPaymentMethod] = useState(() => {
+    if (isBalanceMode && initialMethod === "internal-balance") {
+      return "pix";
+    }
+    return initialMethod === "card" ? "credit-card" : initialMethod;
+  });
+
+  const activePaymentMethod =
+    isBalanceMode && paymentMethod === "internal-balance"
+      ? "pix"
+      : paymentMethod;
+
   const [loading, setLoading] = useState(false);
   const [pixData, setPixData] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -64,9 +104,6 @@ export default function Checkout() {
     expiry: "",
     cvv: "",
   });
-
-  // Validação de saldo suficiente
-  const hasEnoughBalance = userBalance >= rawPrice;
 
   // Formatadores de Entrada (Máscaras)
   const handleInputChange = (e) => {
@@ -98,35 +135,31 @@ export default function Checkout() {
     }
   };
 
-  // Montador do corpo da requisição sem variáveis não utilizadas
+  // Montador do corpo da requisição
   const buildRequestBody = () => {
-    const action =
-      actionParam || (isBalanceMode ? "add-balance" : "new-subscription");
-    const cardData = paymentMethod === "credit-card" ? cardForm : null;
-
     let payload;
 
-    if (action === "add-balance") {
+    if (actionParam === "add-balance") {
       payload = {
-        amount: rawPrice,
-        payment_method: paymentMethod,
-        card_data: cardData,
+        amount: rawPriceInCents,
+        payment_method: activePaymentMethod,
+        user_id: userId,
       };
-    } else if (action === "buy-product") {
+    } else if (actionParam === "buy-product") {
       payload = {
-        product_id: productIdParam,
-        payment_method: paymentMethod,
-        card_data: cardData,
+        products: [{ product_id: productIdParam }],
+        user_id: userId,
+        payment_method: activePaymentMethod,
       };
     } else {
       payload = {
-        plan_id: plan,
-        payment_method: paymentMethod,
-        card_data: cardData,
+        plan: plan,
+        method_payment: activePaymentMethod,
+        user_id: userId,
       };
     }
 
-    return { action, payload };
+    return { action: actionParam, payload };
   };
 
   const handleProcessPayment = async (e) => {
@@ -136,29 +169,12 @@ export default function Checkout() {
     const requestBody = buildRequestBody();
 
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await api.post("/api/orders", requestBody);
 
-      const data = await response.json();
+      console.log(response);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Erro ao processar requisição.");
-      }
-
-      // Trata a resposta do Go Backend
       if (paymentMethod === "pix") {
-        setPixData({
-          qrCodeUrl:
-            data.qr_code_url ||
-            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${data.pix_copy_paste}`,
-          payload: data.pix_copy_paste || data.payload,
-        });
+        console.log("aqui mostra o pixs");
       } else {
         alert("Operação realizada com sucesso!");
         navigate("/home");
@@ -170,6 +186,34 @@ export default function Checkout() {
     }
   };
 
+  // TELA DE ERRO: Ação Inválida ou Ausente
+  if (!isValidAction || !isValidPaymentMethod) {
+    return (
+      <div className="flex-1 bg-slate-950 text-slate-100 flex items-center justify-center p-4 min-h-screen">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 text-center space-y-6 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mx-auto shadow-inner">
+            <XCircle className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-white">
+              Ação de Checkout Inválida
+            </h2>
+            <p className="text-xs text-slate-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+              Não foi possível identificar o tipo de operação. Certifique-se de
+              acessar o checkout a partir de um plano ou recarga válida.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/home")}
+            className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all border border-slate-700 cursor-pointer"
+          >
+            Voltar para o Início
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 md:p-6">
       <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-8 shadow-2xl">
@@ -178,7 +222,7 @@ export default function Checkout() {
           <div className="space-y-4">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Voltar
             </button>
@@ -221,7 +265,7 @@ export default function Checkout() {
                     setPaymentMethod("pix");
                     setPixData(null);
                   }}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     paymentMethod === "pix"
                       ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
                       : "text-slate-400 hover:text-white"
@@ -239,7 +283,7 @@ export default function Checkout() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("credit-card")}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     paymentMethod === "credit-card"
                       ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
                       : "text-slate-400 hover:text-white"
@@ -250,12 +294,12 @@ export default function Checkout() {
                   </span>
                 </button>
 
-                {/* Opção Saldo da Conta (Indisponível no modo Adicionar Saldo) */}
+                {/* Opção Saldo Interno (Apenas se NÃO for 'add-balance') */}
                 {!isBalanceMode && (
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("internal-balance")}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       paymentMethod === "internal-balance"
                         ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
                         : "text-slate-400 hover:text-white"
@@ -264,9 +308,7 @@ export default function Checkout() {
                     <span className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" /> Saldo Interno
                     </span>
-                    <span className="text-[11px]">
-                      R$ {userBalance.toFixed(2).replace(".", ",")}
-                    </span>
+                    <span className="text-[11px]">R$ {userBalance}</span>
                   </button>
                 )}
               </div>
@@ -352,7 +394,7 @@ export default function Checkout() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 <Zap className="w-4 h-4 fill-current" />
                 {loading ? "Processando..." : `Pagar R$ ${displayPrice}`}
@@ -377,7 +419,7 @@ export default function Checkout() {
                     type="button"
                     onClick={handleProcessPayment}
                     disabled={loading}
-                    className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     <QrCode className="w-4 h-4" />
                     {loading
@@ -409,7 +451,7 @@ export default function Checkout() {
                       <button
                         type="button"
                         onClick={handleCopyPix}
-                        className="h-9 px-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shrink-0"
+                        className="h-9 px-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
                       >
                         {copied ? (
                           <Check className="w-3.5 h-3.5" />
@@ -425,8 +467,8 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* PAINEL 3: SALDO INTERNO */}
-          {paymentMethod === "internal-balance" && (
+          {/* PAINEL 3: SALDO INTERNO (Apenas se NÃO for 'add-balance') */}
+          {!isBalanceMode && paymentMethod === "internal-balance" && (
             <div className="space-y-5 text-center">
               <h2 className="text-lg font-bold text-white">
                 Pagamento com Saldo Interno
@@ -435,9 +477,7 @@ export default function Checkout() {
               <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3 text-left">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400">Seu saldo disponível:</span>
-                  <span className="text-white font-bold">
-                    R$ {userBalance.toFixed(2).replace(".", ",")}
-                  </span>
+                  <span className="text-white font-bold">{userBalance}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400">Valor da compra:</span>
@@ -460,11 +500,11 @@ export default function Checkout() {
                   type="button"
                   onClick={handleProcessPayment}
                   disabled={loading}
-                  className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   <Wallet className="w-4 h-4" />
                   {loading
-                    ? "Debitating Saldo..."
+                    ? "Debitando Saldo..."
                     : "Confirmar e Pagar com Saldo"}
                 </button>
               )}

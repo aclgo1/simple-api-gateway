@@ -55,16 +55,16 @@ type ProductItem struct {
 }
 
 type ParamBuyProductInput struct {
-	AccountId   string        `json:"account_id"`
+	UserId      string        `json:"user_id"`
 	ProductsIDS []ProductItem `json:"products"`
 }
 
 func (o *ParamBuyProductInput) Validate() error {
-	if o.AccountId == "" {
+	if o.UserId == "" {
 		return errors.New("accountId empty")
 	}
 
-	if _, err := uuid.Parse(o.AccountId); err != nil {
+	if _, err := uuid.Parse(o.UserId); err != nil {
 		return errors.New("invalid uuid account")
 	}
 
@@ -78,10 +78,11 @@ func (o *ParamBuyProductInput) Validate() error {
 }
 
 type OrderCreateOutput struct {
-	OrderId     string        `json:"order_id"`
-	AccountId   string        `json:"account_id"`
-	ProductsIDS []ProductItem `json:"products"`
-	CreatedAt   time.Time     `json:"created_at"`
+	OrderId       string        `json:"order_id"`
+	AccountId     string        `json:"account_id"`
+	PaymentMethod string        `json:"payment_method"`
+	ProductsIDS   []ProductItem `json:"products"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type OrderFindByIdInput struct {
@@ -187,7 +188,8 @@ type SubscriptionOutput struct {
 type ParamsCreateOrderSubscriptionOutput struct {
 	OrderID              string                                   `json:"order_id"`
 	Status               string                                   `json:"status"`
-	SubscriptionData     *models.ParamsActivateSubscriptionOutput `json:"subscription_data"`
+	PaymentMethod        string                                   `json:"payment_method"`
+	SubscriptionData     *models.ParamsActivateSubscriptionOutput `json:"subscription_data,omitempty"`
 	GatewayTransactionID string                                   `json:"gateway_transaction_id"`
 	PixQRCode            string                                   `json:"pix_qr_code"`
 	PixExpiration        time.Time                                `json:"pix_expiration"`
@@ -197,7 +199,7 @@ type ParamsCreateOrderSubscriptionOutput struct {
 }
 
 type ParamsAddBalanceInput struct {
-	MethodPayment  string `json:"method_payment"`
+	MethodPayment  string `json:"payment_method"`
 	UserId         string `json:"user_id"`
 	Amount         int64  `json:"amount"`
 	CardToken      string `json:"card_token"`
@@ -210,6 +212,7 @@ func (p *ParamsAddBalanceInput) Validate() error {
 
 type ParamsAddBalanceOutput struct {
 	OrderID              string    `json:"order_id"`
+	PaymentMethod        string    `json:"payment_method"`
 	Status               string    `json:"status"`
 	GatewayTransactionID string    `json:"gateway_transaction_id"`
 	PixQRCode            string    `json:"pix_qr_code"`

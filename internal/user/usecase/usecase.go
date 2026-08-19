@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -68,7 +69,7 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		LastName: params.Lastname,
 		Password: params.Password,
 		Email:    params.Email,
-		Verified: user.DefaultVerifiedYes,
+		Verified: user.DefaultVerifiedNo,
 	})
 
 	if err != nil {
@@ -84,15 +85,25 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 		return nil, fmt.Errorf("u.clientBalanceGRPC.Create: %w", err)
 	}
 
-	paramLogin := protoUser.UserLoginRequest{
-		Email:    params.Email,
-		Password: params.Password,
+	paramConfirmSignup := user.ParamsConfirmSignup{
+		To:           created.User.Email,
+		IntervalSend: user.DefaultTimeSendEmails,
 	}
 
-	ttks, err := u.clientUserGRPC.Login(ctx, &paramLogin)
-	if err != nil {
-		return nil, fmt.Errorf("u.clientUserGRPC.Login: %w", err)
+	confirmSignupErr := u.confirmSignup(ctx, &paramConfirmSignup)
+	if confirmSignupErr != nil {
+		return nil, confirmSignupErr
 	}
+
+	// paramLogin := protoUser.UserLoginRequest{
+	// 	Email:    params.Email,
+	// 	Password: params.Password,
+	// }
+
+	// ttks, err := u.clientUserGRPC.Login(ctx, &paramLogin)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("u.clientUserGRPC.Login: %w", err)
+	// }
 
 	out := user.UserRegisterResponse{
 		User: &user.User{
@@ -107,10 +118,10 @@ func (u *userUc) Register(ctx context.Context, params *user.ParamsUserRegister) 
 			CreatedAt: created.User.CreatedAt.AsTime(),
 			UpdatedAt: created.User.UpdatedAt.AsTime(),
 		},
-		ParamsUserLoginResponse: &user.ParamsUserLoginResponse{
-			AccessToken:  ttks.Tokens.AccessToken,
-			RefreshToken: ttks.Tokens.RefreshToken,
-		},
+		// ParamsUserLoginResponse: &user.ParamsUserLoginResponse{
+		// 	AccessToken:  ttks.Tokens.AccessToken,
+		// 	RefreshToken: ttks.Tokens.RefreshToken,
+		// },
 	}
 
 	return &out, nil
@@ -166,27 +177,32 @@ func (u *userUc) FindById(ctx context.Context, params *user.ParamsUserFindById) 
 	if err != nil {
 		u.logger.Error("u.clientBalanceGRPC.GetWalletByAccount", err)
 
-		paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
-			AccountID: params.UserID,
+		if strings.Contains(err.Error(), "no documents in result") {
+			paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
+				AccountID: params.UserID,
+			}
+
+			newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
+			if err != nil {
+				u.logger.Error("u.clientBalanceGRPC.Create: ", err)
+			}
+
+			return &user.User{
+				UserID:    resp.User.Id,
+				Name:      resp.User.Name,
+				Lastname:  resp.User.LastName,
+				Password:  resp.User.Password,
+				Email:     resp.User.Email,
+				Role:      resp.User.Role,
+				Verified:  resp.User.Verified,
+				Balance:   newWallet.Balance,
+				CreatedAt: resp.User.CreatedAt.AsTime(),
+				UpdatedAt: resp.User.UpdatedAt.AsTime(),
+			}, nil
+
 		}
 
-		newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
-		if err != nil {
-			u.logger.Error("u.clientBalanceGRPC.Create: ", err)
-		}
-
-		return &user.User{
-			UserID:    resp.User.Id,
-			Name:      resp.User.Name,
-			Lastname:  resp.User.LastName,
-			Password:  resp.User.Password,
-			Email:     resp.User.Email,
-			Role:      resp.User.Role,
-			Verified:  resp.User.Verified,
-			Balance:   newWallet.Balance,
-			CreatedAt: resp.User.CreatedAt.AsTime(),
-			UpdatedAt: resp.User.UpdatedAt.AsTime(),
-		}, nil
+		return nil, err
 	}
 
 	return &user.User{
@@ -216,27 +232,32 @@ func (u *userUc) FindByEmail(ctx context.Context, params *user.ParamsUserFindByE
 	if err != nil {
 		u.logger.Error("u.clientBalanceGRPC.GetWalletByAccount", err)
 
-		paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
-			AccountID: resp.User.Id,
+		if strings.Contains(err.Error(), "no documents in result") {
+			paramProtoNewWallet := protoBalance.ParamCreateWalletRequest{
+				AccountID: resp.User.Id,
+			}
+
+			newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
+			if err != nil {
+				u.logger.Error("u.clientBalanceGRPC.Create: ", err)
+			}
+
+			return &user.User{
+				UserID:    resp.User.Id,
+				Name:      resp.User.Name,
+				Lastname:  resp.User.LastName,
+				Password:  resp.User.Password,
+				Email:     resp.User.Email,
+				Role:      resp.User.Role,
+				Verified:  resp.User.Verified,
+				Balance:   newWallet.Balance,
+				CreatedAt: resp.User.CreatedAt.AsTime(),
+				UpdatedAt: resp.User.UpdatedAt.AsTime(),
+			}, nil
+
 		}
 
-		newWallet, err := u.clientBalanceGRPC.Create(ctx, &paramProtoNewWallet)
-		if err != nil {
-			u.logger.Error("u.clientBalanceGRPC.Create: ", err)
-		}
-
-		return &user.User{
-			UserID:    resp.User.Id,
-			Name:      resp.User.Name,
-			Lastname:  resp.User.LastName,
-			Password:  resp.User.Password,
-			Email:     resp.User.Email,
-			Role:      resp.User.Role,
-			Verified:  resp.User.Verified,
-			Balance:   newWallet.Balance,
-			CreatedAt: resp.User.CreatedAt.AsTime(),
-			UpdatedAt: resp.User.UpdatedAt.AsTime(),
-		}, nil
+		return nil, err
 	}
 
 	return &user.User{
@@ -333,7 +354,7 @@ func (u *userUc) RefreshTokens(ctx context.Context, params *user.ParamsRefreshTo
 	}, nil
 }
 
-func (u *userUc) SendConfirm(ctx context.Context, params *user.ParamsConfirm) error {
+func (u *userUc) confirmSignup(ctx context.Context, params *user.ParamsConfirmSignup) error {
 
 	err := u.redisClient.Get(ctx, params.To).Err()
 	if err != nil && err != redis.Nil {
@@ -372,7 +393,7 @@ func (u *userUc) SendConfirm(ctx context.Context, params *user.ParamsConfirm) er
 	return user.ErrEmailSentCheckInbox{}
 }
 
-func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK) (*user.ParamsUserLoginResponse, error) {
+func (u *userUc) ConfirmEmail(ctx context.Context, params *user.ParamsConfirmEmail) (*user.ParamsUserLoginResponse, error) {
 
 	userEmail, err := u.redisClient.Get(ctx, params.ConfirmCode).Result()
 	if err != nil && err != redis.Nil {
@@ -399,15 +420,16 @@ func (u *userUc) SendConfirmOK(ctx context.Context, params *user.ParamsConfirmOK
 		return nil, err
 	}
 
-	pLogin := protoUser.UserLoginRequest{
-		Email:    foundUser.User.Email,
-		Password: foundUser.User.Password,
+	pLogin := protoUser.UserLoginNoPassRequest{
+		Email: foundUser.User.Email,
 	}
 
-	tokens, err := u.clientUserGRPC.Login(ctx, &pLogin)
+	tokens, err := u.clientUserGRPC.LoginNoPass(ctx, &pLogin)
 	if err != nil {
 		return nil, err
 	}
+
+	u.redisClient.Del(ctx, params.ConfirmCode)
 
 	resp := user.ParamsUserLoginResponse{
 		AccessToken:  tokens.Tokens.AccessToken,
@@ -501,12 +523,11 @@ func (u *userUc) NewPass(ctx context.Context, params *user.ParamsNewPass) (*user
 		return nil, errDel
 	}
 
-	pLogin := protoUser.UserLoginRequest{
-		Email:    find.User.Email,
-		Password: find.User.Password,
+	pLogin := protoUser.UserLoginNoPassRequest{
+		Email: find.User.Email,
 	}
 
-	tokens, err := u.clientUserGRPC.Login(ctx, &pLogin)
+	tokens, err := u.clientUserGRPC.LoginNoPass(ctx, &pLogin)
 	if err != nil {
 		return nil, err
 	}

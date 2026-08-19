@@ -4,7 +4,7 @@ import App from "../App";
 import Error from "../pages/Error";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
-import ConfirmSignup from "../pages/C";
+import ConfirmSignup from "../pages/ConfirmSignup";
 import NewPass from "../pages/NewPass";
 import ResetPass from "../pages/ResetPass";
 import Pricing from "../pages/Pricing";
@@ -13,6 +13,9 @@ import Admin from "../pages/Admin";
 import Checkout from "../pages/Checkout";
 import AddBalance from "../pages/AddBalance";
 import RoutePrivate from "../components/PrivateRoute";
+import ConfirmEmail from "../pages/ConfirmEmail";
+import Profile from "../pages/Profile";
+import ResetPassConfirm from "../pages/ResetPassConfirm";
 
 export const router = createBrowserRouter([
   {
@@ -37,8 +40,12 @@ export const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "confirm",
+        path: "confirm-signup",
         element: <ConfirmSignup />,
+      },
+      {
+        path: "confirm-email",
+        element: <ConfirmEmail />,
       },
       {
         path: "newpass",
@@ -47,6 +54,18 @@ export const router = createBrowserRouter([
       {
         path: "resetpass",
         element: <ResetPass />,
+      },
+      {
+        path: "resetpass-confirm",
+        element: <ResetPassConfirm />,
+      },
+      {
+        path: "profile",
+        element: (
+          <RoutePrivate>
+            <Profile />
+          </RoutePrivate>
+        ),
       },
       {
         path: "products",
@@ -67,13 +86,13 @@ export const router = createBrowserRouter([
       {
         path: "checkout",
         element: (
-          // <RoutePrivate>
-          <Checkout />
-          // </RoutePrivate>
+          <RoutePrivate>
+            <Checkout />
+          </RoutePrivate>
         ),
       },
       {
-        path: "balance",
+        path: "add-balance",
         element: (
           <RoutePrivate>
             <AddBalance />
